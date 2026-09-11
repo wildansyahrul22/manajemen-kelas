@@ -9,12 +9,7 @@
         <form wire:submit="login" class="space-y-5">
             <x-ui.input label="NPM" name="npm" wire:model="npm" placeholder="Contoh: 24010001" autocomplete="username" autofocus required />
 
-            <div x-data="{ show: false }">
-                <x-ui.input label="Password" name="password" wire:model="password" placeholder="••••••••" autocomplete="current-password" required x-bind:type="show ? 'text' : 'password'" />
-                <button type="button" x-on:click="show = ! show" class="mt-2 text-xs font-medium text-slate-500 hover:text-primary-900 hover:underline">
-                    <span x-text="show ? 'Sembunyikan password' : 'Tampilkan password'"></span>
-                </button>
-            </div>
+            <x-ui.input label="Password" name="password" type="password" wire:model="password" placeholder="••••••••" autocomplete="current-password" required />
 
             <x-ui.checkbox label="Ingat saya" name="remember" wire:model="remember" />
 

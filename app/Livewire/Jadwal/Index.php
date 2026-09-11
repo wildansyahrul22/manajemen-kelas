@@ -51,9 +51,23 @@ class Index extends Component
     {
         $this->authorize('create', JadwalKelas::class);
 
-        $this->form->reset();
-        $this->form->hari = (string) ($hari ?? '');
+        $this->form->startCreate($hari);
         $this->openForm();
+    }
+
+    public function addSesi(): void
+    {
+        $this->authorize('create', JadwalKelas::class);
+
+        $this->form->addSesi();
+    }
+
+    public function removeSesi(string $key): void
+    {
+        $this->authorize('create', JadwalKelas::class);
+
+        $this->form->removeSesi($key);
+        $this->resetValidation();
     }
 
     public function openEdit(int $id): void
@@ -74,11 +88,15 @@ class Index extends Component
             ? $this->authorize('update', $this->form->jadwal)
             : $this->authorize('create', JadwalKelas::class);
 
-        $this->form->save($this->kelas);
+        $saved = $this->form->save($this->kelas);
 
         $this->closeForm();
         unset($this->jadwalPerHari);
-        $this->notify($isEdit ? 'Jadwal berhasil diperbarui.' : 'Jadwal berhasil ditambahkan.');
+        $this->notify(match (true) {
+            $isEdit => 'Jadwal berhasil diperbarui.',
+            $saved->count() > 1 => $saved->count().' jadwal berhasil ditambahkan.',
+            default => 'Jadwal berhasil ditambahkan.',
+        });
     }
 
     public function confirmDelete(int $id): void

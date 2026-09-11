@@ -25,7 +25,14 @@
                             <h3 class="font-semibold text-slate-900">{{ $hari->label() }}</h3>
                             @if ($isToday)<x-ui.badge color="primary">Hari ini</x-ui.badge>@endif
                         </div>
-                        <span class="text-xs text-slate-400">{{ $daftar->count() }} sesi</span>
+                        <div class="flex items-center gap-2">
+                            <span class="text-xs text-slate-400">{{ $daftar->count() }} sesi</span>
+                            @if ($this->canManage)
+                                <button type="button" wire:click="openCreate({{ $hariValue }})" class="-mr-1.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-primary-900" aria-label="Tambah jadwal {{ $hari->label() }}" title="Tambah jadwal {{ $hari->label() }}">
+                                    <x-heroicon-m-plus class="size-4" />
+                                </button>
+                            @endif
+                        </div>
                     </div>
 
                     @forelse ($daftar as $jadwal)
