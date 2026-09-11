@@ -66,6 +66,14 @@ php artisan mahasiswa:import path/ke/file.csv --kelas=TI-R8 --password=rahasia
 
 Kelas harus sudah ada. NPM yang sudah terdaftar atau baris yang tidak valid dilewati dan dilaporkan.
 
+## Deploy (CI/CD)
+
+Setiap push ke `main` menjalankan workflow `.github/workflows/deploy.yml`: test dijalankan dulu, lalu jika lulus GitHub Actions masuk ke server lewat SSH dan menjalankan `bin/deploy.sh` (`git reset --hard origin/main` → `composer install --no-dev` → `migrate --force` → `optimize`). Situs production: <https://manajemen-kelas.web.id>.
+
+Secrets yang dibutuhkan di repo: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`. Asset Vite di-commit (`public/build`) karena server tidak memiliki Node.
+
+Deploy manual dari server: `bash ~/manajemen-kelas/bin/deploy.sh`.
+
 ## Testing
 
 ```sh
