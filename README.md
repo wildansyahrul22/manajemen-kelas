@@ -72,7 +72,7 @@ Setiap push ke `main` menjalankan workflow `.github/workflows/deploy.yml`: test 
 
 Secrets yang dibutuhkan di repo: `SSH_HOST`, `SSH_PORT`, `SSH_USER`, `SSH_PRIVATE_KEY`. Asset Vite di-commit (`public/build`) karena server tidak memiliki Node.
 
-Deploy manual dari server: `bash ~/manajemen-kelas/bin/deploy.sh`.
+Di server, project berada di `~/public_html/manajemen-kelas.web.id` (folder addon domain) dengan document root di subfolder `public/`; root project diblokir dari web oleh `.htaccess`. Deploy manual dari server: `bash ~/public_html/manajemen-kelas.web.id/bin/deploy.sh`.
 
 ## Testing
 

@@ -49,7 +49,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd ~/manajemen-kelas
+            cd ~/public_html/manajemen-kelas.web.id
             git fetch --prune origin main
             git reset --hard origin/main
             bash bin/deploy.sh

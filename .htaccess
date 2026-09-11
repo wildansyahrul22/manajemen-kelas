@@ -1,0 +1,9 @@
+# Root project tidak boleh diakses lewat web (mis. saat project berada di dalam public_html).
+# Hanya folder public/ yang boleh dilayani; public/.htaccess membukanya kembali.
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Order deny,allow
+    Deny from all
+</IfModule>

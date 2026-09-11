@@ -16,6 +16,7 @@
 /node_modules
 /public/fonts-manifest.dev.json
 /public/hot
+/public/.well-known
 /public/storage
 /storage/*.key
 /storage/pail
