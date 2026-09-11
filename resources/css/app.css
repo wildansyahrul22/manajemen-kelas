@@ -1,0 +1,51 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../../app/**/*.php';
+
+@theme {
+    --font-sans: 'Plus Jakarta Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+
+    /* Primary = near-black neutral scale (buttons, active nav, focus rings). */
+    --color-primary-50: #fafafa;
+    --color-primary-100: #f4f4f5;
+    --color-primary-200: #e4e4e7;
+    --color-primary-300: #d4d4d8;
+    --color-primary-400: #a1a1aa;
+    --color-primary-500: #71717a;
+    --color-primary-600: #3f3f46;
+    --color-primary-700: #27272a;
+    --color-primary-800: #18181b;
+    --color-primary-900: #09090b;
+    --color-primary-950: #000000;
+}
+
+[x-cloak] {
+    display: none !important;
+}
+
+@layer base {
+    html {
+        scroll-behavior: smooth;
+    }
+
+    body {
+        @apply bg-slate-50 text-slate-800 antialiased;
+    }
+
+    ::selection {
+        @apply bg-primary-900 text-white;
+    }
+
+    input[type='checkbox'],
+    input[type='radio'] {
+        accent-color: var(--color-primary-900);
+    }
+}
+
+@utility scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-slate-300) transparent;
+}
