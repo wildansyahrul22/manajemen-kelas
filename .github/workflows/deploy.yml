@@ -49,4 +49,8 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script_stop: true
-          script: bash ~/manajemen-kelas/bin/deploy.sh
+          script: |
+            cd ~/manajemen-kelas
+            git fetch --prune origin main
+            git reset --hard origin/main
+            bash bin/deploy.sh
