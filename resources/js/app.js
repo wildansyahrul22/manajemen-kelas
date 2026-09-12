@@ -7,12 +7,15 @@ document.addEventListener('alpine:init', () => {
     const floating = {
         open: false,
         style: '',
+        matchWidth: false,
 
-        position(matchWidth = false) {
+        position(matchWidth = this.matchWidth) {
             const trigger = this.$refs.trigger;
             const panel = this.$refs.panel;
 
             if (!trigger || !panel) return;
+
+            this.matchWidth = matchWidth;
 
             const rect = trigger.getBoundingClientRect();
             const gap = 6;
@@ -31,22 +34,60 @@ document.addEventListener('alpine:init', () => {
                 top = rect.top - height - gap;
             }
 
-            this.style = `top:${top}px;left:${left}px;${matchWidth ? `width:${rect.width}px;` : ''}`;
+            // `position: fixed` is measured from the nearest ancestor with transform / filter /
+            // backdrop-filter (e.g. the blurred header), not always from the viewport: compensate.
+            const origin = this.fixedOrigin(panel);
+
+            this.style = `top:${top - origin.top}px;left:${left - origin.left}px;${matchWidth ? `width:${rect.width}px;` : ''}`;
         },
 
+        /**
+         * Viewport coordinates of the point the panel's `top:0;left:0` resolves to.
+         */
+        fixedOrigin(panel) {
+            // A sibling probe shares the panel's containing block but not its enter transition.
+            const probe = document.createElement('div');
+            probe.style.cssText = 'position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;';
+            panel.parentNode.insertBefore(probe, panel);
+
+            const { top, left } = probe.getBoundingClientRect();
+
+            probe.remove();
+
+            return { top, left };
+        },
+
+        triggerIsVisible() {
+            const rect = this.$refs.trigger?.getBoundingClientRect();
+
+            return !!rect && rect.bottom > 0 && rect.top < window.innerHeight && rect.right > 0 && rect.left < window.innerWidth;
+        },
+
+        /**
+         * Keep the panel anchored while the page scrolls or the viewport changes (a mobile keyboard
+         * opening fires both); only close when the trigger itself has scrolled out of view.
+         */
         bindGlobalListeners() {
             this._onScroll = (event) => {
-                if (this.open && !this.$refs.panel?.contains(event.target)) this.close();
+                if (!this.open || this.$refs.panel?.contains(event.target)) return;
+
+                this.triggerIsVisible() ? this.position() : this.close();
             };
-            this._onResize = () => this.open && this.close();
+            this._onResize = () => {
+                if (!this.open) return;
+
+                this.triggerIsVisible() ? this.position() : this.close();
+            };
 
             window.addEventListener('scroll', this._onScroll, true);
             window.addEventListener('resize', this._onResize);
+            window.visualViewport?.addEventListener('resize', this._onResize);
         },
 
         unbindGlobalListeners() {
             window.removeEventListener('scroll', this._onScroll, true);
             window.removeEventListener('resize', this._onResize);
+            window.visualViewport?.removeEventListener('resize', this._onResize);
         },
     };
 
