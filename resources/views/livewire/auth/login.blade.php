@@ -7,9 +7,11 @@
 
     <x-ui.card class="p-6 sm:p-8" :padding="false">
         <form wire:submit="login" class="space-y-5">
-            <x-ui.input label="NPM" name="npm" wire:model="npm" placeholder="Contoh: 24010001" autocomplete="username" autofocus required />
+            <x-ui.input label="NPM" name="npm" wire:model="npm" placeholder="Contoh: 202343502484"
+                autocomplete="username" autofocus required />
 
-            <x-ui.input label="Password" name="password" type="password" wire:model="password" placeholder="••••••••" autocomplete="current-password" required />
+            <x-ui.input label="Password" name="password" type="password" wire:model="password" placeholder="••••••••"
+                autocomplete="current-password" required />
 
             <x-ui.checkbox label="Ingat saya" name="remember" wire:model="remember" />
 
