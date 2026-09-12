@@ -3,9 +3,12 @@
 namespace App\Livewire\Forms;
 
 use App\Enums\Role;
+use App\Models\KategoriKelompok;
 use App\Models\Kelas;
 use App\Models\Kelompok;
+use App\Models\MataKuliah;
 use App\Models\User;
+use Closure;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
@@ -16,7 +19,7 @@ class KelompokForm extends Form
 
     public string $nama = '';
 
-    public string $mata_kuliah_id = '';
+    public string $kategori_kelompok_id = '';
 
     public string $deskripsi = '';
 
@@ -34,9 +37,9 @@ class KelompokForm extends Form
     {
         return [
             'nama' => ['required', 'string', 'max:100'],
-            'mata_kuliah_id' => [
+            'kategori_kelompok_id' => [
                 'required',
-                Rule::exists('mata_kuliah', 'id')->where('kelas_id', $this->kelas?->id),
+                Rule::exists('kategori_kelompok', 'id')->whereIn('mata_kuliah_id', MataKuliah::query()->select('id')->where('kelas_id', $this->kelas?->id)),
             ],
             'deskripsi' => ['nullable', 'string', 'max:2000'],
             'anggota' => ['required', 'array', 'min:1'],
@@ -45,6 +48,7 @@ class KelompokForm extends Form
                 Rule::exists('users', 'id')
                     ->where('kelas_id', $this->kelas?->id)
                     ->whereIn('role', [Role::Mahasiswa->value, Role::Admin->value]),
+                $this->belumPunyaKelompokDiKategori(),
             ],
             'ketua_id' => ['nullable', 'integer', Rule::in($this->anggota)],
         ];
@@ -57,7 +61,7 @@ class KelompokForm extends Form
     {
         return [
             'nama' => 'nama kelompok',
-            'mata_kuliah_id' => 'mata kuliah',
+            'kategori_kelompok_id' => 'kategori kelompok',
             'deskripsi' => 'deskripsi',
             'anggota' => 'anggota',
             'anggota.*' => 'anggota',
@@ -77,11 +81,34 @@ class KelompokForm extends Form
         ];
     }
 
+    /**
+     * Changing kategori drops members that already belong to a kelompok of the new kategori.
+     */
+    public function updatedKategoriKelompokId(): void
+    {
+        $kategoriId = (int) $this->kategori_kelompok_id;
+
+        if ($kategoriId === 0 || $this->anggota === []) {
+            $this->anggota = [];
+            $this->ketua_id = '';
+
+            return;
+        }
+
+        $terpakai = KategoriKelompok::anggotaIds($kategoriId, $this->kelompok?->id)->pluck('user_id')->all();
+
+        $this->anggota = array_values(array_diff(array_map('intval', $this->anggota), $terpakai));
+
+        if (! in_array((int) $this->ketua_id, $this->anggota, true)) {
+            $this->ketua_id = '';
+        }
+    }
+
     public function fillFrom(Kelompok $kelompok): void
     {
         $this->kelompok = $kelompok;
         $this->nama = $kelompok->nama;
-        $this->mata_kuliah_id = (string) $kelompok->mata_kuliah_id;
+        $this->kategori_kelompok_id = (string) $kelompok->kategori_kelompok_id;
         $this->deskripsi = (string) $kelompok->deskripsi;
 
         $anggota = $kelompok->anggota()->get(['users.id', 'kelompok_anggota.is_ketua']);
@@ -97,9 +124,12 @@ class KelompokForm extends Form
 
         $data = $this->validate();
 
+        $kategori = KategoriKelompok::query()->findOrFail((int) $data['kategori_kelompok_id']);
+
         $attributes = [
             'nama' => $data['nama'],
-            'mata_kuliah_id' => (int) $data['mata_kuliah_id'],
+            'kategori_kelompok_id' => $kategori->id,
+            'mata_kuliah_id' => $kategori->mata_kuliah_id,
             'deskripsi' => $data['deskripsi'] !== '' ? $data['deskripsi'] : null,
         ];
 
@@ -116,5 +146,28 @@ class KelompokForm extends Form
 
             return $kelompok;
         });
+    }
+
+    /**
+     * A student can only sit in one kelompok per kategori.
+     */
+    protected function belumPunyaKelompokDiKategori(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail): void {
+            $kategoriId = (int) $this->kategori_kelompok_id;
+
+            if ($kategoriId === 0) {
+                return;
+            }
+
+            $sudahAda = KategoriKelompok::anggotaIds($kategoriId, $this->kelompok?->id)
+                ->where('kelompok_anggota.user_id', (int) $value)
+                ->exists();
+
+            if ($sudahAda) {
+                $nama = User::query()->whereKey((int) $value)->value('name') ?? 'Anggota';
+                $fail("{$nama} sudah tergabung di kelompok lain pada kategori ini.");
+            }
+        };
     }
 }

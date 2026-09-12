@@ -1,4 +1,10 @@
-@props(['model', 'title' => null, 'description' => null, 'maxWidth' => 'max-w-lg'])
+{{--
+    Modal bound to a boolean Livewire property. Open it from the client first (`opens="model"` on
+    <x-ui.button> / <x-ui.menu-item>, or `x-on:click="$wire.model = true"`) so it appears instantly;
+    pass `loading` (a wire:target list) to cover the body with a spinner until the server action
+    that fills it has finished.
+--}}
+@props(['model', 'title' => null, 'description' => null, 'maxWidth' => 'max-w-lg', 'loading' => null])
 <div
     x-data="{ show: $wire.entangle('{{ $model }}') }"
     x-show="show"
@@ -21,6 +27,13 @@
             x-trap.noscroll="show"
             class="relative w-full {{ $maxWidth }} rounded-2xl bg-white shadow-xl"
         >
+            @if ($loading)
+                <div wire:loading.flex wire:target="{{ $loading }}" class="absolute inset-0 z-10 flex-col items-center justify-center gap-3 rounded-2xl bg-white/90 text-sm text-slate-500" aria-live="polite">
+                    <x-heroicon-m-arrow-path class="size-6 animate-spin text-primary-900" />
+                    <span>Memuat...</span>
+                </div>
+            @endif
+
             @if ($title)
                 <div class="flex items-start justify-between gap-4 px-6 pt-6">
                     <div>

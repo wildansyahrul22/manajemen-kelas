@@ -1,4 +1,4 @@
-<x-ui.modal model="showForm" :title="$form->jadwal ? 'Edit Jadwal' : 'Tambah Jadwal'" :description="$form->jadwal ? null : 'Satu hari bisa diisi beberapa mata kuliah sekaligus.'" max-width="max-w-2xl">
+<x-ui.modal model="showForm" :title="$form->jadwal ? 'Edit Jadwal' : 'Tambah Jadwal'" :description="$form->jadwal ? null : 'Satu hari bisa diisi beberapa mata kuliah sekaligus.'" max-width="max-w-2xl" loading="openCreate, openEdit">
     <form id="form-jadwal" wire:submit="save" class="space-y-4">
         <x-ui.select label="Hari" name="form.hari" wire:model="form.hari" :options="\App\Enums\Hari::options()" placeholder="Pilih hari" required />
 

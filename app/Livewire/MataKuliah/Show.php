@@ -45,8 +45,10 @@ class Show extends Component
     public function kelompok(): Collection
     {
         return $this->mataKuliah->kelompok()
-            ->select(['id', 'nama'])
+            ->select(['id', 'kategori_kelompok_id', 'nama'])
+            ->with('kategori:id,nama')
             ->withCount('anggota')
+            ->orderBy('kategori_kelompok_id')
             ->orderBy('nama')
             ->get();
     }

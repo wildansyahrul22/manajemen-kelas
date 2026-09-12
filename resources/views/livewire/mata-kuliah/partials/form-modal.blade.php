@@ -1,4 +1,4 @@
-<x-ui.modal model="showForm" :title="$form->mataKuliah ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah'">
+<x-ui.modal model="showForm" :title="$form->mataKuliah ? 'Edit Mata Kuliah' : 'Tambah Mata Kuliah'" loading="openCreate, openEdit">
     <form id="form-mata-kuliah" wire:submit="save" class="space-y-4">
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <x-ui.combobox label="Semester" name="form.semester_id" wire:model="form.semester_id" :options="$this->semesterOptions->pluck('nama', 'id')" placeholder="Pilih semester" required />

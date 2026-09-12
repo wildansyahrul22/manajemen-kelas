@@ -4,7 +4,7 @@
             <x-heroicon-o-bars-3 class="size-6" />
         </button>
 
-        <h1 class="truncate text-base font-semibold text-slate-900 sm:text-lg">{{ $title ?? config('app.name') }}</h1>
+        <h1 data-page-title class="truncate text-base font-semibold text-slate-900 sm:text-lg">{{ $title ?? config('app.name') }}</h1>
 
         <div class="ml-auto flex items-center gap-2 sm:gap-3">
             @if ($user->isSuperAdmin())

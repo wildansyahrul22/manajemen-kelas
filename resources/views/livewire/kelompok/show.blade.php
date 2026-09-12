@@ -2,8 +2,8 @@
     <x-ui.page-header :title="$kelompok->nama" :description="$kelompok->mataKuliah->nama.' · '.$kelompok->mataKuliah->dosen" :back="route('kelompok.index')">
         @can('update', $kelompok)
             <x-slot:actions>
-                <x-ui.button variant="secondary" wire:click="openEdit({{ $kelompok->id }})"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
-                <x-ui.button variant="danger" wire:click="confirmDelete({{ $kelompok->id }})"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
+                <x-ui.button variant="secondary" wire:click="openEdit({{ $kelompok->id }})" opens="showForm"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
+                <x-ui.button variant="danger" wire:click="confirmDelete({{ $kelompok->id }})" opens="confirmingDelete"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
             </x-slot:actions>
         @endcan
     </x-ui.page-header>
@@ -44,6 +44,7 @@
         <x-ui.card title="Tentang Kelompok">
             <dl class="space-y-4 text-sm">
                 <div><dt class="text-slate-500">Mata kuliah</dt><dd class="mt-0.5"><a href="{{ route('mata-kuliah.show', $kelompok->mata_kuliah_id) }}" wire:navigate class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $kelompok->mataKuliah->nama }}</a></dd></div>
+                <div><dt class="text-slate-500">Kategori</dt><dd class="mt-0.5"><a href="{{ route('kelompok.index', ['kategori' => $kelompok->kategori_kelompok_id]) }}" wire:navigate class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $kelompok->kategori->nama }}</a></dd></div>
                 <div><dt class="text-slate-500">Deskripsi</dt><dd class="mt-0.5 whitespace-pre-line text-slate-700">{{ $kelompok->deskripsi ?: '—' }}</dd></div>
                 <div><dt class="text-slate-500">Dibuat oleh</dt><dd class="mt-0.5 font-medium text-slate-800">{{ $kelompok->creator?->name ?? '—' }}</dd></div>
                 <div><dt class="text-slate-500">Dibuat</dt><dd class="mt-0.5 text-slate-700">{{ $kelompok->created_at->isoFormat('D MMM YYYY, HH:mm') }}</dd></div>

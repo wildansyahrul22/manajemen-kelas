@@ -1,7 +1,7 @@
 <div>
     <x-ui.page-header title="Daftar Informasi" :description="'Pengumuman dan informasi untuk kelas ' . $this->kelas->nama . '.'">
         <x-slot:actions>
-            <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Bagikan Informasi</x-ui.button>
+            <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Bagikan Informasi</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>
 
@@ -23,7 +23,7 @@
                 <x-ui.empty-state title="Belum ada informasi"
                     description="Jadilah yang pertama membagikan informasi untuk kelas ini."
                     icon="heroicon-o-megaphone">
-                    <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" />
+                    <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" />
                         Bagikan informasi</x-ui.button>
                 </x-ui.empty-state>
             @else
@@ -59,9 +59,9 @@
                                                     ? 'heroicon-s-bookmark'
                                                     : 'heroicon-o-bookmark'">{{ $informasi->is_pinned ? 'Lepas sematan' : 'Sematkan' }}</x-ui.menu-item>
                                         @endcan
-                                        <x-ui.menu-item wire:click="openEdit({{ $informasi->id }})"
+                                        <x-ui.menu-item wire:click="openEdit({{ $informasi->id }})" opens="showForm"
                                             icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $informasi->id }})"
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $informasi->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     </x-ui.action-menu>
                                 </div>

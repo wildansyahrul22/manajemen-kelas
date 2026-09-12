@@ -6,8 +6,8 @@
     <x-ui.page-header :title="$tugas->nama" :back="route('tugas.index')">
         @can('update', $tugas)
             <x-slot:actions>
-                <x-ui.button variant="secondary" wire:click="openEdit({{ $tugas->id }})"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
-                <x-ui.button variant="danger" wire:click="confirmDelete({{ $tugas->id }})"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
+                <x-ui.button variant="secondary" wire:click="openEdit({{ $tugas->id }})" opens="showForm"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
+                <x-ui.button variant="danger" wire:click="confirmDelete({{ $tugas->id }})" opens="confirmingDelete"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
             </x-slot:actions>
         @endcan
     </x-ui.page-header>

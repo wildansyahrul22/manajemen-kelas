@@ -1,4 +1,4 @@
-<x-ui.modal model="showForm" :title="$form->informasi ? 'Edit Informasi' : 'Bagikan Informasi'" max-width="max-w-2xl">
+<x-ui.modal model="showForm" :title="$form->informasi ? 'Edit Informasi' : 'Bagikan Informasi'" max-width="max-w-2xl" loading="openCreate, openEdit">
     <form id="form-informasi" wire:submit="save" class="space-y-4">
         <x-ui.input label="Judul" name="form.judul" wire:model="form.judul" placeholder="Judul informasi" required />
 

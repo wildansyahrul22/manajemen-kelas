@@ -1,4 +1,4 @@
-<x-ui.modal model="showForm" :title="$form->tugas ? 'Edit Tugas' : 'Tambah Tugas'" description="Tugas akan tampil untuk seluruh anggota kelas.">
+<x-ui.modal model="showForm" :title="$form->tugas ? 'Edit Tugas' : 'Tambah Tugas'" description="Tugas akan tampil untuk seluruh anggota kelas." loading="openCreate, openEdit">
     <form id="form-tugas" wire:submit="save" class="space-y-4">
         <x-ui.input label="Nama tugas" name="form.nama" wire:model="form.nama" placeholder="Contoh: Laporan Praktikum 2" required />
 

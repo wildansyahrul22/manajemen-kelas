@@ -2,8 +2,8 @@
     <x-ui.page-header :title="$mataKuliah->nama" :description="($mataKuliah->kode ? $mataKuliah->kode.' · ' : '').$mataKuliah->sks.' SKS · '.$mataKuliah->semester->nama" :back="route('mata-kuliah.index')">
         @can('update', $mataKuliah)
             <x-slot:actions>
-                <x-ui.button variant="secondary" wire:click="openEdit({{ $mataKuliah->id }})"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
-                <x-ui.button variant="danger" wire:click="confirmDelete({{ $mataKuliah->id }})"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
+                <x-ui.button variant="secondary" wire:click="openEdit({{ $mataKuliah->id }})" opens="showForm"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
+                <x-ui.button variant="danger" wire:click="confirmDelete({{ $mataKuliah->id }})" opens="confirmingDelete"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
             </x-slot:actions>
         @endcan
     </x-ui.page-header>
@@ -50,7 +50,10 @@
             <x-ui.card title="Kelompok" :padding="false">
                 @forelse ($this->kelompok as $kelompok)
                     <a href="{{ route('kelompok.show', $kelompok) }}" wire:navigate wire:key="kelompok-{{ $kelompok->id }}" class="flex items-center justify-between gap-3 border-b border-slate-100 px-5 py-3.5 text-sm transition last:border-b-0 hover:bg-slate-50 sm:px-6">
-                        <span class="font-medium text-slate-800">{{ $kelompok->nama }}</span>
+                        <span class="min-w-0">
+                            <span class="block truncate font-medium text-slate-800">{{ $kelompok->nama }}</span>
+                            <span class="block truncate text-xs text-slate-500">{{ $kelompok->kategori->nama }}</span>
+                        </span>
                         <span class="text-xs text-slate-500">{{ $kelompok->anggota_count }} anggota</span>
                     </a>
                 @empty

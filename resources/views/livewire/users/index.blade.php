@@ -4,7 +4,7 @@
         ? 'Kelola akun mahasiswa, admin kelas, dan super admin.'
         : 'Kelola akun mahasiswa dan admin kelas ' . $this->kelas->nama . '.'">
         <x-slot:actions>
-            <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Tambah User</x-ui.button>
+            <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah User</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>
 
@@ -62,11 +62,11 @@
                                     <x-ui.menu-item :href="route('users.show', $user)" icon="heroicon-o-eye">Lihat
                                         detail</x-ui.menu-item>
                                     @can('update', $user)
-                                        <x-ui.menu-item wire:click="openEdit({{ $user->id }})"
+                                        <x-ui.menu-item wire:click="openEdit({{ $user->id }})" opens="showForm"
                                             icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
                                     @endcan
                                     @can('delete', $user)
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $user->id }})"
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $user->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     @endcan
                                 </x-ui.action-menu>
@@ -82,7 +82,7 @@
         </div>
     </x-ui.card>
 
-    <x-ui.modal model="showForm" :title="$form->user ? 'Edit User' : 'Tambah User'" max-width="max-w-2xl">
+    <x-ui.modal model="showForm" :title="$form->user ? 'Edit User' : 'Tambah User'" max-width="max-w-2xl" loading="openCreate, openEdit">
         <form id="form-user" wire:submit="save" class="space-y-4">
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                 <x-ui.input label="NPM" name="form.npm" wire:model="form.npm" placeholder="6-20 karakter" required

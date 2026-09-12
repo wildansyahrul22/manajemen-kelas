@@ -5,7 +5,7 @@
     <x-ui.page-header title="Daftar Tugas" :description="'Tugas kelas ' . $this->kelas->nama . ' pada ' . $this->kelas->semesterAktif->nama . '.'">
         @if ($this->canManage)
             <x-slot:actions>
-                <x-ui.button wire:click="openCreate">
+                <x-ui.button wire:click="openCreate" opens="showForm">
                     <x-heroicon-m-plus class="size-4" /> Tambah Tugas
                 </x-ui.button>
             </x-slot:actions>
@@ -36,7 +36,7 @@
                     description="Belum ada tugas yang cocok dengan filter yang dipilih."
                     icon="heroicon-o-clipboard-document-list">
                     @if ($this->canManage)
-                        <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" />
+                        <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" />
                             Tambah tugas pertama</x-ui.button>
                     @endif
                 </x-ui.empty-state>
@@ -84,9 +84,9 @@
                                     <x-ui.action-menu>
                                         <x-ui.menu-item :href="route('tugas.show', $tugas)" icon="heroicon-o-eye">Lihat
                                             detail</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="openEdit({{ $tugas->id }})"
+                                        <x-ui.menu-item wire:click="openEdit({{ $tugas->id }})" opens="showForm"
                                             icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $tugas->id }})"
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $tugas->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     </x-ui.action-menu>
                                 </x-ui.td>

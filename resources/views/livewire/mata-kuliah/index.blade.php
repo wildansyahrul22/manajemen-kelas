@@ -2,7 +2,7 @@
     <x-ui.page-header title="Mata Kuliah" :description="'Mata kuliah kelas ' . $this->kelas->nama . ' per semester.'">
         @if ($this->canManage)
             <x-slot:actions>
-                <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Tambah Mata Kuliah</x-ui.button>
+                <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Mata Kuliah</x-ui.button>
             </x-slot:actions>
         @endif
     </x-ui.page-header>
@@ -25,7 +25,7 @@
                 <x-ui.empty-state title="Belum ada mata kuliah" description="Belum ada mata kuliah pada semester ini."
                     icon="heroicon-o-book-open">
                     @if ($this->canManage)
-                        <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" />
+                        <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" />
                             Tambah mata kuliah</x-ui.button>
                     @endif
                 </x-ui.empty-state>
@@ -61,9 +61,9 @@
                                     <x-ui.action-menu>
                                         <x-ui.menu-item :href="route('mata-kuliah.show', $mataKuliah)" icon="heroicon-o-eye">Lihat
                                             detail</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="openEdit({{ $mataKuliah->id }})"
+                                        <x-ui.menu-item wire:click="openEdit({{ $mataKuliah->id }})" opens="showForm"
                                             icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $mataKuliah->id }})"
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $mataKuliah->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     </x-ui.action-menu>
                                 </x-ui.td>

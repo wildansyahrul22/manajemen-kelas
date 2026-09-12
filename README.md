@@ -1,6 +1,6 @@
 # Manajemen Kelas
 
-Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, mata kuliah, kelompok, informasi kelas, manajemen user/kelas, dan pengaturan semester aktif.
+Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, dan pengaturan semester aktif.
 
 Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL** (MAMP).
 
@@ -47,12 +47,14 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 |-----------------------------------------|-----------|-------------------|-------------|
 | Dashboard, Daftar Tugas, Jadwal, Mata Kuliah | Lihat | CRUD (kelasnya) | CRUD (semua) |
 | Informasi & Kategori Informasi          | CRUD (edit/hapus informasi milik sendiri) | CRUD | CRUD |
-| Kelompok                                | CRUD (edit/hapus kelompok buatan sendiri) | CRUD | CRUD |
+| Kelompok & Kategori Kelompok            | CRUD (edit/hapus kelompok buatan sendiri) | CRUD | CRUD |
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
 | Semester Aktif                          | —         | Kelasnya          | Semua kelas |
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
+
+Kelompok selalu berada di bawah sebuah **kategori kelompok** (misal "Project Akhir" pada mata kuliah Pemrograman Web). Satu mahasiswa hanya bisa tergabung di satu kelompok per kategori, sehingga saat membuat kelompok hanya mahasiswa yang belum punya kelompok pada kategori itu yang ditawarkan.
 
 ## Import mahasiswa dari CSV
 

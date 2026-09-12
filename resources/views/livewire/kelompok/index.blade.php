@@ -5,7 +5,7 @@
         $this->kelas->semesterAktif->nama .
         '.'">
         <x-slot:actions>
-            <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Buat Kelompok</x-ui.button>
+            <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Buat Kelompok</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>
 
@@ -14,6 +14,8 @@
             <x-ui.search wire:model.live.debounce.500ms="search" placeholder="Cari nama kelompok..." />
         </div>
         <x-ui.combobox name="mataKuliahId" wire:model.live="mataKuliahId" :options="$this->mataKuliahOptions->pluck('nama', 'id')" placeholder="Semua mata kuliah"
+            clearable class="sm:w-56" />
+        <x-ui.combobox name="kategoriId" wire:model.live="kategoriId" :options="$this->kategoriFilterOptions" placeholder="Semua kategori"
             clearable class="sm:w-56" />
         <div class="lg:ml-auto">
             <x-ui.per-page wire:model.live="perPage" />
@@ -24,12 +26,20 @@
         class="transition-opacity">
         @if ($this->daftarKelompok->isEmpty())
             <x-ui.card :padding="false">
-                <x-ui.empty-state title="Belum ada kelompok"
-                    description="Buat kelompok dan tambahkan anggotanya dari daftar mahasiswa kelas."
-                    icon="heroicon-o-user-group">
-                    <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" /> Buat
-                        kelompok</x-ui.button>
-                </x-ui.empty-state>
+                @if ($this->kategoriOptions->isEmpty())
+                    <x-ui.empty-state title="Belum ada kategori kelompok"
+                        description="Buat kategori kelompok (misal: Project Akhir) pada mata kuliah semester aktif terlebih dahulu."
+                        icon="heroicon-o-rectangle-group">
+                        <x-ui.button :href="route('kategori-kelompok.index')" variant="secondary"><x-heroicon-m-plus class="size-4" /> Buat kategori</x-ui.button>
+                    </x-ui.empty-state>
+                @else
+                    <x-ui.empty-state title="Belum ada kelompok"
+                        description="Buat kelompok dan tambahkan anggotanya dari daftar mahasiswa kelas."
+                        icon="heroicon-o-user-group">
+                        <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" /> Buat
+                            kelompok</x-ui.button>
+                    </x-ui.empty-state>
+                @endif
             </x-ui.card>
         @else
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -42,6 +52,7 @@
                                 <div class="min-w-0">
                                     <p class="truncate text-xs font-medium text-slate-500">
                                         {{ $kelompok->mataKuliah->nama }}</p>
+                                    <x-ui.badge class="mt-1 bg-slate-100 text-slate-700">{{ $kelompok->kategori->nama }}</x-ui.badge>
                                     <a href="{{ route('kelompok.show', $kelompok) }}" wire:navigate
                                         class="mt-0.5 block truncate text-lg font-bold text-slate-900 hover:text-primary-900 hover:underline">{{ $kelompok->nama }}</a>
                                 </div>
@@ -49,9 +60,9 @@
                                     <x-ui.action-menu class="-mr-1.5 -mt-1">
                                         <x-ui.menu-item :href="route('kelompok.show', $kelompok)" icon="heroicon-o-eye">Lihat
                                             detail</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="openEdit({{ $kelompok->id }})"
+                                        <x-ui.menu-item wire:click="openEdit({{ $kelompok->id }})" opens="showForm"
                                             icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $kelompok->id }})"
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $kelompok->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     </x-ui.action-menu>
                                 @endif

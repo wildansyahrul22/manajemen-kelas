@@ -7,8 +7,8 @@
                         @if ($informasi->is_pinned)<x-heroicon-s-bookmark class="size-4 text-amber-500" /> Lepas sematan @else <x-heroicon-o-bookmark class="size-4" /> Sematkan @endif
                     </x-ui.button>
                 @endcan
-                <x-ui.button variant="secondary" wire:click="openEdit({{ $informasi->id }})"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
-                <x-ui.button variant="danger" wire:click="confirmDelete({{ $informasi->id }})"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
+                <x-ui.button variant="secondary" wire:click="openEdit({{ $informasi->id }})" opens="showForm"><x-heroicon-m-pencil-square class="size-4" /> Edit</x-ui.button>
+                <x-ui.button variant="danger" wire:click="confirmDelete({{ $informasi->id }})" opens="confirmingDelete"><x-heroicon-m-trash class="size-4" /> Hapus</x-ui.button>
             </x-slot:actions>
         @endcan
     </x-ui.page-header>

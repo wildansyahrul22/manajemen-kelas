@@ -44,6 +44,11 @@ class MataKuliah extends Model
         return $this->hasMany(Kelompok::class, 'mata_kuliah_id');
     }
 
+    public function kategoriKelompok(): HasMany
+    {
+        return $this->hasMany(KategoriKelompok::class, 'mata_kuliah_id');
+    }
+
     #[Scope]
     protected function forKelasAktif(Builder $query, Kelas $kelas): void
     {

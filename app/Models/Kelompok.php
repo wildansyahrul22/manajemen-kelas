@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Table('kelompok')]
-#[Fillable(['mata_kuliah_id', 'nama', 'deskripsi', 'created_by'])]
+#[Fillable(['mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'created_by'])]
 class Kelompok extends Model
 {
     /** @use HasFactory<KelompokFactory> */
@@ -27,6 +27,11 @@ class Kelompok extends Model
             ->withTimestamps()
             ->orderByDesc('kelompok_anggota.is_ketua')
             ->orderBy('users.name');
+    }
+
+    public function kategori(): BelongsTo
+    {
+        return $this->belongsTo(KategoriKelompok::class, 'kategori_kelompok_id');
     }
 
     public function creator(): BelongsTo

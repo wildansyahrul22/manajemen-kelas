@@ -2,7 +2,7 @@
     <x-ui.page-header title="Jadwal Kelas" :description="'Jadwal kelas '.$this->kelas->nama.' pada '.$this->kelas->semesterAktif->nama.'.'">
         @if ($this->canManage)
             <x-slot:actions>
-                <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Tambah Jadwal</x-ui.button>
+                <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Jadwal</x-ui.button>
             </x-slot:actions>
         @endif
     </x-ui.page-header>
@@ -28,7 +28,7 @@
                         <div class="flex items-center gap-2">
                             <span class="text-xs text-slate-400">{{ $daftar->count() }} sesi</span>
                             @if ($this->canManage)
-                                <button type="button" wire:click="openCreate({{ $hariValue }})" class="-mr-1.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-primary-900" aria-label="Tambah jadwal {{ $hari->label() }}" title="Tambah jadwal {{ $hari->label() }}">
+                                <button type="button" wire:click="openCreate({{ $hariValue }})" x-on:click="$wire.showForm = true" class="-mr-1.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-primary-900" aria-label="Tambah jadwal {{ $hari->label() }}" title="Tambah jadwal {{ $hari->label() }}">
                                     <x-heroicon-m-plus class="size-4" />
                                 </button>
                             @endif
@@ -50,8 +50,8 @@
                             </div>
                             @if ($this->canManage)
                                 <x-ui.action-menu class="-mr-1.5 -mt-1">
-                                    <x-ui.menu-item wire:click="openEdit({{ $jadwal->id }})" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="confirmDelete({{ $jadwal->id }})" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                    <x-ui.menu-item wire:click="openEdit({{ $jadwal->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
+                                    <x-ui.menu-item wire:click="confirmDelete({{ $jadwal->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                 </x-ui.action-menu>
                             @endif
                         </div>
@@ -59,7 +59,7 @@
                         <div class="px-5 py-6 text-center text-sm text-slate-400">
                             Tidak ada jadwal.
                             @if ($this->canManage)
-                                <button type="button" wire:click="openCreate({{ $hariValue }})" class="ml-1 font-medium text-primary-600 hover:underline">Tambah</button>
+                                <button type="button" wire:click="openCreate({{ $hariValue }})" x-on:click="$wire.showForm = true" class="ml-1 font-medium text-primary-600 hover:underline">Tambah</button>
                             @endif
                         </div>
                     @endforelse

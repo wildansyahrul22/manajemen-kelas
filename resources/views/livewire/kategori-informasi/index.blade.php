@@ -1,7 +1,7 @@
 <div>
     <x-ui.page-header title="Kategori Informasi" description="Kelompokkan informasi kelas agar mudah dicari.">
         <x-slot:actions>
-            <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Tambah Kategori</x-ui.button>
+            <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Kategori</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>
 
@@ -20,7 +20,7 @@
             @if ($this->daftarKategori->isEmpty())
                 <x-ui.empty-state title="Belum ada kategori"
                     description="Buat kategori seperti Pengumuman, Akademik, atau Kegiatan." icon="heroicon-o-tag">
-                    <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" /> Tambah
+                    <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" /> Tambah
                         kategori</x-ui.button>
                 </x-ui.empty-state>
             @else
@@ -39,9 +39,9 @@
                                 class="hidden text-slate-500 sm:table-cell">{{ $kategori->created_at->isoFormat('D MMM YYYY') }}</x-ui.td>
                             <x-ui.td class="text-right">
                                 <x-ui.action-menu>
-                                    <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})"
+                                    <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm"
                                         icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})"
+                                    <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete"
                                         icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                 </x-ui.action-menu>
                             </x-ui.td>
@@ -56,7 +56,7 @@
         </div>
     </x-ui.card>
 
-    <x-ui.modal model="showForm" :title="$form->kategori ? 'Edit Kategori' : 'Tambah Kategori'" max-width="max-w-md">
+    <x-ui.modal model="showForm" :title="$form->kategori ? 'Edit Kategori' : 'Tambah Kategori'" max-width="max-w-md" loading="openCreate, openEdit">
         <form id="form-kategori" wire:submit="save" class="space-y-4">
             <x-ui.input label="Nama kategori" name="form.nama" wire:model="form.nama" placeholder="Contoh: Pengumuman"
                 required />

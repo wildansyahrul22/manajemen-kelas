@@ -26,6 +26,15 @@
     display: none !important;
 }
 
+/* While a wire:navigate visit is in flight the page body gives way to the skeleton (see resources/js/app.js). */
+[data-navigating] [data-page-content] {
+    display: none;
+}
+
+[data-navigating] [data-page-skeleton] {
+    display: block;
+}
+
 @layer base {
     html {
         scroll-behavior: smooth;

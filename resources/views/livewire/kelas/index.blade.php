@@ -1,7 +1,7 @@
 <div>
     <x-ui.page-header title="Kelas" description="Daftar kelas yang terdaftar pada sistem.">
         <x-slot:actions>
-            <x-ui.button wire:click="openCreate"><x-heroicon-m-plus class="size-4" /> Tambah Kelas</x-ui.button>
+            <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Kelas</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>
 
@@ -21,7 +21,7 @@
                 <x-ui.empty-state title="Belum ada kelas"
                     description="Tambahkan kelas pertama, lalu buat akun admin kelasnya di menu Users."
                     icon="heroicon-o-building-library">
-                    <x-ui.button wire:click="openCreate" variant="secondary"><x-heroicon-m-plus class="size-4" /> Tambah
+                    <x-ui.button wire:click="openCreate" opens="showForm" variant="secondary"><x-heroicon-m-plus class="size-4" /> Tambah
                         kelas</x-ui.button>
                 </x-ui.empty-state>
             @else
@@ -48,9 +48,9 @@
                             <x-ui.td class="hidden text-center lg:table-cell">{{ $kelas->mata_kuliah_count }}</x-ui.td>
                             <x-ui.td class="text-right">
                                 <x-ui.action-menu>
-                                    <x-ui.menu-item wire:click="openEdit({{ $kelas->id }})"
+                                    <x-ui.menu-item wire:click="openEdit({{ $kelas->id }})" opens="showForm"
                                         icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="confirmDelete({{ $kelas->id }})"
+                                    <x-ui.menu-item wire:click="confirmDelete({{ $kelas->id }})" opens="confirmingDelete"
                                         icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                 </x-ui.action-menu>
                             </x-ui.td>
@@ -65,7 +65,7 @@
         </div>
     </x-ui.card>
 
-    <x-ui.modal model="showForm" :title="$form->kelas ? 'Edit Kelas' : 'Tambah Kelas'">
+    <x-ui.modal model="showForm" :title="$form->kelas ? 'Edit Kelas' : 'Tambah Kelas'" loading="openCreate, openEdit">
         <form id="form-kelas" wire:submit="save" class="space-y-4">
             <x-ui.input label="Nama kelas" name="form.nama" wire:model="form.nama" placeholder="Contoh: TI-3A"
                 required />

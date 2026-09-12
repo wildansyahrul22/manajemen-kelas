@@ -35,6 +35,7 @@
                 <x-ui.nav-link :href="route('jadwal.index')" :active="request()->routeIs('jadwal.*')" icon="heroicon-o-calendar-days">Jadwal Kelas</x-ui.nav-link>
                 <x-ui.nav-link :href="route('mata-kuliah.index')" :active="request()->routeIs('mata-kuliah.*')" icon="heroicon-o-book-open">Mata Kuliah</x-ui.nav-link>
                 <x-ui.nav-link :href="route('kelompok.index')" :active="request()->routeIs('kelompok.*')" icon="heroicon-o-user-group">Kelompok</x-ui.nav-link>
+                <x-ui.nav-link :href="route('kategori-kelompok.index')" :active="request()->routeIs('kategori-kelompok.*')" icon="heroicon-o-rectangle-group">Kategori Kelompok</x-ui.nav-link>
             </div>
         </div>
 

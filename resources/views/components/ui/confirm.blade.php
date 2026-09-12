@@ -1,4 +1,4 @@
-@props(['model', 'title' => 'Hapus data?', 'description' => 'Data yang dihapus tidak dapat dikembalikan.', 'action' => 'delete', 'label' => 'Hapus'])
+@props(['model', 'title' => 'Hapus data?', 'description' => 'Data yang dihapus tidak dapat dikembalikan.', 'action' => 'delete', 'label' => 'Hapus', 'loading' => 'confirmDelete'])
 <x-ui.modal :model="$model" max-width="max-w-md">
     <div class="flex items-start gap-4">
         <span class="flex size-11 shrink-0 items-center justify-center rounded-full bg-rose-100 text-rose-600">
@@ -12,6 +12,9 @@
     </div>
     <x-slot:footer>
         <x-ui.button variant="secondary" x-on:click="show = false">Batal</x-ui.button>
-        <x-ui.button variant="danger-solid" wire:click="{{ $action }}" wire:loading.attr="disabled">{{ $label }}</x-ui.button>
+        <x-ui.button variant="danger-solid" wire:click="{{ $action }}" wire:loading.attr="disabled" wire:target="{{ $loading }}, {{ $action }}">
+            <x-heroicon-m-arrow-path class="size-4 animate-spin" wire:loading wire:target="{{ $loading }}, {{ $action }}" />
+            {{ $label }}
+        </x-ui.button>
     </x-slot:footer>
 </x-ui.modal>

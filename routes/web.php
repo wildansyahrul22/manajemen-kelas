@@ -5,6 +5,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\Informasi;
 use App\Livewire\Jadwal;
 use App\Livewire\KategoriInformasi;
+use App\Livewire\KategoriKelompok;
 use App\Livewire\Kelas;
 use App\Livewire\Kelompok;
 use App\Livewire\MataKuliah;
@@ -52,6 +53,8 @@ Route::middleware('auth')->group(function () {
 
         Route::livewire('/kelompok', Kelompok\Index::class)->name('kelompok.index');
         Route::livewire('/kelompok/{kelompok}', Kelompok\Show::class)->name('kelompok.show');
+
+        Route::livewire('/kategori-kelompok', KategoriKelompok\Index::class)->name('kategori-kelompok.index');
 
         Route::middleware('role:admin,super_admin')->group(function () {
             Route::livewire('/users', Users\Index::class)->name('users.index');

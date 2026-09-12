@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Informasi;
 use App\Models\JadwalKelas;
 use App\Models\KategoriInformasi;
+use App\Models\KategoriKelompok;
 use App\Models\Kelas;
 use App\Models\Kelompok;
 use App\Models\MataKuliah;
@@ -168,11 +169,22 @@ class DemoSeeder extends Seeder
 
         KategoriInformasi::query()->create(['kelas_id' => $kelasB->id, 'nama' => 'Pengumuman', 'warna' => 'orange']);
 
+        $kategoriKelompok = KategoriKelompok::query()->create([
+            'mata_kuliah_id' => $mataKuliahA[0]->id,
+            'nama' => 'Project Akhir',
+        ]);
+
+        KategoriKelompok::query()->create([
+            'mata_kuliah_id' => $mataKuliahA[1]->id,
+            'nama' => 'Presentasi',
+        ]);
+
         $anggota = $mahasiswaLain->push($mahasiswa)->shuffle();
 
-        $anggota->chunk(5)->values()->each(function ($chunk, int $index) use ($mataKuliahA, $mahasiswa) {
+        $anggota->chunk(5)->values()->each(function ($chunk, int $index) use ($mataKuliahA, $kategoriKelompok, $mahasiswa) {
             $kelompok = Kelompok::query()->create([
                 'mata_kuliah_id' => $mataKuliahA[0]->id,
+                'kategori_kelompok_id' => $kategoriKelompok->id,
                 'nama' => 'Kelompok '.($index + 1),
                 'deskripsi' => 'Kelompok project akhir Pemrograman Web.',
                 'created_by' => $mahasiswa->id,

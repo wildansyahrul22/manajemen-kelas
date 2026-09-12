@@ -4,6 +4,7 @@ namespace App\Livewire\Kelompok;
 
 use App\Livewire\Concerns\ManagesModalForm;
 use App\Livewire\Forms\KelompokForm;
+use App\Models\KategoriKelompok;
 use App\Models\Kelompok;
 use App\Models\MataKuliah;
 use App\Models\User;
@@ -23,23 +24,49 @@ trait ManagesKelompok
     }
 
     /**
-     * Students selectable as members (loaded once per request, filtered client-side).
+     * Kategori of the active semester, labelled "Kategori · Mata kuliah" (id => label).
+     *
+     * @return Collection<int, string>
+     */
+    #[Computed]
+    public function kategoriOptions(): Collection
+    {
+        return KategoriKelompok::query()
+            ->select(['id', 'mata_kuliah_id', 'nama'])
+            ->with('mataKuliah:id,nama')
+            ->forKelasAktif($this->kelas)
+            ->get()
+            ->sortBy([['mataKuliah.nama', 'asc'], ['nama', 'asc']])
+            ->mapWithKeys(fn (KategoriKelompok $kategori) => [$kategori->id => $kategori->nama.' · '.$kategori->mataKuliah->nama]);
+    }
+
+    /**
+     * Students still free for the kategori picked in the form: those already placed in another
+     * kelompok of that kategori are left out (members of the kelompok being edited stay).
      */
     #[Computed]
     public function mahasiswaOptions(): Collection
     {
+        $kategoriId = (int) $this->form->kategori_kelompok_id;
+
+        if ($kategoriId === 0) {
+            return collect();
+        }
+
         return User::query()
             ->forKelas($this->kelas->id)
             ->anggotaKelas()
+            ->whereNotIn('id', KategoriKelompok::anggotaIds($kategoriId, $this->form->kelompok?->id))
             ->orderBy('name')
             ->get(['id', 'npm', 'name']);
     }
 
-    public function openCreate(): void
+    public function openCreate(?int $kategoriId = null): void
     {
         $this->authorize('create', Kelompok::class);
 
         $this->form->reset();
+        $this->form->kategori_kelompok_id = (string) ($kategoriId ?? '');
         $this->openForm();
     }
 

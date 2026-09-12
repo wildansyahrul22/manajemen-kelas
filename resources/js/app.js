@@ -230,3 +230,38 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
+
+/**
+ * Instant feedback for wire:navigate: the moment a visit starts, move the sidebar highlight and the
+ * header title to the destination and swap the page body for the skeleton, so the app "moves" on
+ * click and the server response only fills in the content.
+ */
+document.addEventListener('livewire:navigate', (event) => {
+    if (event.detail.cached) return;
+
+    const trimSlash = (pathname) => pathname.replace(/\/+$/, '') || '/';
+    const path = trimSlash(event.detail.url.pathname);
+    const links = [...document.querySelectorAll('[data-nav-link]')];
+
+    const target = links
+        .filter((link) => {
+            const linkPath = trimSlash(new URL(link.href, window.location.href).pathname);
+
+            return path === linkPath || path.startsWith(`${linkPath}/`);
+        })
+        .sort((a, b) => b.href.length - a.href.length)[0];
+
+    if (target) {
+        links.forEach((link) => link.removeAttribute('aria-current'));
+        target.setAttribute('aria-current', 'page');
+
+        const title = document.querySelector('[data-page-title]');
+        if (title) title.textContent = target.textContent.trim();
+    }
+
+    document.documentElement.setAttribute('data-navigating', '');
+});
+
+document.addEventListener('livewire:navigated', () => {
+    document.documentElement.removeAttribute('data-navigating');
+});
