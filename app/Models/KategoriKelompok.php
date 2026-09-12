@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Database\Factories\KategoriKelompokFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -22,7 +24,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class KategoriKelompok extends Model
 {
     /** @use HasFactory<KategoriKelompokFactory> */
-    use HasFactory, ScopedByMataKuliah;
+    use HasFactory, LogsActivity, ScopedByMataKuliah;
 
     public function kelompok(): HasMany
     {
@@ -54,5 +56,20 @@ class KategoriKelompok extends Model
             ->select('kelompok_anggota.user_id')
             ->where('kelompok.kategori_kelompok_id', $kategoriId)
             ->when($exceptKelompokId !== null, fn (Builder $query) => $query->where('kelompok.id', '!=', $exceptKelompokId));
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::KategoriKelompok;
+    }
+
+    public function activityLabel(): string
+    {
+        return $this->nama;
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelasIdViaMataKuliah();
     }
 }

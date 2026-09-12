@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
 use App\Enums\Role;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -19,7 +21,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, Notifiable;
+    use HasFactory, LogsActivity, Notifiable;
 
     /**
      * @return array<string, string>
@@ -134,5 +136,20 @@ class User extends Authenticatable
             ->take(2)
             ->map(fn (string $part) => mb_strtoupper(mb_substr($part, 0, 1)))
             ->implode('');
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::User;
+    }
+
+    public function activityLabel(): string
+    {
+        return "{$this->name} ({$this->npm})";
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelas_id;
     }
 }

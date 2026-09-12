@@ -29,6 +29,16 @@ trait ScopedByMataKuliah
     }
 
     /**
+     * Kelas of the parent mata kuliah, looked up without lazy loading the relation.
+     */
+    public function kelasIdViaMataKuliah(): ?int
+    {
+        $kelasId = MataKuliah::query()->whereKey($this->mata_kuliah_id)->value('kelas_id');
+
+        return $kelasId === null ? null : (int) $kelasId;
+    }
+
+    /**
      * Whether this row belongs to the given kelas (any semester).
      */
     public function belongsToKelas(int $kelasId): bool

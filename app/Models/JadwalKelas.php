@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\Hari;
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Database\Factories\JadwalKelasFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Model;
 class JadwalKelas extends Model
 {
     /** @use HasFactory<JadwalKelasFactory> */
-    use HasFactory, ScopedByMataKuliah;
+    use HasFactory, LogsActivity, ScopedByMataKuliah;
 
     /**
      * @return array<string, string>
@@ -46,5 +48,23 @@ class JadwalKelas extends Model
     public function jam(): string
     {
         return $this->jam_mulai->format('H:i').' - '.$this->jam_selesai->format('H:i');
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::Jadwal;
+    }
+
+    public function activityLabel(): string
+    {
+        $mataKuliah = MataKuliah::query()->whereKey($this->mata_kuliah_id)->value('nama') ?? 'Mata kuliah';
+        $hari = $this->hari instanceof Hari ? $this->hari->label() : Hari::from((int) $this->hari)->label();
+
+        return "{$mataKuliah} · {$hari} ".$this->jam();
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelasIdViaMataKuliah();
     }
 }

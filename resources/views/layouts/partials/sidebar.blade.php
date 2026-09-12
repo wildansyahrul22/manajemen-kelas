@@ -58,6 +58,7 @@
                         <x-ui.nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')" icon="heroicon-o-building-library">Kelas</x-ui.nav-link>
                     @endif
                     <x-ui.nav-link :href="route('semester-aktif.index')" :active="request()->routeIs('semester-aktif.*')" icon="heroicon-o-adjustments-horizontal">Semester Aktif</x-ui.nav-link>
+                    <x-ui.nav-link :href="route('log-aktivitas.index')" :active="request()->routeIs('log-aktivitas.*')" icon="heroicon-o-clock">Log Aktivitas</x-ui.nav-link>
                 </div>
             </div>
         @endif

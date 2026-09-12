@@ -1,6 +1,6 @@
 # Manajemen Kelas
 
-Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, dan pengaturan semester aktif.
+Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, pengaturan semester aktif, dan log aktivitas.
 
 Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL** (MAMP).
 
@@ -52,10 +52,13 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
 | Semester Aktif                          | —         | Kelasnya          | Semua kelas |
+| Log Aktivitas                           | —         | Kelasnya          | Semua kelas (filter kelas) |
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
 
 Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara semua role membagikan gambar/file. Hanya super admin yang bisa mengunggah **lampiran** langsung (maks. 5 MB; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran`).
+
+**Log Aktivitas** (`activity_log`) mencatat otomatis setiap buat/ubah/hapus pada informasi, kategori, kelompok (termasuk perubahan anggota/ketua), tugas, jadwal, mata kuliah, user, dan kelas, plus masuk/keluar — lengkap dengan pelaku, kelas, perubahan field (sebelum → sesudah; password disamarkan), dan IP. Admin kelas hanya melihat log kelasnya; super admin melihat semua dan bisa memfilter per kelas.
 
 Kelompok selalu berada di bawah sebuah **kategori kelompok** (misal "Project Akhir" pada mata kuliah Pemrograman Web). Satu mahasiswa hanya bisa tergabung di satu kelompok per kategori, sehingga saat membuat kelompok hanya mahasiswa yang belum punya kelompok pada kategori itu yang ditawarkan.
 

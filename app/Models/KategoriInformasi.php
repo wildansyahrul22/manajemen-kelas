@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\KategoriInformasiFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -15,7 +17,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class KategoriInformasi extends Model
 {
     /** @use HasFactory<KategoriInformasiFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /**
      * Available badge colours (name => tailwind classes).
@@ -49,5 +51,20 @@ class KategoriInformasi extends Model
     public function badgeClass(): string
     {
         return self::WARNA[$this->warna] ?? self::WARNA['slate'];
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::KategoriInformasi;
+    }
+
+    public function activityLabel(): string
+    {
+        return $this->nama;
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelas_id;
     }
 }

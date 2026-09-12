@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Carbon\CarbonInterface;
 use Database\Factories\TugasFactory;
@@ -18,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Tugas extends Model
 {
     /** @use HasFactory<TugasFactory> */
-    use HasFactory, ScopedByMataKuliah;
+    use HasFactory, LogsActivity, ScopedByMataKuliah;
 
     /**
      * @return array<string, string>
@@ -84,5 +86,20 @@ class Tugas extends Model
         }
 
         return $this->deadline->lessThan(now()->addDays(3)) ? 'segera' : 'aktif';
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::Tugas;
+    }
+
+    public function activityLabel(): string
+    {
+        return $this->nama;
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelasIdViaMataKuliah();
     }
 }

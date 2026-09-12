@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\InformasiFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -17,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 class Informasi extends Model
 {
     /** @use HasFactory<InformasiFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     /** Private disk: attachments are streamed through a route that checks kelas membership. */
     public const string LAMPIRAN_DISK = 'local';
@@ -104,5 +106,20 @@ class Informasi extends Model
     protected function terbaru(Builder $query): void
     {
         $query->orderByDesc('is_pinned')->orderByDesc('created_at');
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::Informasi;
+    }
+
+    public function activityLabel(): string
+    {
+        return $this->judul;
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelas_id;
     }
 }

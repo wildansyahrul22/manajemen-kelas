@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\ModulLog;
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\MataKuliahFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -17,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MataKuliah extends Model
 {
     /** @use HasFactory<MataKuliahFactory> */
-    use HasFactory;
+    use HasFactory, LogsActivity;
 
     public function kelas(): BelongsTo
     {
@@ -81,5 +83,20 @@ class MataKuliah extends Model
             ->select('id')
             ->where('kelas_id', $kelas->id)
             ->where('semester_id', $kelas->semester_aktif_id);
+    }
+
+    public function activityModul(): ModulLog
+    {
+        return ModulLog::MataKuliah;
+    }
+
+    public function activityLabel(): string
+    {
+        return $this->nama;
+    }
+
+    public function activityKelasId(): ?int
+    {
+        return $this->kelas_id;
     }
 }

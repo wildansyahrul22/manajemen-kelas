@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Forms;
 
+use App\Enums\AksiLog;
 use App\Enums\Role;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
@@ -141,11 +142,39 @@ class KelompokForm extends Form
 
         return DB::transaction(function () use ($attributes, $sync, $user) {
             $kelompok = $this->kelompok ?? new Kelompok(['created_by' => $user->id]);
+            $sebelum = $this->kelompok !== null ? $this->ringkasanAnggota($kelompok) : null;
+
             $kelompok->fill($attributes)->save();
             $kelompok->anggota()->sync($sync);
 
+            // Pivot syncs fire no model events, so membership changes are logged here.
+            if ($sebelum !== null) {
+                $sesudah = $this->ringkasanAnggota($kelompok);
+                $perubahan = array_filter([
+                    'anggota' => [$sebelum['anggota'], $sesudah['anggota']],
+                    'ketua' => [$sebelum['ketua'], $sesudah['ketua']],
+                ], fn (array $pasangan) => $pasangan[0] !== $pasangan[1]);
+
+                if ($perubahan !== []) {
+                    $kelompok->catatAktivitas(AksiLog::Ubah, $perubahan);
+                }
+            }
+
             return $kelompok;
         });
+    }
+
+    /**
+     * @return array{anggota: string, ketua: ?string}
+     */
+    protected function ringkasanAnggota(Kelompok $kelompok): array
+    {
+        $anggota = $kelompok->anggota()->get(['users.name', 'kelompok_anggota.is_ketua']);
+
+        return [
+            'anggota' => $anggota->pluck('name')->sort()->values()->join(', '),
+            'ketua' => $anggota->first(fn (User $user) => (bool) $user->pivot->is_ketua)?->name,
+        ];
     }
 
     /**

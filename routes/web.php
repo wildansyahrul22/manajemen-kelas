@@ -9,6 +9,7 @@ use App\Livewire\KategoriInformasi;
 use App\Livewire\KategoriKelompok;
 use App\Livewire\Kelas;
 use App\Livewire\Kelompok;
+use App\Livewire\LogAktivitas;
 use App\Livewire\MataKuliah;
 use App\Livewire\Profile;
 use App\Livewire\SemesterAktif;
@@ -66,6 +67,7 @@ Route::middleware('auth')->group(function () {
 
     Route::middleware('role:admin,super_admin')->group(function () {
         Route::livewire('/semester-aktif', SemesterAktif\Index::class)->name('semester-aktif.index');
+        Route::livewire('/log-aktivitas', LogAktivitas\Index::class)->name('log-aktivitas.index');
     });
 
     Route::middleware('role:super_admin')->group(function () {
