@@ -43,9 +43,15 @@
                                 <a href="{{ route('informasi.show', $informasi) }}" wire:navigate
                                     class="mt-1.5 block text-base font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $informasi->judul }}</a>
                                 <p class="mt-1 line-clamp-2 text-sm text-slate-500">{{ $informasi->isi }}</p>
-                                <p class="mt-2 text-xs text-slate-400">
-                                    {{ $informasi->creator?->name ?? 'Pengguna terhapus' }} ·
-                                    {{ $informasi->created_at->isoFormat('D MMM YYYY, HH:mm') }}
+                                <p class="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-slate-400">
+                                    <span>{{ $informasi->creator?->name ?? 'Pengguna terhapus' }} ·
+                                        {{ $informasi->created_at->isoFormat('D MMM YYYY, HH:mm') }}</span>
+                                    @if ($informasi->hasLampiran())
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-600" title="{{ $informasi->lampiran_nama }}"><x-heroicon-m-paper-clip class="size-3.5" /> Lampiran</span>
+                                    @endif
+                                    @if ($informasi->link)
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-sky-700" title="{{ $informasi->link }}"><x-heroicon-m-link class="size-3.5" /> Tautan</span>
+                                    @endif
                                 </p>
                             </div>
                             @if (auth()->user()->can('update', $informasi))

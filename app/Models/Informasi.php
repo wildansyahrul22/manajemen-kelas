@@ -10,13 +10,29 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Facades\Storage;
 
 #[Table('informasi')]
-#[Fillable(['kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'is_pinned', 'created_by'])]
+#[Fillable(['kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'lampiran_path', 'lampiran_nama', 'is_pinned', 'created_by'])]
 class Informasi extends Model
 {
     /** @use HasFactory<InformasiFactory> */
     use HasFactory;
+
+    /** Private disk: attachments are streamed through a route that checks kelas membership. */
+    public const string LAMPIRAN_DISK = 'local';
+
+    public const string LAMPIRAN_DIR = 'informasi';
+
+    /** @var list<string> */
+    public const array LAMPIRAN_EKSTENSI = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'];
+
+    public const int LAMPIRAN_MAKS_KB = 5120;
+
+    protected static function booted(): void
+    {
+        static::deleting(fn (Informasi $informasi) => $informasi->hapusLampiran());
+    }
 
     /**
      * @return array<string, string>
@@ -41,6 +57,31 @@ class Informasi extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function hasLampiran(): bool
+    {
+        return $this->lampiran_path !== null;
+    }
+
+    public function lampiranIsImage(): bool
+    {
+        return in_array($this->lampiranEkstensi(), ['jpg', 'jpeg', 'png', 'webp', 'gif'], true);
+    }
+
+    public function lampiranEkstensi(): string
+    {
+        return strtolower(pathinfo((string) $this->lampiran_nama, PATHINFO_EXTENSION));
+    }
+
+    /**
+     * Remove the stored file (if any) without touching the row.
+     */
+    public function hapusLampiran(): void
+    {
+        if ($this->lampiran_path !== null) {
+            Storage::disk(self::LAMPIRAN_DISK)->delete($this->lampiran_path);
+        }
     }
 
     #[Scope]

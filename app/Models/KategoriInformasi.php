@@ -11,7 +11,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Table('kategori_informasi')]
-#[Fillable(['kelas_id', 'nama', 'warna'])]
+#[Fillable(['kelas_id', 'nama', 'warna', 'created_by'])]
 class KategoriInformasi extends Model
 {
     /** @use HasFactory<KategoriInformasiFactory> */
@@ -39,6 +39,11 @@ class KategoriInformasi extends Model
     public function informasi(): HasMany
     {
         return $this->hasMany(Informasi::class, 'kategori_informasi_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     public function badgeClass(): string

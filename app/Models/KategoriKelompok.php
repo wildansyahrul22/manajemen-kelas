@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Attributes\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -17,7 +18,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * one kelompok per kategori.
  */
 #[Table('kategori_kelompok')]
-#[Fillable(['mata_kuliah_id', 'nama'])]
+#[Fillable(['mata_kuliah_id', 'nama', 'created_by'])]
 class KategoriKelompok extends Model
 {
     /** @use HasFactory<KategoriKelompokFactory> */
@@ -26,6 +27,11 @@ class KategoriKelompok extends Model
     public function kelompok(): HasMany
     {
         return $this->hasMany(Kelompok::class, 'kategori_kelompok_id');
+    }
+
+    public function creator(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
     }
 
     #[Scope]

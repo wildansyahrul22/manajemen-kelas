@@ -38,12 +38,16 @@
                             <x-ui.td
                                 class="hidden text-slate-500 sm:table-cell">{{ $kategori->created_at->isoFormat('D MMM YYYY') }}</x-ui.td>
                             <x-ui.td class="text-right">
-                                <x-ui.action-menu>
-                                    <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm"
-                                        icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete"
-                                        icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
-                                </x-ui.action-menu>
+                                @can('update', $kategori)
+                                    <x-ui.action-menu>
+                                        <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm"
+                                            icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete"
+                                            icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                    </x-ui.action-menu>
+                                @else
+                                    <span class="text-slate-300">—</span>
+                                @endcan
                             </x-ui.td>
                         </tr>
                     @endforeach

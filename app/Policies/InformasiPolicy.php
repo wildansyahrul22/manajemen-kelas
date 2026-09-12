@@ -40,4 +40,12 @@ class InformasiPolicy
     {
         return $user->canManageKelas($informasi->kelas_id);
     }
+
+    /**
+     * Only super admin may attach files; everyone else shares a link instead.
+     */
+    public function upload(User $user): bool
+    {
+        return $user->isSuperAdmin();
+    }
 }

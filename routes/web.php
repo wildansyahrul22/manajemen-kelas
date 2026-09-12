@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\InformasiLampiranController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Informasi;
@@ -48,6 +49,7 @@ Route::middleware('auth')->group(function () {
 
         Route::livewire('/informasi', Informasi\Index::class)->name('informasi.index');
         Route::livewire('/informasi/{informasi}', Informasi\Show::class)->name('informasi.show');
+        Route::get('/informasi/{informasi}/lampiran', InformasiLampiranController::class)->name('informasi.lampiran');
 
         Route::livewire('/kategori-informasi', KategoriInformasi\Index::class)->name('kategori-informasi.index');
 

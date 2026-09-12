@@ -46,13 +46,16 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 | Fitur                                   | Mahasiswa | Admin Kelas       | Super Admin |
 |-----------------------------------------|-----------|-------------------|-------------|
 | Dashboard, Daftar Tugas, Jadwal, Mata Kuliah | Lihat | CRUD (kelasnya) | CRUD (semua) |
-| Informasi & Kategori Informasi          | CRUD (edit/hapus informasi milik sendiri) | CRUD | CRUD |
-| Kelompok & Kategori Kelompok            | CRUD (edit/hapus kelompok buatan sendiri) | CRUD | CRUD |
+| Informasi & Kategori Informasi          | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
+| Lampiran file/gambar pada informasi     | —         | —                 | Upload      |
+| Kelompok & Kategori Kelompok            | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
 | Semester Aktif                          | —         | Kelasnya          | Semua kelas |
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
+
+Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara semua role membagikan gambar/file. Hanya super admin yang bisa mengunggah **lampiran** langsung (maks. 5 MB; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran`).
 
 Kelompok selalu berada di bawah sebuah **kategori kelompok** (misal "Project Akhir" pada mata kuliah Pemrograman Web). Satu mahasiswa hanya bisa tergabung di satu kelompok per kategori, sehingga saat membuat kelompok hanya mahasiswa yang belum punya kelompok pada kategori itu yang ditawarkan.
 

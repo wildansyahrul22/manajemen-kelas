@@ -48,16 +48,105 @@ class InformasiKelompokTest extends TestCase
     public function test_kategori_in_use_cannot_be_deleted(): void
     {
         $kelas = $this->kelas();
-        $kategori = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id]);
+        $pembuat = $this->mahasiswa($kelas);
+        $kategori = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id, 'created_by' => $pembuat->id]);
         Informasi::factory()->create(['kelas_id' => $kelas->id, 'kategori_informasi_id' => $kategori->id]);
 
-        Livewire::actingAs($this->mahasiswa($kelas))
+        Livewire::actingAs($pembuat)
             ->test(KategoriIndex::class)
             ->call('confirmDelete', $kategori->id)
             ->call('delete')
             ->assertDispatched('notify', type: 'error');
 
         $this->assertModelExists($kategori);
+    }
+
+    public function test_mahasiswa_can_only_edit_or_delete_kategori_informasi_they_created(): void
+    {
+        $kelas = $this->kelas();
+        $pembuat = $this->mahasiswa($kelas);
+        $lain = $this->mahasiswa($kelas);
+
+        Livewire::actingAs($pembuat)
+            ->test(KategoriIndex::class)
+            ->call('openCreate')
+            ->set('form.nama', 'Kategori Saya')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $kategori = KategoriInformasi::query()->where('nama', 'Kategori Saya')->firstOrFail();
+        $this->assertSame($pembuat->id, $kategori->created_by);
+
+        Livewire::actingAs($lain)->test(KategoriIndex::class)->call('openEdit', $kategori->id)->assertForbidden();
+        Livewire::actingAs($lain)->test(KategoriIndex::class)->call('confirmDelete', $kategori->id)->assertForbidden();
+        $this->actingAs($lain)->get(route('kategori-informasi.index'))->assertOk()->assertDontSee('openEdit('.$kategori->id.')', false);
+
+        Livewire::actingAs($pembuat)
+            ->test(KategoriIndex::class)
+            ->call('openEdit', $kategori->id)
+            ->set('form.nama', 'Kategori Saya 2')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        Livewire::actingAs($this->admin($kelas))
+            ->test(KategoriIndex::class)
+            ->call('confirmDelete', $kategori->id)
+            ->call('delete');
+
+        $this->assertModelMissing($kategori);
+    }
+
+    public function test_mahasiswa_can_only_edit_or_delete_kategori_kelompok_they_created(): void
+    {
+        $kelas = $this->kelas();
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $kelas->id]);
+        $pembuat = $this->mahasiswa($kelas);
+        $lain = $this->mahasiswa($kelas);
+
+        Livewire::actingAs($pembuat)
+            ->test(KategoriKelompokIndex::class)
+            ->call('openCreate')
+            ->set('form.nama', 'Kategori Saya')
+            ->set('form.mata_kuliah_id', (string) $mataKuliah->id)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $kategori = KategoriKelompok::query()->where('nama', 'Kategori Saya')->firstOrFail();
+        $this->assertSame($pembuat->id, $kategori->created_by);
+
+        Livewire::actingAs($lain)->test(KategoriKelompokIndex::class)->call('openEdit', $kategori->id)->assertForbidden();
+        Livewire::actingAs($lain)->test(KategoriKelompokIndex::class)->call('confirmDelete', $kategori->id)->assertForbidden();
+        $this->actingAs($lain)->get(route('kategori-kelompok.index'))->assertOk()->assertDontSee('openEdit('.$kategori->id.')', false);
+
+        Livewire::actingAs($pembuat)
+            ->test(KategoriKelompokIndex::class)
+            ->call('confirmDelete', $kategori->id)
+            ->call('delete');
+
+        $this->assertModelMissing($kategori);
+    }
+
+    public function test_mahasiswa_cannot_edit_or_delete_kelompok_created_by_someone_else(): void
+    {
+        $kelas = $this->kelas();
+        $kategori = KategoriKelompok::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $kelas->id])->id]);
+        $pembuat = $this->mahasiswa($kelas);
+        $anggota = $this->mahasiswa($kelas);
+        $kelompok = Kelompok::factory()->create(['kategori_kelompok_id' => $kategori->id, 'created_by' => $pembuat->id]);
+        $kelompok->anggota()->attach([$pembuat->id, $anggota->id]);
+
+        // Being a member is not enough; only the creator (or an admin) may change it.
+        Livewire::actingAs($anggota)->test(KelompokIndex::class)->call('openEdit', $kelompok->id)->assertForbidden();
+        Livewire::actingAs($anggota)->test(KelompokIndex::class)->call('confirmDelete', $kelompok->id)->assertForbidden();
+
+        Livewire::actingAs($pembuat)
+            ->test(KelompokIndex::class)
+            ->call('openEdit', $kelompok->id)
+            ->set('form.nama', 'Kelompok Diubah')
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame('Kelompok Diubah', $kelompok->fresh()->nama);
     }
 
     public function test_kelompok_members_must_be_students_of_the_kelas(): void

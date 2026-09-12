@@ -29,7 +29,7 @@ class Index extends Component
     public function daftarInformasi(): LengthAwarePaginator
     {
         return Informasi::query()
-            ->select(['id', 'kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'is_pinned', 'created_by', 'created_at'])
+            ->select(['id', 'kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'lampiran_path', 'lampiran_nama', 'is_pinned', 'created_by', 'created_at'])
             ->with(['kategori:id,nama,warna', 'creator:id,name'])
             ->forKelas($this->kelas->id)
             ->when($this->kategoriId !== '', fn ($query) => $query->where('kategori_informasi_id', (int) $this->kategoriId))

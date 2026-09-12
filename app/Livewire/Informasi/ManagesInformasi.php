@@ -8,12 +8,22 @@ use App\Models\Informasi;
 use App\Models\KategoriInformasi;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\WithFileUploads;
 
 trait ManagesInformasi
 {
-    use ManagesModalForm;
+    use ManagesModalForm, WithFileUploads;
 
     public InformasiForm $form;
+
+    /**
+     * Whether the current user may attach files (super admin only); others share links.
+     */
+    #[Computed]
+    public function canUpload(): bool
+    {
+        return auth()->user()->can('upload', Informasi::class);
+    }
 
     #[Computed]
     public function kategoriOptions(): Collection
@@ -47,7 +57,7 @@ trait ManagesInformasi
             ? $this->authorize('update', $this->form->informasi)
             : $this->authorize('create', Informasi::class);
 
-        $informasi = $this->form->save($this->kelas, auth()->user(), $this->canManage);
+        $informasi = $this->form->save($this->kelas, auth()->user(), $this->canManage, $this->canUpload);
 
         $this->closeForm();
         $this->notify($isEdit ? 'Informasi berhasil diperbarui.' : 'Informasi berhasil dibagikan.');
@@ -81,6 +91,9 @@ trait ManagesInformasi
         $this->authorize('delete', $informasi);
 
         $informasi->delete();
+
+        // The modal template reads the attached file off form.informasi, so never keep a deleted model there.
+        $this->form->reset();
 
         $this->closeDelete();
         $this->notify('Informasi berhasil dihapus.');

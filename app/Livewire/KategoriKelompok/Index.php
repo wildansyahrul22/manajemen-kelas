@@ -35,8 +35,8 @@ class Index extends Component
     public function daftarKategori(): LengthAwarePaginator
     {
         return KategoriKelompok::query()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'created_at'])
-            ->with('mataKuliah:id,nama')
+            ->select(['id', 'mata_kuliah_id', 'nama', 'created_by', 'created_at'])
+            ->with('mataKuliah:id,kelas_id,nama')
             ->withCount('kelompok')
             ->forKelasAktif($this->kelas)
             ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
@@ -79,7 +79,7 @@ class Index extends Component
             ? $this->authorize('update', $this->form->kategori)
             : $this->authorize('create', KategoriKelompok::class);
 
-        $this->form->save($this->kelas);
+        $this->form->save($this->kelas, auth()->user());
 
         $this->closeForm();
         unset($this->daftarKategori);

@@ -47,8 +47,10 @@
                             <x-ui.td class="text-right">
                                 <x-ui.action-menu>
                                     <x-ui.menu-item :href="route('kelompok.index', ['kategori' => $kategori->id])" icon="heroicon-o-user-group">Lihat kelompok</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                    <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                    @can('update', $kategori)
+                                        <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                    @endcan
                                 </x-ui.action-menu>
                             </x-ui.td>
                         </tr>

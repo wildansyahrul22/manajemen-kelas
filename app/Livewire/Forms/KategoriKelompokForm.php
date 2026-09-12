@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -61,7 +62,7 @@ class KategoriKelompokForm extends Form
         $this->mata_kuliah_id = (string) $kategori->mata_kuliah_id;
     }
 
-    public function save(Kelas $kelas): KategoriKelompok
+    public function save(Kelas $kelas, User $user): KategoriKelompok
     {
         $this->kelas = $kelas;
 
@@ -78,6 +79,6 @@ class KategoriKelompokForm extends Form
             return $this->kategori;
         }
 
-        return KategoriKelompok::query()->create($attributes);
+        return KategoriKelompok::query()->create([...$attributes, 'created_by' => $user->id]);
     }
 }

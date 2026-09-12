@@ -4,6 +4,7 @@ namespace App\Livewire\Forms;
 
 use App\Models\KategoriInformasi;
 use App\Models\Kelas;
+use App\Models\User;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
@@ -50,7 +51,7 @@ class KategoriInformasiForm extends Form
         $this->warna = $kategori->warna;
     }
 
-    public function save(Kelas $kelas): KategoriInformasi
+    public function save(Kelas $kelas, User $user): KategoriInformasi
     {
         $this->kelas = $kelas;
 
@@ -62,6 +63,6 @@ class KategoriInformasiForm extends Form
             return $this->kategori;
         }
 
-        return KategoriInformasi::query()->create([...$data, 'kelas_id' => $kelas->id]);
+        return KategoriInformasi::query()->create([...$data, 'kelas_id' => $kelas->id, 'created_by' => $user->id]);
     }
 }

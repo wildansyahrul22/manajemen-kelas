@@ -17,9 +17,13 @@ class KategoriInformasiPolicy
         return true;
     }
 
+    /**
+     * Admin of the kelas may edit everything; mahasiswa only kategori they created.
+     */
     public function update(User $user, KategoriInformasi $kategori): bool
     {
-        return $user->belongsToKelas($kategori->kelas_id);
+        return $user->canManageKelas($kategori->kelas_id)
+            || ($kategori->created_by === $user->id && $user->belongsToKelas($kategori->kelas_id));
     }
 
     public function delete(User $user, KategoriInformasi $kategori): bool
