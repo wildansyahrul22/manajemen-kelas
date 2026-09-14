@@ -32,6 +32,15 @@ class Show extends Component
     }
 
     #[Computed]
+    public function jadwalLab(): Collection
+    {
+        return $this->mataKuliah->jadwalLab()
+            ->select(['id', 'tanggal', 'jam_mulai', 'jam_selesai', 'ruangan', 'keterangan'])
+            ->urut()
+            ->get();
+    }
+
+    #[Computed]
     public function tugas(): Collection
     {
         return $this->mataKuliah->tugas()

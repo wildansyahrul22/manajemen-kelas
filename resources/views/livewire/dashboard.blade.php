@@ -38,14 +38,18 @@
                 <a href="{{ route('jadwal.index') }}" wire:navigate class="text-sm font-medium text-primary-700 hover:text-primary-900 hover:underline">Lihat semua</a>
             </x-slot:actions>
             @forelse ($this->jadwalHariIni as $jadwal)
-                <div wire:key="jadwal-{{ $jadwal->id }}" class="flex items-start gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0 sm:px-6">
+                @php $isLab = $jadwal instanceof \App\Models\JadwalLab; @endphp
+                <div wire:key="{{ $isLab ? 'lab' : 'jadwal' }}-{{ $jadwal->id }}" class="flex items-start gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0 sm:px-6">
                     <div class="w-14 shrink-0 text-center">
                         <p class="text-sm font-bold text-slate-900">{{ $jadwal->jam_mulai->format('H:i') }}</p>
                         <p class="text-xs text-slate-400">{{ $jadwal->jam_selesai->format('H:i') }}</p>
                     </div>
-                    <div class="min-w-0 flex-1 border-l-2 border-primary-900 pl-4">
-                        <p class="truncate text-sm font-semibold text-slate-800">{{ $jadwal->mataKuliah->nama }}</p>
-                        <p class="truncate text-xs text-slate-500">{{ $jadwal->mataKuliah->dosen }}</p>
+                    <div @class(['min-w-0 flex-1 border-l-2 pl-4', 'border-amber-500' => $isLab, 'border-primary-900' => ! $isLab])>
+                        <div class="flex items-center gap-2">
+                            <p class="truncate text-sm font-semibold text-slate-800">{{ $jadwal->mataKuliah->nama }}</p>
+                            @if ($isLab)<x-ui.badge color="amber">Lab</x-ui.badge>@endif
+                        </div>
+                        <p class="truncate text-xs text-slate-500">{{ $isLab && $jadwal->keterangan ? $jadwal->keterangan : $jadwal->mataKuliah->dosen }}</p>
                         @if ($jadwal->ruangan)
                             <p class="mt-1 inline-flex items-center gap-1 text-xs text-slate-500"><x-heroicon-m-map-pin class="size-3.5" /> {{ $jadwal->ruangan }}</p>
                         @endif

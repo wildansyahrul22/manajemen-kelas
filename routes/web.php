@@ -5,6 +5,7 @@ use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Informasi;
 use App\Livewire\Jadwal;
+use App\Livewire\JadwalLab;
 use App\Livewire\KategoriInformasi;
 use App\Livewire\KategoriKelompok;
 use App\Livewire\Kelas;
@@ -44,6 +45,7 @@ Route::middleware('auth')->group(function () {
         Route::livewire('/tugas/{tugas}', Tugas\Show::class)->name('tugas.show');
 
         Route::livewire('/jadwal', Jadwal\Index::class)->name('jadwal.index');
+        Route::livewire('/jadwal-lab', JadwalLab\Index::class)->name('jadwal-lab.index');
 
         Route::livewire('/mata-kuliah', MataKuliah\Index::class)->name('mata-kuliah.index');
         Route::livewire('/mata-kuliah/{mataKuliah}', MataKuliah\Show::class)->name('mata-kuliah.show');

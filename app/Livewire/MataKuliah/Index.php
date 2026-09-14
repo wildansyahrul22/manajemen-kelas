@@ -39,7 +39,7 @@ class Index extends Component
     {
         return MataKuliah::query()
             ->select(['id', 'semester_id', 'kode', 'nama', 'dosen', 'sks'])
-            ->withCount(['jadwal', 'tugas'])
+            ->withCount(['jadwal', 'jadwalLab', 'tugas'])
             ->where('kelas_id', $this->kelas->id)
             ->where('semester_id', $this->semesterDipilih)
             ->search($this->search)

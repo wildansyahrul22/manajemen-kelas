@@ -10,6 +10,7 @@ enum ModulLog: string
     case KategoriKelompok = 'kategori_kelompok';
     case Tugas = 'tugas';
     case Jadwal = 'jadwal';
+    case JadwalLab = 'jadwal_lab';
     case MataKuliah = 'mata_kuliah';
     case User = 'user';
     case Kelas = 'kelas';
@@ -24,6 +25,7 @@ enum ModulLog: string
             self::KategoriKelompok => 'Kategori Kelompok',
             self::Tugas => 'Tugas',
             self::Jadwal => 'Jadwal Kelas',
+            self::JadwalLab => 'Jadwal Lab',
             self::MataKuliah => 'Mata Kuliah',
             self::User => 'User',
             self::Kelas => 'Kelas',

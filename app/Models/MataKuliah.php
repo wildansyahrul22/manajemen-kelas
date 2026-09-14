@@ -36,6 +36,11 @@ class MataKuliah extends Model
         return $this->hasMany(JadwalKelas::class, 'mata_kuliah_id');
     }
 
+    public function jadwalLab(): HasMany
+    {
+        return $this->hasMany(JadwalLab::class, 'mata_kuliah_id');
+    }
+
     public function tugas(): HasMany
     {
         return $this->hasMany(Tugas::class, 'mata_kuliah_id');

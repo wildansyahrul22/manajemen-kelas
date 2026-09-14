@@ -24,6 +24,26 @@
                 @endforelse
             </x-ui.card>
 
+            <x-ui.card title="Jadwal Lab" :padding="false">
+                <x-slot:actions>
+                    <a href="{{ route('jadwal-lab.index', ['mk' => $mataKuliah->id]) }}" wire:navigate class="text-sm font-medium text-primary-700 hover:text-primary-900 hover:underline">Lihat semua</a>
+                </x-slot:actions>
+                @forelse ($this->jadwalLab as $jadwal)
+                    <div wire:key="lab-{{ $jadwal->id }}" @class(['flex items-center gap-4 border-b border-slate-100 px-5 py-4 last:border-b-0 sm:px-6', 'opacity-60' => $jadwal->isLewat()])>
+                        <span class="w-32 shrink-0 whitespace-nowrap text-sm font-semibold text-slate-800">{{ $jadwal->tanggal->isoFormat('ddd, D MMM YYYY') }}</span>
+                        <span class="text-sm text-slate-600">{{ $jadwal->jam() }}</span>
+                        @if ($jadwal->keterangan)
+                            <span class="hidden min-w-0 flex-1 truncate text-xs text-slate-500 sm:block">{{ $jadwal->keterangan }}</span>
+                        @endif
+                        @if ($jadwal->ruangan)
+                            <span class="ml-auto inline-flex items-center gap-1 whitespace-nowrap text-xs text-slate-500"><x-heroicon-m-map-pin class="size-3.5" /> {{ $jadwal->ruangan }}</span>
+                        @endif
+                    </div>
+                @empty
+                    <x-ui.empty-state title="Belum ada jadwal lab" icon="heroicon-o-beaker" class="py-8" />
+                @endforelse
+            </x-ui.card>
+
             <x-ui.card title="Tugas" description="10 tugas terakhir" :padding="false">
                 @forelse ($this->tugas as $tugas)
                     <a href="{{ route('tugas.show', $tugas) }}" wire:navigate wire:key="tugas-{{ $tugas->id }}" class="flex items-center gap-4 border-b border-slate-100 px-5 py-4 transition last:border-b-0 hover:bg-slate-50 sm:px-6">

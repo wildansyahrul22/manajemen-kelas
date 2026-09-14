@@ -32,10 +32,18 @@
             <div x-show="sidebarCollapsed" x-cloak class="mx-2 mb-2 hidden border-t border-slate-200 lg:block"></div>
             <div class="space-y-1">
                 <x-ui.nav-link :href="route('tugas.index')" :active="request()->routeIs('tugas.*')" icon="heroicon-o-clipboard-document-list">Daftar Tugas</x-ui.nav-link>
-                <x-ui.nav-link :href="route('jadwal.index')" :active="request()->routeIs('jadwal.*')" icon="heroicon-o-calendar-days">Jadwal Kelas</x-ui.nav-link>
                 <x-ui.nav-link :href="route('mata-kuliah.index')" :active="request()->routeIs('mata-kuliah.*')" icon="heroicon-o-book-open">Mata Kuliah</x-ui.nav-link>
                 <x-ui.nav-link :href="route('kelompok.index')" :active="request()->routeIs('kelompok.*')" icon="heroicon-o-user-group">Kelompok</x-ui.nav-link>
                 <x-ui.nav-link :href="route('kategori-kelompok.index')" :active="request()->routeIs('kategori-kelompok.*')" icon="heroicon-o-rectangle-group">Kategori Kelompok</x-ui.nav-link>
+            </div>
+        </div>
+
+        <div>
+            <p class="mb-2 px-3 text-[11px] font-semibold uppercase tracking-wider text-slate-400" :class="sidebarCollapsed && 'lg:hidden'">Jadwal</p>
+            <div x-show="sidebarCollapsed" x-cloak class="mx-2 mb-2 hidden border-t border-slate-200 lg:block"></div>
+            <div class="space-y-1">
+                <x-ui.nav-link :href="route('jadwal.index')" :active="request()->routeIs('jadwal.*')" icon="heroicon-o-calendar-days">Jadwal Kelas</x-ui.nav-link>
+                <x-ui.nav-link :href="route('jadwal-lab.index')" :active="request()->routeIs('jadwal-lab.*')" icon="heroicon-o-beaker">Jadwal Lab</x-ui.nav-link>
             </div>
         </div>
 

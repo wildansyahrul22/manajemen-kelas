@@ -36,6 +36,7 @@
                         <x-ui.th class="hidden md:table-cell">Dosen</x-ui.th>
                         <x-ui.th class="text-center">SKS</x-ui.th>
                         <x-ui.th class="hidden text-center lg:table-cell">Jadwal</x-ui.th>
+                        <x-ui.th class="hidden text-center lg:table-cell">Lab</x-ui.th>
                         <x-ui.th class="hidden text-center lg:table-cell">Tugas</x-ui.th>
                         @if ($this->canManage)
                             <x-ui.th class="text-right">Aksi</x-ui.th>
@@ -54,6 +55,8 @@
                             <x-ui.td class="text-center font-medium">{{ $mataKuliah->sks }}</x-ui.td>
                             <x-ui.td
                                 class="hidden text-center text-slate-500 lg:table-cell">{{ $mataKuliah->jadwal_count }}</x-ui.td>
+                            <x-ui.td
+                                class="hidden text-center text-slate-500 lg:table-cell">{{ $mataKuliah->jadwal_lab_count }}</x-ui.td>
                             <x-ui.td
                                 class="hidden text-center text-slate-500 lg:table-cell">{{ $mataKuliah->tugas_count }}</x-ui.td>
                             @if ($this->canManage)

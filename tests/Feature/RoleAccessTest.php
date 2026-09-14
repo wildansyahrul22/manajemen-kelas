@@ -10,7 +10,7 @@ class RoleAccessTest extends TestCase
     {
         $user = $this->mahasiswa($this->kelas());
 
-        foreach (['dashboard', 'tugas.index', 'jadwal.index', 'mata-kuliah.index', 'informasi.index', 'kategori-informasi.index', 'kelompok.index', 'kategori-kelompok.index', 'profile.edit'] as $route) {
+        foreach (['dashboard', 'tugas.index', 'jadwal.index', 'jadwal-lab.index', 'mata-kuliah.index', 'informasi.index', 'kategori-informasi.index', 'kelompok.index', 'kategori-kelompok.index', 'profile.edit'] as $route) {
             $this->actingAs($user)->get(route($route))->assertOk();
         }
     }

@@ -5,6 +5,7 @@ namespace App\Livewire;
 use App\Livewire\Concerns\InteractsWithKelas;
 use App\Models\Informasi;
 use App\Models\JadwalKelas;
+use App\Models\JadwalLab;
 use App\Models\Kelompok;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
@@ -37,16 +38,31 @@ class Dashboard extends Component
         ];
     }
 
+    /**
+     * Today's kelas sessions and lab sessions merged into one timeline.
+     *
+     * @return Collection<int, JadwalKelas|JadwalLab>
+     */
     #[Computed]
     public function jadwalHariIni(): Collection
     {
-        return JadwalKelas::query()
+        $jadwalKelas = JadwalKelas::query()
             ->select(['id', 'mata_kuliah_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan'])
             ->with('mataKuliah:id,nama,dosen')
             ->forKelasAktif($this->kelas)
             ->hariIni()
-            ->orderBy('jam_mulai')
             ->get();
+
+        $jadwalLab = JadwalLab::query()
+            ->select(['id', 'mata_kuliah_id', 'tanggal', 'jam_mulai', 'jam_selesai', 'ruangan', 'keterangan'])
+            ->with('mataKuliah:id,nama,dosen')
+            ->forKelasAktif($this->kelas)
+            ->hariIni()
+            ->get();
+
+        return $jadwalKelas->concat($jadwalLab)
+            ->sortBy(fn (JadwalKelas|JadwalLab $jadwal) => $jadwal->jam_mulai->format('H:i'))
+            ->values();
     }
 
     #[Computed]

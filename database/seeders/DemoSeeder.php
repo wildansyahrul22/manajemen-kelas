@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Enums\Role;
 use App\Models\Informasi;
 use App\Models\JadwalKelas;
+use App\Models\JadwalLab;
 use App\Models\KategoriInformasi;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
@@ -111,6 +112,22 @@ class DemoSeeder extends Seeder
             'jam_selesai' => '17:10',
             'ruangan' => 'Lab 3',
         ]);
+
+        // Weekly praktikum for the first two mata kuliah: last week (already passed), today, and the next three weeks.
+        $mataKuliahA->take(2)->each(function (MataKuliah $mataKuliah, int $index) {
+            $materi = ['Pengenalan tools & instalasi', 'Praktik dasar', 'Studi kasus', 'Lanjutan studi kasus', 'Responsi'];
+
+            foreach (range(-1, 3) as $minggu) {
+                JadwalLab::query()->create([
+                    'mata_kuliah_id' => $mataKuliah->id,
+                    'tanggal' => today()->addWeeks($minggu)->toDateString(),
+                    'jam_mulai' => $index === 0 ? '13:00' : '08:00',
+                    'jam_selesai' => $index === 0 ? '15:00' : '10:00',
+                    'ruangan' => 'Lab '.($index + 1),
+                    'keterangan' => $materi[$minggu + 1],
+                ]);
+            }
+        });
 
         // Mata kuliah from a previous semester (should not appear in the active semester views).
         MataKuliah::query()->create([
