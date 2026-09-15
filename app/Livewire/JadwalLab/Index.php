@@ -9,6 +9,7 @@ use App\Livewire\Forms\JadwalLabForm;
 use App\Models\JadwalLab;
 use App\Models\MataKuliah;
 use App\Support\ExcelExport;
+use App\Support\PesanWhatsApp;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
@@ -53,6 +54,26 @@ class Index extends Component
             ->when($this->mataKuliahId !== '', fn ($query) => $query->whereKey((int) $this->mataKuliahId))
             ->orderBy('nama')
             ->get();
+    }
+
+    /**
+     * WhatsApp share message per tanggal (Y-m-d => text) covering every listed session on that date,
+     * across mata kuliah, in time order.
+     *
+     * @return array<string, string>
+     */
+    #[Computed]
+    public function teksWhatsApp(): array
+    {
+        return $this->mataKuliahDenganJadwal
+            ->flatMap(fn (MataKuliah $mataKuliah) => $mataKuliah->jadwalLab->each(fn (JadwalLab $sesi) => $sesi->setRelation('mataKuliah', $mataKuliah)))
+            ->groupBy(fn (JadwalLab $sesi) => $sesi->tanggal->toDateString())
+            ->map(fn (Collection $sesi, string $tanggal) => PesanWhatsApp::jadwalLab(
+                $sesi->first()->tanggal,
+                $sesi->sortBy(fn (JadwalLab $item) => $item->jam_mulai->format('H:i')),
+                $this->kelas,
+            ))
+            ->all();
     }
 
     /**
@@ -165,7 +186,7 @@ class Index extends Component
         $saved = $this->form->save($this->kelas);
 
         $this->closeForm();
-        unset($this->mataKuliahDenganJadwal);
+        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp);
         $this->notify(match (true) {
             $isEdit => 'Jadwal lab berhasil diperbarui.',
             $saved->count() > 1 => $saved->count().' jadwal lab berhasil ditambahkan.',
@@ -190,7 +211,7 @@ class Index extends Component
         $jadwalLab->delete();
 
         $this->closeDelete();
-        unset($this->mataKuliahDenganJadwal);
+        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp);
         $this->notify('Jadwal lab berhasil dihapus.');
     }
 

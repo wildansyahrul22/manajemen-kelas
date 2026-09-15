@@ -158,6 +158,15 @@ return [
     'uppercase' => ':Attribute harus berupa huruf kapital.',
     'url' => 'Format :attribute tidak valid.',
     'uuid' => ':Attribute harus merupakan UUID yang valid.',
+    'custom' => [
+        // Livewire's temporary upload endpoint validates `files.*`; PHP rejects oversized files
+        // before Laravel sees them, which surfaces as the `file` rule failing.
+        'files.*' => [
+            'file' => 'Lampiran gagal diunggah: ukuran file melebihi batas unggah server.',
+            'max' => 'Lampiran gagal diunggah: ukuran file melebihi batas unggah server.',
+        ],
+    ],
+
     'attributes' => [
         'address' => 'alamat',
         'affiliate_url' => 'URL afiliasi',

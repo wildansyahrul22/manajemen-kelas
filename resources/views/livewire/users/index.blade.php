@@ -16,12 +16,16 @@
             </div>
             <x-ui.select name="role" wire:model.live="role" :options="$this->roleOptions" placeholder="Semua role" clearable
                 class="sm:w-48" />
+            @if ($role !== \App\Enums\Role::SuperAdmin->value)
+                <x-ui.checkbox label="Tampilkan kelas terbang semester lain" name="semuaSemester" wire:model.live="semuaSemester"
+                    description="Default: hanya anggota {{ $this->kelas->semesterAktif->nama }}." />
+            @endif
             <div class="lg:ml-auto">
                 <x-ui.per-page wire:model.live="perPage" />
             </div>
         </div>
 
-        <div wire:loading.class="opacity-50" wire:target="search, role, perPage, gotoPage, nextPage, previousPage"
+        <div wire:loading.class="opacity-50" wire:target="search, role, semuaSemester, perPage, gotoPage, nextPage, previousPage"
             class="transition-opacity">
             @if ($this->daftarUsers->isEmpty())
                 <x-ui.empty-state title="User tidak ditemukan" description="Tidak ada user yang cocok dengan filter."
@@ -53,7 +57,17 @@
                             <x-ui.td class="font-mono text-xs text-slate-600">{{ $user->npm }}</x-ui.td>
                             <x-ui.td
                                 class="hidden whitespace-nowrap text-slate-600 md:table-cell">{{ $user->noHpFormatted() ?? '—' }}</x-ui.td>
-                            <x-ui.td><x-ui.badge :class="$user->role->badgeClass()">{{ $user->role->label() }}</x-ui.badge></x-ui.td>
+                            <x-ui.td>
+                                <div class="flex flex-wrap items-center gap-1.5">
+                                    <x-ui.badge :class="$user->role->badgeClass()">{{ $user->role->label() }}</x-ui.badge>
+                                    @if ($user->isKelasTerbang())
+                                        @php $aktifSekarang = $user->kelas_id === $this->kelas->id && $user->aktifPadaSemester($this->kelas->semester_aktif_id); @endphp
+                                        <x-ui.badge :color="$aktifSekarang ? 'amber' : 'slate'" :title="$aktifSekarang ? 'Anggota kelas terbang pada semester aktif' : 'Tidak aktif pada semester ini'">
+                                            <x-heroicon-m-paper-airplane class="size-3" /> Kelas terbang · {{ $user->semesterKelasTerbang->nama }}
+                                        </x-ui.badge>
+                                    @endif
+                                </div>
+                            </x-ui.td>
                             @if ($actor->isSuperAdmin())
                                 <x-ui.td
                                     class="hidden text-slate-600 lg:table-cell">{{ $user->kelas?->nama ?? '—' }}</x-ui.td>
@@ -101,6 +115,18 @@
                     <x-ui.input label="Kelas" name="kelas_readonly" :value="$this->kelas->nama" disabled />
                 @endif
             </div>
+
+            @if ($form->role !== \App\Enums\Role::SuperAdmin->value)
+                <div class="space-y-3 rounded-xl border border-slate-200 bg-slate-50/60 p-4">
+                    <x-ui.checkbox label="Kelas terbang" name="form.kelas_terbang" wire:model.live="form.kelas_terbang"
+                        description="Mahasiswa dari kelas lain yang hanya ikut kelas ini pada satu semester. Ia hanya dihitung sebagai anggota kelas (dashboard, pilihan anggota kelompok, daftar user) saat semester itu aktif." />
+                    @if ($form->kelas_terbang)
+                        <x-ui.combobox label="Semester kelas terbang" name="form.kelas_terbang_semester_id" wire:model="form.kelas_terbang_semester_id"
+                            :options="$this->semesterOptions->pluck('nama', 'id')" placeholder="Pilih semester" required class="sm:w-64"
+                            hint="Hanya pada semester ini user tersebut tampil sebagai anggota kelas." />
+                    @endif
+                </div>
+            @endif
 
             <div class="grid grid-cols-1 gap-4 border-t border-slate-100 pt-4 sm:grid-cols-2">
                 <x-ui.input :label="$form->user ? 'Password baru' : 'Password'" name="form.password" type="password" wire:model="form.password"

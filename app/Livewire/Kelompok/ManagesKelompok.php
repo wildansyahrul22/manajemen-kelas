@@ -56,6 +56,7 @@ trait ManagesKelompok
         return User::query()
             ->forKelas($this->kelas->id)
             ->anggotaKelas()
+            ->aktifDiSemester($this->kelas->semester_aktif_id)
             ->whereNotIn('id', KategoriKelompok::anggotaIds($kategoriId, $this->form->kelompok?->id))
             ->orderBy('name')
             ->get(['id', 'npm', 'name']);

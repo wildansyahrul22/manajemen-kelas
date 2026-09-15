@@ -5,6 +5,8 @@ namespace App\Livewire\Informasi;
 use App\Livewire\Concerns\InteractsWithKelas;
 use App\Livewire\Concerns\Notifies;
 use App\Models\Informasi;
+use App\Support\PesanWhatsApp;
+use Livewire\Attributes\Computed;
 use Livewire\Component;
 
 class Show extends Component
@@ -20,9 +22,16 @@ class Show extends Component
         $this->informasi = $informasi;
     }
 
+    #[Computed]
+    public function teksWhatsApp(): string
+    {
+        return PesanWhatsApp::informasi($this->informasi->loadMissing(['kategori:id,nama,warna', 'lampiran']), $this->kelas);
+    }
+
     protected function afterSave(Informasi $informasi): void
     {
         $this->informasi = $informasi->fresh();
+        unset($this->teksWhatsApp);
     }
 
     protected function afterDelete(): void
@@ -33,7 +42,7 @@ class Show extends Component
 
     public function render()
     {
-        $this->informasi->loadMissing(['kategori:id,nama,warna', 'creator:id,name,role']);
+        $this->informasi->loadMissing(['kategori:id,nama,warna', 'creator:id,name,role', 'lampiran']);
 
         return view('livewire.informasi.show')->title($this->informasi->judul);
     }

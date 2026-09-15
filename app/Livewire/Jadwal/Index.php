@@ -10,6 +10,7 @@ use App\Livewire\Forms\JadwalKelasForm;
 use App\Models\JadwalKelas;
 use App\Models\MataKuliah;
 use App\Support\ExcelExport;
+use App\Support\PesanWhatsApp;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -41,6 +42,20 @@ class Index extends Component
 
         return collect(Hari::cases())
             ->mapWithKeys(fn (Hari $hari) => [$hari->value => $jadwal->get($hari->value, collect())]);
+    }
+
+    /**
+     * WhatsApp share message per hari that has sessions (hari value => text).
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function teksWhatsApp(): array
+    {
+        return $this->jadwalPerHari
+            ->filter(fn (Collection $daftar) => $daftar->isNotEmpty())
+            ->map(fn (Collection $daftar, int $hari) => PesanWhatsApp::jadwalKelas(Hari::from($hari), $daftar, $this->kelas))
+            ->all();
     }
 
     #[Computed]
@@ -127,7 +142,7 @@ class Index extends Component
         $saved = $this->form->save($this->kelas);
 
         $this->closeForm();
-        unset($this->jadwalPerHari);
+        unset($this->jadwalPerHari, $this->teksWhatsApp);
         $this->notify(match (true) {
             $isEdit => 'Jadwal berhasil diperbarui.',
             $saved->count() > 1 => $saved->count().' jadwal berhasil ditambahkan.',
@@ -152,7 +167,7 @@ class Index extends Component
         $jadwal->delete();
 
         $this->closeDelete();
-        unset($this->jadwalPerHari);
+        unset($this->jadwalPerHari, $this->teksWhatsApp);
         $this->notify('Jadwal berhasil dihapus.');
     }
 

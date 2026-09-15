@@ -48,15 +48,16 @@
                                     <span>{{ $informasi->creator?->name ?? 'Pengguna terhapus' }} ·
                                         {{ $informasi->created_at->isoFormat('D MMM YYYY, HH:mm') }}</span>
                                     @if ($informasi->hasLampiran())
-                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-600" title="{{ $informasi->lampiran_nama }}"><x-heroicon-m-paper-clip class="size-3.5" /> Lampiran</span>
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-slate-600"><x-heroicon-m-paper-clip class="size-3.5" /> {{ $informasi->lampiran_count }} lampiran</span>
                                     @endif
                                     @if ($informasi->link)
                                         <span class="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2 py-0.5 text-sky-700" title="{{ $informasi->link }}"><x-heroicon-m-link class="size-3.5" /> Tautan</span>
                                     @endif
                                 </p>
                             </div>
-                            @if (auth()->user()->can('update', $informasi))
-                                <div class="shrink-0">
+                            <div class="flex shrink-0 items-start gap-1">
+                                <x-ui.whatsapp-button icon :text="$this->teksWhatsApp[$informasi->id] ?? null" label="Bagikan informasi ini ke WhatsApp" />
+                                @if (auth()->user()->can('update', $informasi))
                                     <x-ui.action-menu>
                                         <x-ui.menu-item :href="route('informasi.show', $informasi)" icon="heroicon-o-eye">Lihat
                                             detail</x-ui.menu-item>
@@ -71,8 +72,8 @@
                                         <x-ui.menu-item wire:click="confirmDelete({{ $informasi->id }})" opens="confirmingDelete"
                                             icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
                                     </x-ui.action-menu>
-                                </div>
-                            @endif
+                                @endif
+                            </div>
                         </li>
                     @endforeach
                 </ul>

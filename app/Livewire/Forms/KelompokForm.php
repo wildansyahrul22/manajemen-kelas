@@ -48,7 +48,11 @@ class KelompokForm extends Form
                 'integer',
                 Rule::exists('users', 'id')
                     ->where('kelas_id', $this->kelas?->id)
-                    ->whereIn('role', [Role::Mahasiswa->value, Role::Admin->value]),
+                    ->whereIn('role', [Role::Mahasiswa->value, Role::Admin->value])
+                    // Kelas terbang students only count in their own semester.
+                    ->where(fn ($query) => $query
+                        ->whereNull('kelas_terbang_semester_id')
+                        ->orWhere('kelas_terbang_semester_id', $this->kelas?->semester_aktif_id)),
                 $this->belumPunyaKelompokDiKategori(),
             ],
             'ketua_id' => ['nullable', 'integer', Rule::in($this->anggota)],

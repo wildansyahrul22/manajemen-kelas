@@ -64,6 +64,27 @@ class DemoSeeder extends Seeder
 
         $mahasiswaLain = User::factory()->count(18)->create(['kelas_id' => $kelasA->id]);
 
+        // Kelas terbang: students from another kelas who join TI-3A for one semester only.
+        User::query()->create([
+            'npm' => '23010050',
+            'name' => 'Dimas Prakoso',
+            'no_hp' => '6281355512345',
+            'password' => 'password',
+            'role' => Role::Mahasiswa,
+            'kelas_id' => $kelasA->id,
+            'kelas_terbang_semester_id' => $semester(3),
+        ]);
+
+        User::query()->create([
+            'npm' => '23010051',
+            'name' => 'Nadia Safitri',
+            'no_hp' => null,
+            'password' => 'password',
+            'role' => Role::Mahasiswa,
+            'kelas_id' => $kelasA->id,
+            'kelas_terbang_semester_id' => $semester(4),
+        ]);
+
         User::query()->create([
             'npm' => '25010001',
             'name' => 'Budi Santoso',

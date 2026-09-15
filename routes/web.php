@@ -52,7 +52,7 @@ Route::middleware('auth')->group(function () {
 
         Route::livewire('/informasi', Informasi\Index::class)->name('informasi.index');
         Route::livewire('/informasi/{informasi}', Informasi\Show::class)->name('informasi.show');
-        Route::get('/informasi/{informasi}/lampiran', InformasiLampiranController::class)->name('informasi.lampiran');
+        Route::get('/informasi/{informasi}/lampiran/{lampiran}', InformasiLampiranController::class)->scopeBindings()->name('informasi.lampiran');
 
         Route::livewire('/kategori-informasi', KategoriInformasi\Index::class)->name('kategori-informasi.index');
 

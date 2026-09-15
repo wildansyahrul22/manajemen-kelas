@@ -41,7 +41,7 @@ class Index extends Component
         return Kelas::query()
             ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'created_at'])
             ->with('semesterAktif:id,nama')
-            ->withCount(['mahasiswa', 'mataKuliah'])
+            ->withCount(['mahasiswa' => fn ($query) => $query->aktifDiSemesterKelas(), 'mataKuliah'])
             ->when(trim($this->search) !== '', fn ($query) => $query->where('nama', 'like', '%'.trim($this->search).'%'))
             ->orderBy('nama');
     }

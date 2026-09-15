@@ -30,7 +30,7 @@ class Show extends Component
 
     public function render()
     {
-        $this->user->loadMissing('kelas:id,nama');
+        $this->user->loadMissing(['kelas:id,nama', 'semesterKelasTerbang:id,nama']);
 
         return view('livewire.users.show')->title($this->user->name);
     }

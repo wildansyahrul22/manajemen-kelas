@@ -18,6 +18,12 @@
             clearable class="sm:w-56" />
         <x-ui.combobox name="kategoriId" wire:model.live="kategoriId" :options="$this->kategoriFilterOptions" placeholder="Semua kategori"
             clearable class="sm:w-56" />
+        <div class="flex flex-col gap-1">
+            <x-ui.whatsapp-button :text="$this->teksWhatsApp" label="Bagikan ke WhatsApp" disabled-title="Pilih kategori terlebih dahulu" class="whitespace-nowrap" />
+            @if ($kategoriId === '')
+                <p class="text-xs text-slate-500">Pilih kategori dulu untuk membagikan pembagian kelompoknya.</p>
+            @endif
+        </div>
         <div class="lg:ml-auto">
             <x-ui.per-page wire:model.live="perPage" />
         </div>

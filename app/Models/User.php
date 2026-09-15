@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
-#[Fillable(['npm', 'name', 'no_hp', 'password', 'role', 'kelas_id'])]
+#[Fillable(['npm', 'name', 'no_hp', 'password', 'role', 'kelas_id', 'kelas_terbang_semester_id'])]
 #[Hidden(['password', 'remember_token'])]
 class User extends Authenticatable
 {
@@ -39,6 +39,14 @@ class User extends Authenticatable
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 
+    /**
+     * The one semester a "kelas terbang" student belongs to this kelas; null for regular members.
+     */
+    public function semesterKelasTerbang(): BelongsTo
+    {
+        return $this->belongsTo(Semester::class, 'kelas_terbang_semester_id');
+    }
+
     public function kelompok(): BelongsToMany
     {
         return $this->belongsToMany(Kelompok::class, 'kelompok_anggota', 'user_id', 'kelompok_id')
@@ -59,6 +67,31 @@ class User extends Authenticatable
     protected function anggotaKelas(Builder $query): void
     {
         $query->whereIn('role', [Role::Mahasiswa, Role::Admin]);
+    }
+
+    /**
+     * Members that count in the given semester: regular users plus kelas terbang users of that semester.
+     */
+    #[Scope]
+    protected function aktifDiSemester(Builder $query, int $semesterId): void
+    {
+        $query->where(function (Builder $query) use ($semesterId) {
+            $query->whereNull('users.kelas_terbang_semester_id')
+                ->orWhere('users.kelas_terbang_semester_id', $semesterId);
+        });
+    }
+
+    /**
+     * Same as aktifDiSemester, but against the parent kelas' active semester — for correlated
+     * subqueries such as Kelas::withCount(['mahasiswa' => fn ($q) => $q->aktifDiSemesterKelas()]).
+     */
+    #[Scope]
+    protected function aktifDiSemesterKelas(Builder $query): void
+    {
+        $query->where(function (Builder $query) {
+            $query->whereNull('users.kelas_terbang_semester_id')
+                ->orWhereColumn('users.kelas_terbang_semester_id', 'kelas.semester_aktif_id');
+        });
     }
 
     #[Scope]
@@ -89,6 +122,19 @@ class User extends Authenticatable
     public function isMahasiswa(): bool
     {
         return $this->role === Role::Mahasiswa;
+    }
+
+    public function isKelasTerbang(): bool
+    {
+        return $this->kelas_terbang_semester_id !== null;
+    }
+
+    /**
+     * Whether this user is a member of the kelas in the given semester.
+     */
+    public function aktifPadaSemester(int $semesterId): bool
+    {
+        return ! $this->isKelasTerbang() || $this->kelas_terbang_semester_id === $semesterId;
     }
 
     /**

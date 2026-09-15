@@ -18,6 +18,9 @@
                     @endif
                 </dd></div>
                 <div><dt class="text-slate-500">Kelas</dt><dd class="mt-0.5 font-medium text-slate-800">{{ $user->kelas?->nama ?? '—' }}</dd></div>
+                @if ($user->isKelasTerbang())
+                    <div><dt class="text-slate-500">Keanggotaan</dt><dd class="mt-0.5 font-medium text-slate-800">Kelas terbang · {{ $user->semesterKelasTerbang->nama }}</dd></div>
+                @endif
                 <div><dt class="text-slate-500">Terdaftar</dt><dd class="mt-0.5 text-slate-700">{{ $user->created_at->isoFormat('D MMMM YYYY') }}</dd></div>
             </dl>
         </x-ui.card>

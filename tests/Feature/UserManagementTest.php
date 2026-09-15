@@ -3,7 +3,13 @@
 namespace Tests\Feature;
 
 use App\Enums\Role;
+use App\Livewire\Dashboard;
+use App\Livewire\Kelas\Index as KelasIndex;
+use App\Livewire\Kelompok\Index as KelompokIndex;
 use App\Livewire\Users\Index;
+use App\Models\KategoriKelompok;
+use App\Models\MataKuliah;
+use App\Models\Semester;
 use App\Models\User;
 use App\Rules\NomorHpIndonesia;
 use Livewire\Livewire;
@@ -137,5 +143,102 @@ class UserManagementTest extends TestCase
             ->test(Index::class)
             ->assertSee('Anak Kelas Sendiri')
             ->assertDontSee('Anak Kelas Lain');
+    }
+
+    public function test_admin_can_add_a_kelas_terbang_user_and_a_semester_is_required_for_it(): void
+    {
+        $kelas = $this->kelas(semester: 3);
+        $semester5 = Semester::query()->where('nomor', 5)->firstOrFail();
+
+        $component = Livewire::actingAs($this->admin($kelas))
+            ->test(Index::class)
+            ->call('openCreate')
+            ->assertDontSee('Semester kelas terbang')
+            ->set('form.npm', '23010050')
+            ->set('form.name', 'Dimas Terbang')
+            ->set('form.role', Role::Mahasiswa->value)
+            ->set('form.password', 'rahasia123')
+            ->set('form.password_confirmation', 'rahasia123')
+            ->set('form.kelas_terbang', true)
+            ->assertSee('Semester kelas terbang')
+            ->call('save')
+            ->assertHasErrors(['form.kelas_terbang_semester_id' => 'required']);
+
+        $component
+            ->set('form.kelas_terbang_semester_id', (string) $semester5->id)
+            ->call('save')
+            ->assertHasNoErrors()
+            ->assertDispatched('notify', function (string $event, array $params) {
+                return str_contains($params['message'], 'baru tampil saat Semester 5 menjadi semester aktif');
+            });
+
+        $user = User::query()->where('npm', '23010050')->firstOrFail();
+        $this->assertTrue($user->isKelasTerbang());
+        $this->assertSame($semester5->id, $user->kelas_terbang_semester_id);
+
+        // Unticking the box clears the semester even if one was picked.
+        Livewire::actingAs($this->admin($kelas))
+            ->test(Index::class)
+            ->set('semuaSemester', true)
+            ->call('openEdit', $user->id)
+            ->assertSet('form.kelas_terbang', true)
+            ->assertSet('form.kelas_terbang_semester_id', (string) $semester5->id)
+            ->set('form.kelas_terbang', false)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertFalse($user->fresh()->isKelasTerbang());
+    }
+
+    public function test_kelas_terbang_user_is_only_a_member_during_their_semester(): void
+    {
+        $kelas = $this->kelas(semester: 3);
+        $admin = $this->admin($kelas, ['name' => 'Rizky Admin']);
+        $reguler = $this->mahasiswa($kelas, ['name' => 'Siti Reguler']);
+        $semester3 = Semester::query()->where('nomor', 3)->firstOrFail();
+        $semester4 = Semester::query()->where('nomor', 4)->firstOrFail();
+        $terbangSekarang = $this->mahasiswa($kelas, ['name' => 'Dimas Terbang', 'kelas_terbang_semester_id' => $semester3->id]);
+        $terbangNanti = $this->mahasiswa($kelas, ['name' => 'Nadia Terbang', 'kelas_terbang_semester_id' => $semester4->id]);
+
+        // Users list: active-semester roster by default, everyone with the toggle.
+        Livewire::actingAs($admin)
+            ->test(Index::class)
+            ->assertSee('Siti Reguler')
+            ->assertSee('Dimas Terbang')
+            ->assertSee('Kelas terbang · Semester 3')
+            ->assertDontSee('Nadia Terbang')
+            ->set('semuaSemester', true)
+            ->assertSee('Nadia Terbang')
+            ->assertSee('Kelas terbang · Semester 4');
+
+        // Dashboard counts admin + reguler + kelas terbang of this semester.
+        $this->assertSame(3, Livewire::actingAs($admin)->test(Dashboard::class)->get('ringkasan')['mahasiswa']);
+
+        // Kelompok member picker and the WhatsApp "belum masuk kelompok" list follow the same rule.
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $kelas->id]);
+        $kategori = KategoriKelompok::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
+
+        $component = Livewire::actingAs($admin)
+            ->test(KelompokIndex::class)
+            ->call('openCreate', $kategori->id);
+
+        $ids = $component->get('mahasiswaOptions')->pluck('id')->all();
+        $this->assertContains($reguler->id, $ids);
+        $this->assertContains($terbangSekarang->id, $ids);
+        $this->assertNotContains($terbangNanti->id, $ids);
+
+        $component
+            ->set('form.nama', 'Kelompok 1')
+            ->set('form.anggota', [$terbangNanti->id])
+            ->call('save')
+            ->assertHasErrors(['form.anggota.0']);
+
+        $teks = Livewire::actingAs($admin)->test(KelompokIndex::class)->set('kategoriId', (string) $kategori->id)->get('teksWhatsApp');
+        $this->assertStringContainsString('Dimas Terbang', $teks);
+        $this->assertStringNotContainsString('Nadia Terbang', $teks);
+
+        // Kelas list (super admin) counts the active-semester roster too.
+        $daftarKelas = Livewire::actingAs($this->superAdmin())->test(KelasIndex::class)->get('daftarKelas');
+        $this->assertSame(3, $daftarKelas->firstWhere('id', $kelas->id)->mahasiswa_count);
     }
 }

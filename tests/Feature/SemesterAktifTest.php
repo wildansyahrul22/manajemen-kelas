@@ -16,6 +16,8 @@ class SemesterAktifTest extends TestCase
 
         Livewire::actingAs($this->admin($kelas))
             ->test(Index::class)
+            // The combobox can only bind to a key that already exists, seeded with the current semester.
+            ->assertSet('pilihan', [$kelas->id => (string) $kelas->semester_aktif_id])
             ->set("pilihan.{$kelas->id}", (string) $semester4->id)
             ->call('simpan', $kelas->id)
             ->assertRedirect(route('semester-aktif.index'));

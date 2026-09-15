@@ -25,6 +25,21 @@ class Index extends Component
     /** @var array<int, string> kelas id => chosen semester id */
     public array $pilihan = [];
 
+    /**
+     * Seed every kelas' combobox with its current semester. The key must exist before render:
+     * Livewire refuses to entangle a property path (pilihan.{id}) that is not on the component yet.
+     */
+    public function mount(): void
+    {
+        $user = auth()->user();
+
+        $this->pilihan = Kelas::query()
+            ->unless($user->isSuperAdmin(), fn ($query) => $query->whereKey($user->kelas_id))
+            ->pluck('semester_aktif_id', 'id')
+            ->map(fn (int $semesterId) => (string) $semesterId)
+            ->all();
+    }
+
     #[Computed]
     public function semesterOptions(): Collection
     {
@@ -39,7 +54,7 @@ class Index extends Component
         return Kelas::query()
             ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'updated_at'])
             ->with('semesterAktif:id,nama')
-            ->withCount('mahasiswa')
+            ->withCount(['mahasiswa' => fn ($query) => $query->aktifDiSemesterKelas()])
             ->unless($user->isSuperAdmin(), fn ($query) => $query->whereKey($user->kelas_id))
             ->when(trim($this->search) !== '', fn ($query) => $query->where('nama', 'like', '%'.trim($this->search).'%'))
             ->orderBy('nama')

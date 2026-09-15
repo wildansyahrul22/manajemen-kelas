@@ -9,6 +9,7 @@ use App\Models\KategoriKelompok;
 use App\Models\Kelompok;
 use App\Models\User;
 use App\Support\ExcelExport;
+use App\Support\PesanWhatsApp;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -75,6 +76,43 @@ class Index extends Component
             ->orderBy('mata_kuliah_id')
             ->orderBy('kategori_kelompok_id')
             ->orderBy('nama');
+    }
+
+    /**
+     * WhatsApp share message for the kategori picked in the filter: every kelompok of that kategori
+     * with its anggota, plus students of the kelas not placed yet. Null until a kategori is chosen.
+     */
+    #[Computed]
+    public function teksWhatsApp(): ?string
+    {
+        if ($this->kategoriId === '') {
+            return null;
+        }
+
+        $kategori = KategoriKelompok::query()
+            ->with('mataKuliah:id,nama')
+            ->forKelasAktif($this->kelas)
+            ->find((int) $this->kategoriId);
+
+        if ($kategori === null) {
+            return null;
+        }
+
+        $daftar = Kelompok::query()
+            ->with(['anggota' => fn ($query) => $query->select(['users.id', 'users.npm', 'users.name'])])
+            ->where('kategori_kelompok_id', $kategori->id)
+            ->orderBy('nama')
+            ->get();
+
+        $belumPunyaKelompok = User::query()
+            ->forKelas($this->kelas->id)
+            ->anggotaKelas()
+            ->aktifDiSemester($this->kelas->semester_aktif_id)
+            ->whereNotIn('id', KategoriKelompok::anggotaIds($kategori->id))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+
+        return PesanWhatsApp::kelompok($kategori, $daftar, $belumPunyaKelompok, $this->kelas);
     }
 
     #[Computed]
@@ -157,13 +195,12 @@ class Index extends Component
 
     protected function afterSave(Kelompok $kelompok): void
     {
-        unset($this->daftarKelompok);
-        unset($this->kategoriFilterOptions);
+        unset($this->daftarKelompok, $this->kategoriFilterOptions, $this->teksWhatsApp);
     }
 
     protected function afterDelete(): void
     {
-        unset($this->daftarKelompok);
+        unset($this->daftarKelompok, $this->teksWhatsApp);
     }
 
     public function render()

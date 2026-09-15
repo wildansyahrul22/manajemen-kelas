@@ -13,6 +13,7 @@ use App\Livewire\MataKuliah\Index as MataKuliahIndex;
 use App\Livewire\Tugas\Index as TugasIndex;
 use App\Livewire\Users\Index as UsersIndex;
 use App\Models\Informasi;
+use App\Models\InformasiLampiran;
 use App\Models\JadwalKelas;
 use App\Models\JadwalLab;
 use App\Models\KategoriInformasi;
@@ -215,7 +216,9 @@ class ExportExcelTest extends TestCase
         $penulis = $this->mahasiswa($kelas, ['name' => 'Siti']);
         $pengumuman = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Pengumuman']);
         $lain = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Kegiatan']);
-        Informasi::factory()->create(['kelas_id' => $kelas->id, 'kategori_informasi_id' => $pengumuman->id, 'judul' => 'Kuis Bab 3', 'isi' => 'Siapkan materi.', 'link' => 'https://drive.google.com/x', 'lampiran_path' => 'informasi/a.pdf', 'lampiran_nama' => 'materi.pdf', 'is_pinned' => true, 'created_by' => $penulis->id]);
+        $kuis = Informasi::factory()->create(['kelas_id' => $kelas->id, 'kategori_informasi_id' => $pengumuman->id, 'judul' => 'Kuis Bab 3', 'isi' => 'Siapkan materi.', 'link' => 'https://drive.google.com/x', 'is_pinned' => true, 'created_by' => $penulis->id]);
+        InformasiLampiran::factory()->create(['informasi_id' => $kuis->id, 'nama' => 'materi.pdf', 'ukuran' => 2048]);
+        InformasiLampiran::factory()->create(['informasi_id' => $kuis->id, 'nama' => 'contoh-soal.png', 'ukuran' => 1024 * 1024]);
         Informasi::factory()->create(['kelas_id' => $kelas->id, 'kategori_informasi_id' => $lain->id, 'judul' => 'Lomba', 'created_by' => $penulis->id]);
 
         $component = Livewire::actingAs($penulis)
@@ -224,11 +227,18 @@ class ExportExcelTest extends TestCase
             ->call('export')
             ->assertFileDownloaded();
 
-        $rows = $this->downloadedSpreadsheet($component)->getSheet(0)->toArray(null, true, true, false);
+        $spreadsheet = $this->downloadedSpreadsheet($component);
+        $this->assertSame(['Informasi', 'Lampiran'], $spreadsheet->getSheetNames());
 
+        $rows = $spreadsheet->getSheetByName('Informasi')->toArray(null, true, true, false);
         $this->assertSame('Filter: Kategori = Pengumuman', $rows[2][0]);
-        $this->assertSame(['Kuis Bab 3', 'Pengumuman', 'Siapkan materi.', 'https://drive.google.com/x', 'materi.pdf', 'Ya', 'Siti'], array_slice($rows[6], 1, 7));
+        $this->assertSame(['Kuis Bab 3', 'Pengumuman', 'Siapkan materi.', 'https://drive.google.com/x', '2', 'Ya', 'Siti'], array_slice($rows[6], 1, 7));
         $this->assertCount(7, $rows);
+
+        $lampiran = $spreadsheet->getSheetByName('Lampiran')->toArray(null, true, true, false);
+        $this->assertSame(['No', 'Judul Informasi', 'Kategori', 'Nama File', 'Ukuran'], $lampiran[5]);
+        $this->assertSame(['1', 'Kuis Bab 3', 'Pengumuman', 'materi.pdf', '2.0 KB'], $lampiran[6]);
+        $this->assertSame(['2', 'Kuis Bab 3', 'Pengumuman', 'contoh-soal.png', '1.0 MB'], $lampiran[7]);
     }
 
     public function test_kategori_informasi_export_counts_informasi_per_kategori(): void
@@ -267,9 +277,9 @@ class ExportExcelTest extends TestCase
         $rows = $this->downloadedSpreadsheet($component)->getSheet(0)->toArray(null, true, true, false);
 
         $this->assertSame('Kelas '.$kelas->nama, $rows[1][0]);
-        $this->assertSame('Filter: Role = Mahasiswa', $rows[2][0]);
-        $this->assertSame(['No', 'NPM', 'Nama', 'No. HP', 'Role', 'Kelas', 'Terdaftar Pada'], $rows[5]);
-        $this->assertSame(['1', '24010002', 'Siti', null, 'Mahasiswa', $kelas->nama], array_slice($rows[6], 0, 6));
+        $this->assertSame('Filter: Role = Mahasiswa · Keanggotaan = Anggota Semester 3', $rows[2][0]);
+        $this->assertSame(['No', 'NPM', 'Nama', 'No. HP', 'Role', 'Kelas', 'Keanggotaan', 'Terdaftar Pada'], $rows[5]);
+        $this->assertSame(['1', '24010002', 'Siti', null, 'Mahasiswa', $kelas->nama, 'Reguler'], array_slice($rows[6], 0, 7));
         $this->assertCount(7, $rows);
 
         $component->set('role', '');

@@ -29,7 +29,7 @@ class Dashboard extends Component
         $kelas = $this->kelas;
 
         return [
-            'mahasiswa' => User::query()->forKelas($kelas->id)->anggotaKelas()->count(),
+            'mahasiswa' => User::query()->forKelas($kelas->id)->anggotaKelas()->aktifDiSemester($kelas->semester_aktif_id)->count(),
             'mata_kuliah' => MataKuliah::query()->forKelasAktif($kelas)->count(),
             'tugas_aktif' => Tugas::query()->forKelasAktif($kelas)->belumDeadline()->count(),
             'jadwal_hari_ini' => $this->jadwalHariIni->count(),

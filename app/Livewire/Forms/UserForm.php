@@ -23,6 +23,11 @@ class UserForm extends Form
 
     public string $kelas_id = '';
 
+    /** Kelas terbang: member of this kelas for one semester only. */
+    public bool $kelas_terbang = false;
+
+    public string $kelas_terbang_semester_id = '';
+
     public string $password = '';
 
     public string $password_confirmation = '';
@@ -43,6 +48,8 @@ class UserForm extends Form
             'no_hp' => ['nullable', 'string', new NomorHpIndonesia],
             'role' => ['required', Rule::in($this->allowedRoles)],
             'kelas_id' => [$needsKelas ? 'required' : 'nullable', Rule::exists('kelas', 'id')],
+            'kelas_terbang' => ['boolean'],
+            'kelas_terbang_semester_id' => [$needsKelas && $this->kelas_terbang ? 'required' : 'nullable', Rule::exists('semesters', 'id')],
             'password' => [$this->user === null ? 'required' : 'nullable', 'confirmed', Password::min(8)],
         ];
     }
@@ -58,6 +65,8 @@ class UserForm extends Form
             'no_hp' => 'nomor HP',
             'role' => 'role',
             'kelas_id' => 'kelas',
+            'kelas_terbang' => 'kelas terbang',
+            'kelas_terbang_semester_id' => 'semester kelas terbang',
             'password' => 'password',
         ];
     }
@@ -70,6 +79,8 @@ class UserForm extends Form
         $this->no_hp = (string) $user->no_hp;
         $this->role = $user->role->value;
         $this->kelas_id = (string) $user->kelas_id;
+        $this->kelas_terbang = $user->isKelasTerbang();
+        $this->kelas_terbang_semester_id = (string) ($user->kelas_terbang_semester_id ?? '');
         $this->password = '';
         $this->password_confirmation = '';
     }
@@ -89,12 +100,15 @@ class UserForm extends Form
 
         $data = $this->validate();
 
+        $isSuperAdmin = $data['role'] === Role::SuperAdmin->value;
+
         $attributes = [
             'npm' => $data['npm'],
             'name' => $data['name'],
             'no_hp' => ($data['no_hp'] ?? '') !== '' ? $data['no_hp'] : null,
             'role' => $data['role'],
-            'kelas_id' => $data['role'] === Role::SuperAdmin->value ? null : (int) $data['kelas_id'],
+            'kelas_id' => $isSuperAdmin ? null : (int) $data['kelas_id'],
+            'kelas_terbang_semester_id' => ! $isSuperAdmin && $data['kelas_terbang'] ? (int) $data['kelas_terbang_semester_id'] : null,
         ];
 
         if ($data['password'] !== null && $data['password'] !== '') {

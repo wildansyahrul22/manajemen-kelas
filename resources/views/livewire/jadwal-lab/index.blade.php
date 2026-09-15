@@ -75,12 +75,15 @@
                                             <p class="mt-1 text-xs text-slate-500">{{ $jadwal->keterangan }}</p>
                                         @endif
                                     </div>
-                                    @if ($this->canManage)
-                                        <x-ui.action-menu class="-mr-1.5 -mt-1">
-                                            <x-ui.menu-item wire:click="openEdit({{ $jadwal->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                            <x-ui.menu-item wire:click="confirmDelete({{ $jadwal->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
-                                        </x-ui.action-menu>
-                                    @endif
+                                    <div class="-mr-1.5 -mt-1 flex shrink-0 items-center">
+                                        <x-ui.whatsapp-button icon :text="$this->teksWhatsApp[$jadwal->tanggal->toDateString()] ?? null" label="Bagikan jadwal lab {{ $jadwal->tanggal->isoFormat('D MMM') }} ke WhatsApp" />
+                                        @if ($this->canManage)
+                                            <x-ui.action-menu>
+                                                <x-ui.menu-item wire:click="openEdit({{ $jadwal->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
+                                                <x-ui.menu-item wire:click="confirmDelete({{ $jadwal->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                            </x-ui.action-menu>
+                                        @endif
+                                    </div>
                                 </div>
                             @endforeach
                         </x-ui.card>

@@ -12,10 +12,10 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Table('informasi')]
-#[Fillable(['kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'lampiran_path', 'lampiran_nama', 'is_pinned', 'created_by'])]
+#[Fillable(['kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'is_pinned', 'created_by'])]
 class Informasi extends Model
 {
     /** @use HasFactory<InformasiFactory> */
@@ -29,11 +29,16 @@ class Informasi extends Model
     /** @var list<string> */
     public const array LAMPIRAN_EKSTENSI = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'];
 
+    /** Per file. */
     public const int LAMPIRAN_MAKS_KB = 5120;
+
+    /** Per informasi. */
+    public const int LAMPIRAN_MAKS_JUMLAH = 5;
 
     protected static function booted(): void
     {
-        static::deleting(fn (Informasi $informasi) => $informasi->hapusLampiran());
+        // Deleting through the models (not the FK cascade) so each attachment removes its file.
+        static::deleting(fn (Informasi $informasi) => $informasi->lampiran()->get()->each->delete());
     }
 
     /**
@@ -61,29 +66,39 @@ class Informasi extends Model
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    public function hasLampiran(): bool
+    public function lampiran(): HasMany
     {
-        return $this->lampiran_path !== null;
-    }
-
-    public function lampiranIsImage(): bool
-    {
-        return in_array($this->lampiranEkstensi(), ['jpg', 'jpeg', 'png', 'webp', 'gif'], true);
-    }
-
-    public function lampiranEkstensi(): string
-    {
-        return strtolower(pathinfo((string) $this->lampiran_nama, PATHINFO_EXTENSION));
+        return $this->hasMany(InformasiLampiran::class, 'informasi_id')->orderBy('id');
     }
 
     /**
-     * Remove the stored file (if any) without touching the row.
+     * Scoped route binding for /informasi/{informasi}/lampiran/{lampiran}: the relation is named
+     * "lampiran" (Indonesian has no plural form), not the "lampirans" Laravel would guess.
      */
-    public function hapusLampiran(): void
+    public function resolveChildRouteBinding($childType, $value, $field): ?Model
     {
-        if ($this->lampiran_path !== null) {
-            Storage::disk(self::LAMPIRAN_DISK)->delete($this->lampiran_path);
+        if ($childType === 'lampiran') {
+            return $this->lampiran()->where($field ?? 'id', $value)->first();
         }
+
+        return parent::resolveChildRouteBinding($childType, $value, $field);
+    }
+
+    /**
+     * Number of attached files, from withCount('lampiran') when present, else the loaded relation.
+     */
+    public function jumlahLampiran(): int
+    {
+        if (array_key_exists('lampiran_count', $this->attributes)) {
+            return (int) $this->attributes['lampiran_count'];
+        }
+
+        return $this->lampiran->count();
+    }
+
+    public function hasLampiran(): bool
+    {
+        return $this->jumlahLampiran() > 0;
     }
 
     #[Scope]

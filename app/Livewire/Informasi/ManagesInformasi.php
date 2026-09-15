@@ -17,7 +17,7 @@ trait ManagesInformasi
     public InformasiForm $form;
 
     /**
-     * Whether the current user may attach files (super admin only); others share links.
+     * Whether the current user may attach files (admin kelas and super admin); mahasiswa share links.
      */
     #[Computed]
     public function canUpload(): bool
@@ -92,7 +92,7 @@ trait ManagesInformasi
 
         $informasi->delete();
 
-        // The modal template reads the attached file off form.informasi, so never keep a deleted model there.
+        // The modal template reads the attachments off form.informasi, so never keep a deleted model there.
         $this->form->reset();
 
         $this->closeDelete();

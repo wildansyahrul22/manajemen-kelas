@@ -19,9 +19,11 @@ Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL*
    php artisan migrate --seed  # membuat tabel + data semester 1-14 dan akun super admin
    npm install
    npm run build               # atau `npm run dev` saat mengembangkan
-   php artisan serve
+   composer run serve          # = php artisan serve + batas unggah dari public/.user.ini
    ```
 4. Buka <http://localhost:8000>.
+
+> `php artisan serve` biasa memakai php.ini CLI (bawaan Homebrew: `upload_max_filesize = 2M`) dan **mengabaikan** `public/.user.ini`, sehingga lampiran > 2 MB gagal diunggah. `composer run serve` / `composer run dev` menambahkan `PHP_INI_SCAN_DIR=:public` agar batas 6M/32M ikut terbaca. Alternatif: naikkan `upload_max_filesize` dan `post_max_size` di php.ini CLI.
 
 Pengaturan koneksi database ada di `.env` (`DB_HOST=127.0.0.1`, `DB_PORT=8889`, `DB_DATABASE=manajemen_kelas`, `DB_USERNAME=root`, `DB_PASSWORD=root`).
 
@@ -47,7 +49,7 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 |-----------------------------------------|-----------|-------------------|-------------|
 | Dashboard, Daftar Tugas, Jadwal, Jadwal Lab, Mata Kuliah | Lihat | CRUD (kelasnya) | CRUD (semua) |
 | Informasi & Kategori Informasi          | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
-| Lampiran file/gambar pada informasi     | —         | —                 | Upload      |
+| Lampiran file/gambar pada informasi     | —         | Upload            | Upload      |
 | Kelompok & Kategori Kelompok            | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
@@ -56,7 +58,11 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
 
-Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara semua role membagikan gambar/file. Hanya super admin yang bisa mengunggah **lampiran** langsung (maks. 5 MB; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran`).
+Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara mahasiswa membagikan gambar/file. Admin kelas dan super admin bisa mengunggah **beberapa lampiran** sekaligus (maks. 5 MB per file, 5 file per informasi — di hosting dijamin oleh `public/.user.ini`: `upload_max_filesize = 6M`, `post_max_size = 32M`; form menampilkan batas efektif server dan menolak file kebesaran sebelum diunggah; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran/{lampiran}`).
+
+**Bagikan ke WhatsApp**: tombol/ikon WhatsApp membuka WhatsApp dengan pesan siap kirim (tinggal pilih grup) — per informasi (daftar & detail), per hari pada Jadwal Kelas, per tanggal pada Jadwal Lab, dan per kategori pada Kelompok (pilih kategori dulu; pesan memuat semua kelompok beserta anggota + NPM dan mahasiswa yang belum masuk kelompok). Teks pesan disusun di `App\Support\PesanWhatsApp`.
+
+**Kelas terbang**: saat menambah/mengedit user, centang *Kelas terbang* lalu pilih semesternya untuk mahasiswa dari kelas lain yang hanya ikut kelas ini pada satu semester. User tersebut hanya dihitung sebagai anggota kelas saat semester itu aktif — di dashboard, pilihan anggota kelompok (dan validasinya), pesan WhatsApp kelompok, jumlah mahasiswa di daftar Kelas/Semester Aktif, serta daftar Users (centang "Tampilkan kelas terbang semester lain" untuk melihat yang lain). Export Users memuat kolom *Keanggotaan* (Reguler / Kelas terbang · Semester N).
 
 **Log Aktivitas** (`activity_log`) mencatat otomatis setiap buat/ubah/hapus pada informasi, kategori, kelompok (termasuk perubahan anggota/ketua), tugas, jadwal, jadwal lab, mata kuliah, user, dan kelas, plus masuk/keluar — lengkap dengan pelaku, kelas, perubahan field (sebelum → sesudah; password disamarkan), dan IP. Admin kelas hanya melihat log kelasnya; super admin melihat semua dan bisa memfilter per kelas.
 

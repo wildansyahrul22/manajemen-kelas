@@ -9,6 +9,7 @@ use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Livewire\Forms\UserForm;
 use App\Models\Kelas;
+use App\Models\Semester;
 use App\Models\User;
 use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -30,12 +31,24 @@ class Index extends Component
     #[Url(except: '')]
     public string $role = '';
 
+    /**
+     * Kelas terbang users belong to the kelas in one semester only; by default the list shows the
+     * roster of the active semester. Tick to also see kelas terbang users of other semesters.
+     */
+    #[Url(as: 'semua', except: false)]
+    public bool $semuaSemester = false;
+
     public function mount(): void
     {
         $this->authorize('viewAny', User::class);
     }
 
     public function updatedRole(): void
+    {
+        $this->resetPage();
+    }
+
+    public function updatedSemuaSemester(): void
     {
         $this->resetPage();
     }
@@ -63,6 +76,12 @@ class Index extends Component
         return Kelas::query()->orderBy('nama')->get(['id', 'nama']);
     }
 
+    #[Computed]
+    public function semesterOptions(): Collection
+    {
+        return Semester::query()->orderBy('nomor')->get(['id', 'nama']);
+    }
+
     /**
      * Super admin filtering on the super admin role sees every super admin (they have no kelas);
      * otherwise the list is the current kelas narrowed by role.
@@ -77,11 +96,12 @@ class Index extends Component
         $showSuperAdmins = $this->showSuperAdmins();
 
         return User::query()
-            ->select(['id', 'npm', 'name', 'no_hp', 'role', 'kelas_id', 'created_at'])
-            ->with('kelas:id,nama')
+            ->select(['id', 'npm', 'name', 'no_hp', 'role', 'kelas_id', 'kelas_terbang_semester_id', 'created_at'])
+            ->with(['kelas:id,nama', 'semesterKelasTerbang:id,nama'])
             ->when($showSuperAdmins, fn ($query) => $query->where('role', Role::SuperAdmin))
             ->unless($showSuperAdmins, function ($query) {
                 $query->forKelas($this->kelas->id)
+                    ->unless($this->semuaSemester, fn ($query) => $query->aktifDiSemester($this->kelas->semester_aktif_id))
                     ->when($this->role !== '', fn ($query) => $query->where('role', $this->role));
             })
             ->search($this->search)
@@ -107,6 +127,7 @@ class Index extends Component
                 $user->noHpFormatted(),
                 $user->role->label(),
                 $user->kelas?->nama,
+                $user->isKelasTerbang() ? 'Kelas terbang · '.$user->semesterKelasTerbang->nama : 'Reguler',
                 $user->created_at,
             ]);
 
@@ -115,6 +136,7 @@ class Index extends Component
             ->filter([
                 'Pencarian' => $this->search,
                 'Role' => Role::tryFrom($this->role)?->label(),
+                'Keanggotaan' => $this->showSuperAdmins() ? null : ($this->semuaSemester ? 'Termasuk kelas terbang semester lain' : 'Anggota '.$this->kelas->semesterAktif->nama),
             ])
             ->kolom(
                 ['No', ExcelExport::TIPE_ANGKA],
@@ -123,6 +145,7 @@ class Index extends Component
                 'No. HP',
                 'Role',
                 'Kelas',
+                'Keanggotaan',
                 ['Terdaftar Pada', ExcelExport::TIPE_WAKTU],
             )
             ->baris($baris)
@@ -157,14 +180,21 @@ class Index extends Component
             ? $this->authorize('update', $this->form->user)
             : $this->authorize('create', User::class);
 
-        $this->form->save(
+        $user = $this->form->save(
             allowedRoles: array_keys($this->roleOptions),
             lockedKelasId: $actor->isSuperAdmin() ? null : $actor->kelas_id,
         );
 
         $this->closeForm();
         unset($this->daftarUsers);
-        $this->notify($isEdit ? 'Data user berhasil diperbarui.' : 'User berhasil ditambahkan.');
+
+        $pesan = $isEdit ? 'Data user berhasil diperbarui.' : 'User berhasil ditambahkan.';
+
+        if ($user->isKelasTerbang() && ! $this->semuaSemester && $user->kelas_id === $this->kelas->id && ! $user->aktifPadaSemester($this->kelas->semester_aktif_id)) {
+            $pesan .= ' Sebagai kelas terbang, user ini baru tampil saat '.$user->semesterKelasTerbang->nama.' menjadi semester aktif (centang "Tampilkan kelas terbang semester lain" untuk melihatnya sekarang).';
+        }
+
+        $this->notify($pesan);
     }
 
     public function confirmDelete(int $id): void

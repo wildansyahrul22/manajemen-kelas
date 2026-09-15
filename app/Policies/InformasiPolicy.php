@@ -42,10 +42,10 @@ class InformasiPolicy
     }
 
     /**
-     * Only super admin may attach files; everyone else shares a link instead.
+     * Admin kelas and super admin may attach files; mahasiswa share a link instead.
      */
     public function upload(User $user): bool
     {
-        return $user->isSuperAdmin();
+        return $user->isAdmin() || $user->isSuperAdmin();
     }
 }

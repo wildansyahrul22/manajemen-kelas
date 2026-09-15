@@ -3,23 +3,26 @@
 namespace App\Http\Controllers;
 
 use App\Models\Informasi;
+use App\Models\InformasiLampiran;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
- * Serves an informasi attachment from private storage, so only members of the kelas can open it.
+ * Serves one informasi attachment from private storage, so only members of the kelas can open it.
+ * The route uses scoped bindings: {lampiran} must belong to {informasi}.
  */
 class InformasiLampiranController extends Controller
 {
-    public function __invoke(Informasi $informasi): StreamedResponse
+    public function __invoke(Informasi $informasi, InformasiLampiran $lampiran): StreamedResponse
     {
         abort_unless(auth()->user()->can('view', $informasi), 403);
-        abort_unless($informasi->hasLampiran() && Storage::disk(Informasi::LAMPIRAN_DISK)->exists($informasi->lampiran_path), 404);
 
         $disk = Storage::disk(Informasi::LAMPIRAN_DISK);
 
-        return $informasi->lampiranIsImage()
-            ? $disk->response($informasi->lampiran_path, $informasi->lampiran_nama)
-            : $disk->download($informasi->lampiran_path, $informasi->lampiran_nama);
+        abort_unless($disk->exists($lampiran->path), 404);
+
+        return $lampiran->isImage()
+            ? $disk->response($lampiran->path, $lampiran->nama)
+            : $disk->download($lampiran->path, $lampiran->nama);
     }
 }
