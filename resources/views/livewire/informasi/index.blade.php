@@ -1,6 +1,7 @@
 <div>
     <x-ui.page-header title="Daftar Informasi" :description="'Pengumuman dan informasi untuk kelas ' . $this->kelas->nama . '.'">
         <x-slot:actions>
+            <x-ui.export-button />
             <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Bagikan Informasi</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>

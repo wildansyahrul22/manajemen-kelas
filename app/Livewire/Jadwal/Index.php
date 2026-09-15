@@ -9,10 +9,12 @@ use App\Livewire\Concerns\Notifies;
 use App\Livewire\Forms\JadwalKelasForm;
 use App\Models\JadwalKelas;
 use App\Models\MataKuliah;
+use App\Support\ExcelExport;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Jadwal Kelas')]
 class Index extends Component
@@ -45,6 +47,40 @@ class Index extends Component
     public function mataKuliahOptions(): Collection
     {
         return MataKuliah::query()->forKelasAktif($this->kelas)->orderBy('nama')->get(['id', 'nama']);
+    }
+
+    public function export(): StreamedResponse
+    {
+        $baris = JadwalKelas::query()
+            ->with('mataKuliah:id,nama,kode,dosen')
+            ->forKelasAktif($this->kelas)
+            ->urut()
+            ->get()
+            ->map(fn (JadwalKelas $jadwal, int $indeks) => [
+                $indeks + 1,
+                $jadwal->hari->label(),
+                $jadwal->jam_mulai,
+                $jadwal->jam_selesai,
+                $jadwal->mataKuliah->nama,
+                $jadwal->mataKuliah->kode,
+                $jadwal->mataKuliah->dosen,
+                $jadwal->ruangan,
+            ]);
+
+        return ExcelExport::buat('Jadwal Kelas')
+            ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Hari',
+                ['Jam Mulai', ExcelExport::TIPE_JAM],
+                ['Jam Selesai', ExcelExport::TIPE_JAM],
+                'Mata Kuliah',
+                'Kode',
+                'Dosen',
+                'Ruangan',
+            )
+            ->baris($baris)
+            ->unduh('jadwal-kelas '.$this->kelas->nama);
     }
 
     public function openCreate(?int $hari = null): void

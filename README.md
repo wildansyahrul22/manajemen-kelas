@@ -1,6 +1,6 @@
 # Manajemen Kelas
 
-Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, jadwal lab (praktikum), mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, pengaturan semester aktif, dan log aktivitas.
+Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, jadwal lab (praktikum), mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, pengaturan semester aktif, dan log aktivitas. Hampir semua daftar bisa diekspor ke Excel.
 
 Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL** (MAMP).
 
@@ -59,6 +59,8 @@ Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
 Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara semua role membagikan gambar/file. Hanya super admin yang bisa mengunggah **lampiran** langsung (maks. 5 MB; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran`).
 
 **Log Aktivitas** (`activity_log`) mencatat otomatis setiap buat/ubah/hapus pada informasi, kategori, kelompok (termasuk perubahan anggota/ketua), tugas, jadwal, jadwal lab, mata kuliah, user, dan kelas, plus masuk/keluar — lengkap dengan pelaku, kelas, perubahan field (sebelum → sesudah; password disamarkan), dan IP. Admin kelas hanya melihat log kelasnya; super admin melihat semua dan bisa memfilter per kelas.
+
+**Export Excel** tersedia di halaman Daftar Tugas, Mata Kuliah, Kelompok, Kategori Kelompok, Jadwal Kelas, Jadwal Lab, Daftar Informasi, Kategori Informasi, Users, dan Kelas. Isinya mengikuti filter yang sedang aktif (pencarian, mata kuliah, status, semester, kategori, role) tanpa dibatasi halaman; file berisi judul, kelas/semester, filter aktif, waktu ekspor, header tebal yang dibekukan, tanggal/jam sebagai nilai tanggal Excel, dan lebar kolom otomatis. Data majemuk tidak pernah digabung dalam satu sel: export Kelompok punya lembar "Anggota" (satu baris per mahasiswa, dengan NPM) dan lembar "Kelompok" (ringkasan per kelompok). Dibangun dengan `phpoffice/phpspreadsheet` lewat helper `App\Support\ExcelExport`.
 
 **Jadwal Lab** mencatat sesi praktikum per mata kuliah pada tanggal tertentu (tanggal, jam, ruangan, keterangan). Pilih mata kuliah pada form (atau lewat tombol "+" pada kartu mata kuliah yang sudah punya sesi), lalu isi beberapa sesi sekaligus — sesi baru otomatis mengikuti jam & ruangan sesi sebelumnya dengan tanggal seminggu berikutnya. Halaman hanya menampilkan mata kuliah yang sudah memiliki jadwal lab. Sesi hari ini ikut tampil di "Jadwal Hari Ini" pada dashboard.
 

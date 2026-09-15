@@ -6,11 +6,14 @@ use App\Livewire\Concerns\InteractsWithKelas;
 use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Models\Tugas;
+use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Daftar Tugas')]
 class Index extends Component
@@ -33,24 +36,73 @@ class Index extends Component
         $this->resetPage();
     }
 
-    #[Computed]
-    public function daftarTugas(): LengthAwarePaginator
+    /**
+     * Tugas of the active semester narrowed by the active filters, ordered like the list:
+     * upcoming deadlines first (nearest on top), then past ones (most recent on top).
+     */
+    protected function tugasQuery(): Builder
     {
         $now = now()->toDateTimeString();
 
         return Tugas::query()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline', 'created_at', 'updated_at'])
-            ->with('mataKuliah:id,nama,dosen')
             ->forKelasAktif($this->kelas)
             ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
             ->when($this->status === 'aktif', fn ($query) => $query->belumDeadline())
             ->when($this->status === 'lewat', fn ($query) => $query->lewatDeadline())
             ->search($this->search)
-            // Upcoming deadlines first (nearest on top), then past ones (most recent on top).
             ->orderByRaw('case when deadline >= ? then 0 else 1 end', [$now])
             ->orderByRaw('case when deadline >= ? then deadline else null end asc', [$now])
-            ->orderByDesc('deadline')
+            ->orderByDesc('deadline');
+    }
+
+    #[Computed]
+    public function daftarTugas(): LengthAwarePaginator
+    {
+        return $this->tugasQuery()
+            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline', 'created_at', 'updated_at'])
+            ->with('mataKuliah:id,nama,dosen')
             ->paginate($this->perPage());
+    }
+
+    public function export(): StreamedResponse
+    {
+        $statusLabel = ['aktif' => 'Aktif', 'segera' => 'Segera', 'lewat' => 'Lewat'];
+
+        $baris = $this->tugasQuery()
+            ->with(['mataKuliah:id,nama,dosen', 'creator:id,name'])
+            ->get()
+            ->map(fn (Tugas $tugas, int $indeks) => [
+                $indeks + 1,
+                $tugas->nama,
+                $tugas->mataKuliah->nama,
+                $tugas->mataKuliah->dosen,
+                $tugas->deadline,
+                $statusLabel[$tugas->status()],
+                $tugas->deskripsi,
+                $tugas->creator?->name,
+                $tugas->created_at,
+            ]);
+
+        return ExcelExport::buat('Daftar Tugas')
+            ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
+            ->filter([
+                'Pencarian' => $this->search,
+                'Mata kuliah' => $this->mataKuliahId !== '' ? $this->mataKuliahOptions->firstWhere('id', (int) $this->mataKuliahId)?->nama : null,
+                'Status' => ['aktif' => 'Belum deadline', 'lewat' => 'Lewat deadline'][$this->status] ?? null,
+            ])
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Nama Tugas',
+                'Mata Kuliah',
+                'Dosen',
+                ['Deadline', ExcelExport::TIPE_WAKTU],
+                'Status',
+                ['Deskripsi', ExcelExport::TIPE_PANJANG],
+                'Dibuat Oleh',
+                ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
+            )
+            ->baris($baris)
+            ->unduh('daftar-tugas '.$this->kelas->nama);
     }
 
     protected function afterSave(Tugas $tugas): void

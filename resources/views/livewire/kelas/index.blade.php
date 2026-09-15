@@ -1,6 +1,7 @@
 <div>
     <x-ui.page-header title="Kelas" description="Daftar kelas yang terdaftar pada sistem.">
         <x-slot:actions>
+            <x-ui.export-button />
             <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Kelas</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>

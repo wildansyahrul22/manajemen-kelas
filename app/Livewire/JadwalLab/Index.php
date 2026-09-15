@@ -8,11 +8,14 @@ use App\Livewire\Concerns\Notifies;
 use App\Livewire\Forms\JadwalLabForm;
 use App\Models\JadwalLab;
 use App\Models\MataKuliah;
+use App\Support\ExcelExport;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Praktikum sessions of the active semester, one card per mata kuliah that has any. Pick a mata
@@ -40,20 +43,76 @@ class Index extends Component
     #[Computed]
     public function mataKuliahDenganJadwal(): Collection
     {
-        $sesiSesuaiStatus = fn ($query) => $query
-            ->when($this->status === 'mendatang', fn ($query) => $query->mendatang())
-            ->when($this->status === 'lewat', fn ($query) => $query->lewat());
-
         return MataKuliah::query()
             ->select(['id', 'kode', 'nama', 'dosen'])
-            ->whereHas('jadwalLab', $sesiSesuaiStatus)
-            ->with(['jadwalLab' => fn ($query) => $sesiSesuaiStatus($query)
+            ->whereHas('jadwalLab', fn (Builder $query) => $this->sesuaiStatus($query))
+            ->with(['jadwalLab' => fn ($query) => $this->sesuaiStatus($query)
                 ->select(['id', 'mata_kuliah_id', 'tanggal', 'jam_mulai', 'jam_selesai', 'ruangan', 'keterangan'])
                 ->urut()])
             ->forKelasAktif($this->kelas)
             ->when($this->mataKuliahId !== '', fn ($query) => $query->whereKey((int) $this->mataKuliahId))
             ->orderBy('nama')
             ->get();
+    }
+
+    /**
+     * Apply the status filter (mendatang / lewat) to a JadwalLab query.
+     */
+    protected function sesuaiStatus(mixed $query): mixed
+    {
+        return $query
+            ->when($this->status === 'mendatang', fn ($query) => $query->mendatang())
+            ->when($this->status === 'lewat', fn ($query) => $query->lewat());
+    }
+
+    /**
+     * Same sessions as the page (active filters applied), but flat and in chronological order.
+     */
+    public function export(): StreamedResponse
+    {
+        $baris = $this->sesuaiStatus(JadwalLab::query())
+            ->with('mataKuliah:id,nama,dosen')
+            ->forKelasAktif($this->kelas)
+            ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
+            ->urut()
+            ->get()
+            ->map(fn (JadwalLab $jadwal, int $indeks) => [
+                $indeks + 1,
+                $jadwal->tanggal,
+                $jadwal->tanggal->isoFormat('dddd'),
+                $jadwal->jam_mulai,
+                $jadwal->jam_selesai,
+                $jadwal->mataKuliah->nama,
+                $jadwal->mataKuliah->dosen,
+                $jadwal->ruangan,
+                $jadwal->keterangan,
+                match (true) {
+                    $jadwal->isLewat() => 'Lewat',
+                    $jadwal->isHariIni() => 'Hari ini',
+                    default => 'Mendatang',
+                },
+            ]);
+
+        return ExcelExport::buat('Jadwal Lab')
+            ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
+            ->filter([
+                'Mata kuliah' => $this->mataKuliahId !== '' ? $this->mataKuliahOptions->firstWhere('id', (int) $this->mataKuliahId)?->nama : null,
+                'Status' => ['mendatang' => 'Mendatang', 'lewat' => 'Sudah lewat'][$this->status] ?? null,
+            ])
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                ['Tanggal', ExcelExport::TIPE_TANGGAL],
+                'Hari',
+                ['Jam Mulai', ExcelExport::TIPE_JAM],
+                ['Jam Selesai', ExcelExport::TIPE_JAM],
+                'Mata Kuliah',
+                'Dosen',
+                'Ruangan',
+                ['Keterangan', ExcelExport::TIPE_PANJANG],
+                'Status',
+            )
+            ->baris($baris)
+            ->unduh('jadwal-lab '.$this->kelas->nama);
     }
 
     #[Computed]

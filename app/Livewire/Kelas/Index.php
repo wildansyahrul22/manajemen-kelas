@@ -8,12 +8,15 @@ use App\Livewire\Concerns\WithTableControls;
 use App\Livewire\Forms\KelasForm;
 use App\Models\Kelas;
 use App\Models\Semester;
+use App\Support\ExcelExport;
 use App\Support\KelasContext;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Kelas')]
 class Index extends Component
@@ -33,16 +36,54 @@ class Index extends Component
         return Semester::query()->orderBy('nomor')->get(['id', 'nama']);
     }
 
-    #[Computed]
-    public function daftarKelas(): LengthAwarePaginator
+    protected function kelasQuery(): Builder
     {
         return Kelas::query()
             ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'created_at'])
             ->with('semesterAktif:id,nama')
             ->withCount(['mahasiswa', 'mataKuliah'])
             ->when(trim($this->search) !== '', fn ($query) => $query->where('nama', 'like', '%'.trim($this->search).'%'))
-            ->orderBy('nama')
-            ->paginate($this->perPage());
+            ->orderBy('nama');
+    }
+
+    #[Computed]
+    public function daftarKelas(): LengthAwarePaginator
+    {
+        return $this->kelasQuery()->paginate($this->perPage());
+    }
+
+    public function export(): StreamedResponse
+    {
+        $this->authorize('viewAny', Kelas::class);
+
+        $baris = $this->kelasQuery()
+            ->get()
+            ->map(fn (Kelas $kelas, int $indeks) => [
+                $indeks + 1,
+                $kelas->nama,
+                $kelas->prodi,
+                $kelas->angkatan,
+                $kelas->semesterAktif->nama,
+                $kelas->mahasiswa_count,
+                $kelas->mata_kuliah_count,
+                $kelas->created_at,
+            ]);
+
+        return ExcelExport::buat('Kelas')
+            ->subjudul('Semua kelas')
+            ->filter(['Pencarian' => $this->search])
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Nama Kelas',
+                'Prodi',
+                ['Angkatan', ExcelExport::TIPE_ANGKA],
+                'Semester Aktif',
+                ['Jumlah Mahasiswa', ExcelExport::TIPE_ANGKA],
+                ['Jumlah Mata Kuliah', ExcelExport::TIPE_ANGKA],
+                ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
+            )
+            ->baris($baris)
+            ->unduh('kelas');
     }
 
     public function openCreate(): void

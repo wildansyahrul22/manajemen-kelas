@@ -3,13 +3,14 @@
 @endphp
 <div>
     <x-ui.page-header title="Daftar Tugas" :description="'Tugas kelas ' . $this->kelas->nama . ' pada ' . $this->kelas->semesterAktif->nama . '.'">
-        @if ($this->canManage)
-            <x-slot:actions>
+        <x-slot:actions>
+            <x-ui.export-button />
+            @if ($this->canManage)
                 <x-ui.button wire:click="openCreate" opens="showForm">
                     <x-heroicon-m-plus class="size-4" /> Tambah Tugas
                 </x-ui.button>
-            </x-slot:actions>
-        @endif
+            @endif
+        </x-slot:actions>
     </x-ui.page-header>
 
     <x-ui.card :padding="false">

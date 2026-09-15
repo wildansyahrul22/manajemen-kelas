@@ -1,6 +1,7 @@
 <div>
     <x-ui.page-header title="Kategori Kelompok" :description="'Pengelompokan kelompok per mata kuliah pada '.$this->kelas->semesterAktif->nama.'. Satu mahasiswa hanya bisa berada di satu kelompok per kategori.'">
         <x-slot:actions>
+            <x-ui.export-button />
             <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Kategori</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>

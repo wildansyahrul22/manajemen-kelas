@@ -4,6 +4,7 @@
         ? 'Kelola akun mahasiswa, admin kelas, dan super admin.'
         : 'Kelola akun mahasiswa dan admin kelas ' . $this->kelas->nama . '.'">
         <x-slot:actions>
+            <x-ui.export-button />
             <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah User</x-ui.button>
         </x-slot:actions>
     </x-ui.page-header>

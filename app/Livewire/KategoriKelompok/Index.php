@@ -9,12 +9,15 @@ use App\Livewire\Concerns\WithTableControls;
 use App\Livewire\Forms\KategoriKelompokForm;
 use App\Models\KategoriKelompok;
 use App\Models\MataKuliah;
+use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Kategori Kelompok')]
 class Index extends Component
@@ -31,8 +34,10 @@ class Index extends Component
         $this->resetPage();
     }
 
-    #[Computed]
-    public function daftarKategori(): LengthAwarePaginator
+    /**
+     * Kategori of the active semester narrowed by the active filters, ordered like the list.
+     */
+    protected function kategoriQuery(): Builder
     {
         return KategoriKelompok::query()
             ->select(['id', 'mata_kuliah_id', 'nama', 'created_by', 'created_at'])
@@ -42,8 +47,45 @@ class Index extends Component
             ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
             ->search($this->search)
             ->orderBy('mata_kuliah_id')
-            ->orderBy('nama')
-            ->paginate($this->perPage());
+            ->orderBy('nama');
+    }
+
+    #[Computed]
+    public function daftarKategori(): LengthAwarePaginator
+    {
+        return $this->kategoriQuery()->paginate($this->perPage());
+    }
+
+    public function export(): StreamedResponse
+    {
+        $baris = $this->kategoriQuery()
+            ->with('creator:id,name')
+            ->get()
+            ->map(fn (KategoriKelompok $kategori, int $indeks) => [
+                $indeks + 1,
+                $kategori->mataKuliah->nama,
+                $kategori->nama,
+                $kategori->kelompok_count,
+                $kategori->creator?->name,
+                $kategori->created_at,
+            ]);
+
+        return ExcelExport::buat('Kategori Kelompok')
+            ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
+            ->filter([
+                'Pencarian' => $this->search,
+                'Mata kuliah' => $this->mataKuliahId !== '' ? $this->mataKuliahOptions->firstWhere('id', (int) $this->mataKuliahId)?->nama : null,
+            ])
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Mata Kuliah',
+                'Nama Kategori',
+                ['Jumlah Kelompok', ExcelExport::TIPE_ANGKA],
+                'Dibuat Oleh',
+                ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
+            )
+            ->baris($baris)
+            ->unduh('kategori-kelompok '.$this->kelas->nama);
     }
 
     #[Computed]

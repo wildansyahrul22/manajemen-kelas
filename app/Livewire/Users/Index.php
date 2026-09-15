@@ -10,12 +10,15 @@ use App\Livewire\Concerns\WithTableControls;
 use App\Livewire\Forms\UserForm;
 use App\Models\Kelas;
 use App\Models\User;
+use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Users')]
 class Index extends Component
@@ -60,11 +63,18 @@ class Index extends Component
         return Kelas::query()->orderBy('nama')->get(['id', 'nama']);
     }
 
-    #[Computed]
-    public function daftarUsers(): LengthAwarePaginator
+    /**
+     * Super admin filtering on the super admin role sees every super admin (they have no kelas);
+     * otherwise the list is the current kelas narrowed by role.
+     */
+    protected function showSuperAdmins(): bool
     {
-        $user = auth()->user();
-        $showSuperAdmins = $user->isSuperAdmin() && $this->role === Role::SuperAdmin->value;
+        return auth()->user()->isSuperAdmin() && $this->role === Role::SuperAdmin->value;
+    }
+
+    protected function usersQuery(): Builder
+    {
+        $showSuperAdmins = $this->showSuperAdmins();
 
         return User::query()
             ->select(['id', 'npm', 'name', 'no_hp', 'role', 'kelas_id', 'created_at'])
@@ -75,8 +85,48 @@ class Index extends Component
                     ->when($this->role !== '', fn ($query) => $query->where('role', $this->role));
             })
             ->search($this->search)
-            ->orderBy('name')
-            ->paginate($this->perPage());
+            ->orderBy('name');
+    }
+
+    #[Computed]
+    public function daftarUsers(): LengthAwarePaginator
+    {
+        return $this->usersQuery()->paginate($this->perPage());
+    }
+
+    public function export(): StreamedResponse
+    {
+        $this->authorize('viewAny', User::class);
+
+        $baris = $this->usersQuery()
+            ->get()
+            ->map(fn (User $user, int $indeks) => [
+                $indeks + 1,
+                $user->npm,
+                $user->name,
+                $user->noHpFormatted(),
+                $user->role->label(),
+                $user->kelas?->nama,
+                $user->created_at,
+            ]);
+
+        return ExcelExport::buat('Users')
+            ->subjudul($this->showSuperAdmins() ? 'Semua super admin' : 'Kelas '.$this->kelas->nama)
+            ->filter([
+                'Pencarian' => $this->search,
+                'Role' => Role::tryFrom($this->role)?->label(),
+            ])
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'NPM',
+                'Nama',
+                'No. HP',
+                'Role',
+                'Kelas',
+                ['Terdaftar Pada', ExcelExport::TIPE_WAKTU],
+            )
+            ->baris($baris)
+            ->unduh('users '.($this->showSuperAdmins() ? 'super-admin' : $this->kelas->nama));
     }
 
     public function openCreate(): void

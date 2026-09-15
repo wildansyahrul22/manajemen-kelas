@@ -7,12 +7,16 @@ use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Models\KategoriKelompok;
 use App\Models\Kelompok;
+use App\Models\User;
+use App\Support\ExcelExport;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
 use Livewire\Attributes\Url;
 use Livewire\Component;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 #[Title('Kelompok')]
 class Index extends Component
@@ -56,24 +60,99 @@ class Index extends Component
             ]);
     }
 
-    #[Computed]
-    public function daftarKelompok(): LengthAwarePaginator
+    /**
+     * Kelompok of the active semester narrowed by the active filters, ordered like the list.
+     */
+    protected function kelompokQuery(): Builder
     {
         return Kelompok::query()
             ->select(['id', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'created_by'])
-            ->with([
-                'mataKuliah:id,kelas_id,nama',
-                'kategori:id,nama',
-                'anggota' => fn ($query) => $query->select(['users.id', 'users.name']),
-            ])
+            ->with(['mataKuliah:id,kelas_id,nama', 'kategori:id,nama'])
             ->forKelasAktif($this->kelas)
             ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
             ->when($this->kategoriId !== '', fn ($query) => $query->where('kategori_kelompok_id', (int) $this->kategoriId))
             ->search($this->search)
             ->orderBy('mata_kuliah_id')
             ->orderBy('kategori_kelompok_id')
-            ->orderBy('nama')
+            ->orderBy('nama');
+    }
+
+    #[Computed]
+    public function daftarKelompok(): LengthAwarePaginator
+    {
+        return $this->kelompokQuery()
+            ->with(['anggota' => fn ($query) => $query->select(['users.id', 'users.name'])])
             ->paginate($this->perPage());
+    }
+
+    /**
+     * Two lembar: one row per anggota (NPM + nama + peran) and one row per kelompok
+     * (ketua and member count). Names are never joined into a single cell.
+     */
+    public function export(): StreamedResponse
+    {
+        $daftar = $this->kelompokQuery()
+            ->with(['anggota' => fn ($query) => $query->select(['users.id', 'users.npm', 'users.name'])])
+            ->get();
+
+        $ringkasan = $daftar->map(function (Kelompok $kelompok, int $indeks) {
+            $ketua = $kelompok->anggota->first(fn (User $anggota) => (bool) $anggota->pivot->is_ketua);
+
+            return [
+                $indeks + 1,
+                $kelompok->mataKuliah->nama,
+                $kelompok->kategori->nama,
+                $kelompok->nama,
+                $ketua?->npm,
+                $ketua?->name,
+                $kelompok->anggota->count(),
+                $kelompok->deskripsi,
+            ];
+        });
+
+        $anggota = $daftar
+            ->flatMap(fn (Kelompok $kelompok) => $kelompok->anggota->map(fn (User $anggota) => [
+                $kelompok->mataKuliah->nama,
+                $kelompok->kategori->nama,
+                $kelompok->nama,
+                $anggota->npm,
+                $anggota->name,
+                $anggota->pivot->is_ketua ? 'Ketua' : 'Anggota',
+            ]))
+            ->values()
+            ->map(fn (array $baris, int $indeks) => [$indeks + 1, ...$baris]);
+
+        return ExcelExport::buat('Kelompok')
+            ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
+            ->filter([
+                'Pencarian' => $this->search,
+                'Mata kuliah' => $this->mataKuliahId !== '' ? $this->mataKuliahOptions->firstWhere('id', (int) $this->mataKuliahId)?->nama : null,
+                'Kategori' => $this->kategoriId !== '' ? $this->kategoriFilterOptions->get((int) $this->kategoriId) : null,
+            ])
+            ->lembar('Anggota')
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Mata Kuliah',
+                'Kategori',
+                'Kelompok',
+                'NPM',
+                'Nama',
+                'Peran',
+            )
+            ->baris($anggota)
+            ->lembar('Kelompok')
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Mata Kuliah',
+                'Kategori',
+                'Nama Kelompok',
+                'NPM Ketua',
+                'Nama Ketua',
+                ['Jumlah Anggota', ExcelExport::TIPE_ANGKA],
+                ['Deskripsi', ExcelExport::TIPE_PANJANG],
+            )
+            ->baris($ringkasan)
+            ->unduh('kelompok '.$this->kelas->nama);
     }
 
     protected function afterSave(Kelompok $kelompok): void
