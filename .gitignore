@@ -13,10 +13,11 @@
 /.vscode
 /.zed
 /auth.json
+/DEPLOY.md
 /node_modules
+/public/.well-known
 /public/fonts-manifest.dev.json
 /public/hot
-/public/.well-known
 /public/storage
 /storage/*.key
 /storage/pail
