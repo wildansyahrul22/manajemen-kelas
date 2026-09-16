@@ -51,7 +51,9 @@ class LandingPageTest extends TestCase
         $this->actingAs($this->mahasiswa($this->kelas()))
             ->get(route('landing'))
             ->assertOk()
-            ->assertSee('Buka dashboard')
+            ->assertSee('<a href="'.route('dashboard').'"', escape: false)
+            ->assertSee('Dashboard</a>', escape: false)
+            ->assertDontSee('Buka dashboard')
             ->assertDontSee('Coba demo sekarang');
     }
 
@@ -65,8 +67,8 @@ class LandingPageTest extends TestCase
             ->get(route('landing'))
             ->assertOk()
             ->assertSee('Coba demo sekarang')
-            ->assertSee('Masuk')
-            ->assertDontSee('Buka dashboard');
+            ->assertSee('Masuk</a>', escape: false)
+            ->assertDontSee(route('dashboard'));
     }
 
     public function test_the_demo_call_to_action_only_shows_when_a_demo_account_is_configured(): void

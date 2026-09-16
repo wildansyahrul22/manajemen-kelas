@@ -113,7 +113,7 @@
 <body class="h-full bg-[var(--kertas)] font-sans text-[var(--tinta)] antialiased">
 
     <header class="border-b border-[var(--garis)]">
-        <div class="mx-auto flex w-full max-w-5xl items-center gap-4 px-5 py-4 sm:px-8">
+        <div class="mx-auto flex w-full max-w-5xl items-center gap-3 px-5 py-4 sm:gap-7 sm:px-8">
             <a href="#atas" class="flex items-center gap-2.5">
                 <x-ui.logo size="size-8" />
                 <span class="text-[15px] font-bold tracking-tight">Kelas KampusKu</span>
@@ -122,18 +122,24 @@
             <nav class="ml-auto hidden items-center gap-7 text-sm text-[var(--redup)] sm:flex">
                 <a href="#isinya" class="transition hover:text-[var(--tinta)]">Isi aplikasinya</a>
                 <a href="#harga" class="transition hover:text-[var(--tinta)]">Harga</a>
-                @if ($tamu)
-                    <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk</a>
-                @else
-                    <a href="{{ route('dashboard') }}" class="transition hover:text-[var(--tinta)]">Buka dashboard</a>
-                @endif
             </nav>
 
-            <a href="{{ $wa }}" target="_blank" rel="noopener"
-                class="ml-auto inline-flex items-center gap-2 rounded-full bg-[var(--tinta)] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#0f1a2e] sm:ml-0">
-                <x-ui.whatsapp-icon class="size-4" />
-                Tanya dulu
-            </a>
+            {{-- Kept out of the nav so the way in never hides behind the mobile breakpoint. --}}
+            <div class="ml-auto flex items-center gap-3 sm:ml-0 sm:gap-4">
+                @if ($tamu)
+                    <a href="{{ route('login') }}"
+                        class="text-sm font-semibold transition hover:text-[var(--kunyit-tua)]">Masuk</a>
+                @else
+                    <a href="{{ route('dashboard') }}"
+                        class="text-sm font-semibold transition hover:text-[var(--kunyit-tua)]">Dashboard</a>
+                @endif
+
+                <a href="{{ $wa }}" target="_blank" rel="noopener" aria-label="Tanya dulu lewat WhatsApp"
+                    class="inline-flex items-center gap-2 rounded-full bg-[var(--tinta)] p-2 text-sm font-semibold text-white transition hover:bg-[#0f1a2e] sm:px-4">
+                    <x-ui.whatsapp-icon class="size-4" />
+                    <span class="hidden sm:inline">Tanya dulu</span>
+                </a>
+            </div>
         </div>
     </header>
 
