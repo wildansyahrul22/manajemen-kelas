@@ -17,35 +17,44 @@ use App\Models\User;
 use Illuminate\Database\Seeder;
 
 /**
- * Sample data so the app is usable straight after `migrate --seed`.
- * Default password for every account: "password".
+ * Sample data so the app is usable straight after `migrate --seed`, and the kelas the public demo
+ * (`DEMO_NPM`) points at. Default password for every account: "password".
  */
 class DemoSeeder extends Seeder
 {
+    public const string KELAS_DEMO = 'TI-3A';
+
+    public const string KELAS_LAIN = 'TI-1B';
+
+    /** Admin kelas of the demo kelas: the account to put in `DEMO_NPM`. */
+    public const string NPM_DEMO = '24010001';
+
     public function run(): void
     {
-        if (Kelas::query()->exists()) {
+        // Only skip when this seeder's own kelas are already there, so a demo can be added next to
+        // kelas that are really in use.
+        if (Kelas::query()->whereIn('nama', [self::KELAS_DEMO, self::KELAS_LAIN])->exists()) {
             return;
         }
 
         $semester = fn (int $nomor) => Semester::query()->where('nomor', $nomor)->value('id');
 
         $kelasA = Kelas::query()->create([
-            'nama' => 'TI-3A',
+            'nama' => self::KELAS_DEMO,
             'prodi' => 'Teknik Informatika',
             'angkatan' => 2024,
             'semester_aktif_id' => $semester(3),
         ]);
 
         $kelasB = Kelas::query()->create([
-            'nama' => 'TI-1B',
+            'nama' => self::KELAS_LAIN,
             'prodi' => 'Teknik Informatika',
             'angkatan' => 2025,
             'semester_aktif_id' => $semester(1),
         ]);
 
         $admin = User::query()->create([
-            'npm' => '24010001',
+            'npm' => self::NPM_DEMO,
             'name' => 'Rizky Pratama',
             'no_hp' => '6281234567890',
             'password' => 'password',

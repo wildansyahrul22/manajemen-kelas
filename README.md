@@ -40,10 +40,10 @@ Segera ganti password lewat menu **Profil Saya** setelah login pertama. Sesi log
 Data contoh (2 kelas, mahasiswa, mata kuliah, jadwal, jadwal lab, tugas, informasi, kelompok) bersifat opsional:
 
 ```sh
-php artisan db:seed --class=DemoSeeder   # hanya berjalan jika belum ada kelas
+php artisan db:seed --class=DemoSeeder   # dilewati jika kelas contohnya sudah ada
 ```
 
-Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` mahasiswa TI-3A, `25010001` admin TI-1B.
+Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` mahasiswa TI-3A, `25010001` admin TI-1B. Seeder ini juga yang menyiapkan kelas untuk tombol **Coba demo** di landing page (lihat bagian Demo).
 
 ## Hak akses
 
@@ -82,15 +82,21 @@ Selama kategori masih **terbuka**, seluruh anggota kelas boleh menyusun kelompok
 
 ## Demo sebelum berlangganan
 
-Tombol **Coba demo** di landing page membawa pengunjung ke `/demo`, yang langsung memasukkan mereka sebagai satu akun demo bersama — tanpa daftar. Akun itu ditentukan lewat `DEMO_NPM` di `.env`:
+Tombol **Coba demo** di landing page membawa pengunjung ke `/demo`, yang langsung memasukkan mereka sebagai satu akun demo bersama — tanpa daftar. Menyalakannya perlu dua langkah:
 
-```dotenv
-DEMO_NPM=24010001   # NPM akun demo; kosongkan untuk mematikan demo
+```sh
+php artisan db:seed --class=DemoSeeder   # membuat kelas contoh TI-3A + TI-1B beserta akunnya
 ```
 
-Selama `DEMO_NPM` kosong, `/demo` menjawab 404 dan tombolnya tidak muncul — jadi tidak ada jalan masuk tanpa password kecuali kamu sendiri yang membukanya. Hanya NPM yang persis tertulis di situ yang bisa dimasuki; akun lain tidak terpengaruh. Saat akun demo sedang dipakai, aplikasi menampilkan pita **Mode demo** di atas setiap halaman beserta tautan ke harga langganan.
+```dotenv
+DEMO_NPM=24010001   # NPM admin kelas TI-3A; kosongkan untuk mematikan demo
+```
 
-Akun demo sebaiknya berupa admin kelas pada kelas contoh (mis. hasil `DemoSeeder`), bukan super admin, dan datanya dipakai bersama semua pengunjung. Kalau ingin bersih lagi, kosongkan kelas contohnya lalu jalankan ulang `php artisan db:seed --class=DemoSeeder`.
+Lalu `php artisan config:clear`. Seeder-nya aman dijalankan pada database yang sudah berisi kelas asli — kelas contohnya ditambahkan di samping, dan menjalankannya lagi tidak membuat duplikat.
+
+Selama `DEMO_NPM` kosong (nilai bawaannya), `/demo` menjawab 404 dan tombolnya tidak muncul — jadi tidak ada jalan masuk tanpa password kecuali kamu sendiri yang membukanya. Hanya NPM yang persis tertulis di situ yang bisa dimasuki; akun lain tidak terpengaruh. Saat akun demo sedang dipakai, aplikasi menampilkan pita **Mode demo** di atas setiap halaman beserta tautan ke harga langganan.
+
+Tombolnya hanya tampil untuk pengunjung yang belum masuk; yang sudah login melihat *Buka dashboard*. Akun demo sebaiknya admin kelas pada kelas contoh, bukan super admin, dan datanya dipakai bersama semua pengunjung. Kalau ingin bersih lagi, hapus kelas contohnya lalu jalankan ulang seeder-nya.
 
 ## Masa aktif & paket kelas
 

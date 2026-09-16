@@ -3,6 +3,8 @@
 namespace Tests\Feature;
 
 use App\Models\Kelas;
+use App\Models\User;
+use Database\Seeders\DemoSeeder;
 use Tests\TestCase;
 
 class DemoLoginTest extends TestCase
@@ -72,6 +74,30 @@ class DemoLoginTest extends TestCase
         $this->actingAs($user)->get(route('demo'))->assertRedirect(route('dashboard'));
 
         $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_the_demo_kelas_can_be_seeded_next_to_a_kelas_that_is_really_in_use(): void
+    {
+        $this->kelas(attributes: ['nama' => 'TI-R8']);
+
+        $this->seed(DemoSeeder::class);
+
+        $demo = User::query()->where('npm', DemoSeeder::NPM_DEMO)->firstOrFail();
+        $this->assertSame(DemoSeeder::KELAS_DEMO, $demo->kelas->nama);
+
+        // Seeding again adds nothing, so it is safe to rerun on a live database.
+        $jumlahKelas = Kelas::query()->count();
+        $jumlahUser = User::query()->count();
+
+        $this->seed(DemoSeeder::class);
+
+        $this->assertSame($jumlahKelas, Kelas::query()->count());
+        $this->assertSame($jumlahUser, User::query()->count());
+
+        config(['demo.npm' => DemoSeeder::NPM_DEMO]);
+
+        $this->get(route('demo'))->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($demo);
     }
 
     public function test_the_demo_banner_only_shows_for_the_demo_account(): void

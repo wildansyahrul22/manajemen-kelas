@@ -22,6 +22,8 @@ class LandingPageTest extends TestCase
 
     public function test_a_signed_in_user_still_gets_the_landing_page_with_a_link_to_their_dashboard(): void
     {
+        config(['demo.npm' => '24010001']);
+
         $this->actingAs($this->mahasiswa($this->kelas()))
             ->get(route('landing'))
             ->assertOk()
@@ -31,6 +33,8 @@ class LandingPageTest extends TestCase
 
     public function test_the_demo_call_to_action_only_shows_when_a_demo_account_is_configured(): void
     {
+        config(['demo.npm' => null]);
+
         $this->get(route('landing'))->assertDontSee('Coba demo sekarang');
 
         config(['demo.npm' => '24010001']);
