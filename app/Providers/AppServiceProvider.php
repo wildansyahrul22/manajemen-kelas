@@ -3,10 +3,12 @@
 namespace App\Providers;
 
 use App\Support\KelasContext;
+use App\Support\ModeDemo;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -24,6 +26,9 @@ class AppServiceProvider extends ServiceProvider
         Model::shouldBeStrict(! $this->app->isProduction());
 
         Carbon::setLocale(config('app.locale'));
+
+        // The demo account may open every form, but nothing it submits is ever written.
+        Event::listen(['eloquent.saving: *', 'eloquent.deleting: *'], ModeDemo::tolakPerubahanModel(...));
 
         // Laravel's default remember-me cookie lasts 400 days; cap it at 30.
         Auth::resolved(function ($auth) {

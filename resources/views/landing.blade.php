@@ -2,6 +2,8 @@
     $wa = 'https://wa.me/62812790106175?text='.rawurlencode('Halo, saya mau tanya soal langganan Kelas KampusKu untuk kelas saya.');
     $email = 'admin@kelaskampusku.com';
     $adaDemo = filled(config('demo.npm'));
+    // Someone looking around as the demo account is still a prospect: offer them the login and the demo, not "their" dashboard.
+    $tamu = auth()->guest() || auth()->user()->isDemo();
 
     $menu = [
         'Akademik' => [
@@ -19,7 +21,7 @@
             ['heroicon-o-tag', 'Kategori Informasi', 'Warna sendiri untuk tiap jenis pengumuman.'],
         ],
         'Pengelolaan' => [
-            ['heroicon-o-users', 'Data Mahasiswa', 'Tiga peran akun: mahasiswa, admin kelas, dan super admin.'],
+            ['heroicon-o-users', 'Data Mahasiswa', 'Dua peran akun: mahasiswa dan admin kelas.'],
             ['heroicon-o-adjustments-horizontal', 'Semester Aktif', 'Ganti semester tanpa kehilangan data semester lalu.'],
             ['heroicon-o-arrow-down-tray', 'Export Excel', 'Setiap daftar bisa diunduh rapi untuk laporan.'],
             ['heroicon-o-clock', 'Log Aktivitas', 'Catatan siapa mengubah apa, kapan.'],
@@ -113,11 +115,11 @@
         <nav class="ml-auto hidden items-center gap-7 text-sm text-[var(--redup)] sm:flex">
             <a href="#isinya" class="transition hover:text-[var(--tinta)]">Isi aplikasinya</a>
             <a href="#harga" class="transition hover:text-[var(--tinta)]">Harga</a>
-            @auth
-                <a href="{{ route('dashboard') }}" class="transition hover:text-[var(--tinta)]">Buka dashboard</a>
-            @else
+            @if ($tamu)
                 <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk</a>
-            @endauth
+            @else
+                <a href="{{ route('dashboard') }}" class="transition hover:text-[var(--tinta)]">Buka dashboard</a>
+            @endif
         </nav>
 
         <a href="{{ $wa }}" target="_blank" rel="noopener"
@@ -139,18 +141,16 @@
                 WhatsApp. Semuanya rapi di satu aplikasi yang dipakai bareng sekelas.
             </p>
 
-            @guest
-                @if ($adaDemo)
-                    <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
-                        <a href="{{ route('demo') }}"
-                           class="inline-flex items-center gap-2 rounded-xl bg-[var(--tinta)] px-6 py-3.5 font-semibold text-white transition hover:bg-[#0f1a2e]">
-                            <x-heroicon-m-play class="size-5" />
-                            Coba demo sekarang
-                        </a>
-                        <p class="text-sm text-[var(--redup)]">Tanpa daftar, langsung masuk ke kelas contoh.</p>
-                    </div>
-                @endif
-            @endguest
+            @if ($tamu && $adaDemo)
+                <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+                    <a href="{{ route('demo') }}"
+                       class="inline-flex items-center gap-2 rounded-xl bg-[var(--tinta)] px-6 py-3.5 font-semibold text-white transition hover:bg-[#0f1a2e]">
+                        <x-heroicon-m-play class="size-5" />
+                        Coba demo sekarang
+                    </a>
+                    <p class="text-sm text-[var(--redup)]">Tanpa daftar, langsung masuk ke kelas contoh.</p>
+                </div>
+            @endif
         </div>
 
         <div class="mt-12 border-t border-[var(--garis)] pt-10">
@@ -243,8 +243,9 @@
 
             <p class="mt-12 max-w-2xl border-l-2 border-[var(--kunyit)] pl-5 text-[15px] leading-relaxed text-[var(--redup)]">
                 Mahasiswa hanya bisa melihat dan berbagi. Admin kelas yang mengatur jadwal, tugas, dan pengumuman.
-                Kategori kelompok bisa dikunci kalau pembagiannya sudah final, jadi tidak ada lagi yang mengubah
-                diam-diam.
+                Mengunggah file dan gambar juga hanya bisa dilakukan admin kelas, supaya tidak ada yang iseng
+                atau mengirim spam. Kategori kelompok bisa dikunci kalau pembagiannya sudah final, jadi tidak ada
+                lagi yang mengubah diam-diam.
             </p>
         </div>
     </section>
@@ -254,7 +255,7 @@
             <h2 class="max-w-xl text-3xl font-bold tracking-[-0.03em] sm:text-4xl">Harga per kelas, bukan per mahasiswa</h2>
             <p class="mt-4 max-w-xl text-white/65">
                 Satu kali bayar untuk satu semester penuh — enam bulan. Tidak ada biaya per akun, berapa pun
-                jumlah mahasiswanya.@guest @if ($adaDemo) Belum yakin? <a href="{{ route('demo') }}" class="font-semibold text-white underline underline-offset-4 hover:no-underline">Coba demonya dulu</a>. @endif @endguest
+                jumlah mahasiswanya.@if ($tamu && $adaDemo) Belum yakin? <a href="{{ route('demo') }}" class="font-semibold text-white underline underline-offset-4 hover:no-underline">Coba demonya dulu</a>. @endif
             </p>
 
             <div class="mt-12 grid gap-6 lg:grid-cols-2">

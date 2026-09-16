@@ -96,7 +96,9 @@ Lalu `php artisan config:clear`. Seeder-nya aman dijalankan pada database yang s
 
 Selama `DEMO_NPM` kosong (nilai bawaannya), `/demo` menjawab 404 dan tombolnya tidak muncul — jadi tidak ada jalan masuk tanpa password kecuali kamu sendiri yang membukanya. Hanya NPM yang persis tertulis di situ yang bisa dimasuki; akun lain tidak terpengaruh. Saat akun demo sedang dipakai, aplikasi menampilkan pita **Mode demo** di atas setiap halaman beserta tautan ke harga langganan.
 
-Tombolnya hanya tampil untuk pengunjung yang belum masuk; yang sudah login melihat *Buka dashboard*. Akun demo sebaiknya admin kelas pada kelas contoh, bukan super admin, dan datanya dipakai bersama semua pengunjung. Kalau ingin bersih lagi, hapus kelas contohnya lalu jalankan ulang seeder-nya.
+Tombolnya hanya tampil untuk pengunjung yang belum masuk; yang sudah login melihat *Buka dashboard*. Sesi demo tidak dihitung sebagai login sungguhan: selama masih sebagai akun demo, landing page tetap menawarkan *Masuk* dan *Coba demo*, membuka `/login` otomatis mengakhiri sesi demonya (middleware `demo.keluar`) lalu menampilkan form, dan pita **Mode demo** punya tombol *Keluar dari demo*. Akun demo sebaiknya admin kelas pada kelas contoh, bukan super admin.
+
+Akun demo **hanya-baca**: pengunjung bisa membuka setiap form dan dialog (tambah, edit, hapus, ganti password, unggah lampiran) dan validasinya berjalan seperti biasa, tetapi begitu disimpan aplikasi menolak menulis apa pun ke database dan menampilkan toast *Mode demo: perubahan tidak disimpan*. Penjagaannya ada di `App\Support\ModeDemo` (listener `saving`/`deleting` untuk semua model, didaftarkan di `AppServiceProvider`) — hanya rotasi `remember_token` dan catatan masuk/keluar di log aktivitas yang dibiarkan lewat agar akun demo tetap bisa login dan logout. Di Livewire, `ModeDemoException` ditangkap oleh hook pada trait `Notifies` (toast) dan `ManagesModalForm` (menutup dialog). Jadi data kelas contoh tidak akan berubah oleh pengunjung; kalau kamu sendiri yang mengubahnya dan ingin bersih lagi, hapus kelas contohnya lalu jalankan ulang seeder-nya.
 
 ## Masa aktif & paket kelas
 

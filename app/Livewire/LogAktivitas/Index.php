@@ -10,6 +10,7 @@ use App\Livewire\Concerns\WithTableControls;
 use App\Models\ActivityLog;
 use App\Models\Kelas;
 use App\Models\User;
+use App\Support\ModeDemo;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
@@ -149,6 +150,9 @@ class Index extends Component
     public function deleteFiltered(): void
     {
         $this->authorize('deleteAny', ActivityLog::class);
+
+        // A query-builder delete fires no model events, so the demo guard is applied by hand.
+        ModeDemo::tolakPerubahan();
 
         $ringkasan = $this->ringkasanFilter;
         $jumlah = $this->logQuery()->delete();

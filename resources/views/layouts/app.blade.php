@@ -48,8 +48,14 @@
             @if ($user->isDemo())
                 <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 sm:px-6 lg:px-8">
                     <span class="inline-flex items-center gap-2 font-semibold"><x-heroicon-m-beaker class="size-4" /> Mode demo</span>
-                    <span class="text-amber-800">Datanya dipakai bersama pengunjung lain — silakan coba apa saja.</span>
-                    <a href="{{ route('landing') }}#harga" class="ml-auto font-semibold underline underline-offset-2 hover:no-underline">Lihat harga langganan</a>
+                    <span class="text-amber-800">Silakan buka dan isi form apa saja — perubahannya tidak akan disimpan.</span>
+                    <span class="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1">
+                        <a href="{{ route('landing') }}#harga" class="font-semibold underline underline-offset-2 hover:no-underline">Lihat harga langganan</a>
+                        <form method="POST" action="{{ route('logout') }}">
+                            @csrf
+                            <button type="submit" class="font-semibold underline underline-offset-2 hover:no-underline">Keluar dari demo</button>
+                        </form>
+                    </span>
                 </div>
             @endif
 

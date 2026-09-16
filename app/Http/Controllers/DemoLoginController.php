@@ -35,6 +35,6 @@ class DemoLoginController extends Controller
 
         return redirect()
             ->route('dashboard')
-            ->with('notify', ['type' => 'warning', 'message' => 'Anda masuk sebagai akun demo. Datanya dipakai bersama pengunjung lain, jadi silakan coba apa saja.']);
+            ->with('notify', ['type' => 'warning', 'message' => 'Anda masuk sebagai akun demo. Silakan lihat-lihat dan coba semua formnya — perubahan tidak akan disimpan.']);
     }
 }

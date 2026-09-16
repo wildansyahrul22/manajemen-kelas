@@ -27,7 +27,8 @@ Route::view('/', 'landing')->name('landing');
 // Try the app before subscribing: signs the visitor in as the shared demo account.
 Route::get('/demo', DemoLoginController::class)->name('demo');
 
-Route::middleware('guest')->group(function () {
+// A demo session ends here, so "Masuk" always leads to the form rather than back into the demo.
+Route::middleware(['demo.keluar', 'guest'])->group(function () {
     Route::livewire('/login', Login::class)->name('login');
 });
 

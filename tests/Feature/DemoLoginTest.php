@@ -76,6 +76,45 @@ class DemoLoginTest extends TestCase
         $this->assertAuthenticatedAs($user);
     }
 
+    public function test_the_login_page_ends_a_demo_session_so_a_visitor_can_sign_in_with_their_own_account(): void
+    {
+        $kelas = $this->kelas();
+        $this->admin($kelas, ['npm' => '24010001']);
+        $user = $this->mahasiswa($kelas);
+
+        config(['demo.npm' => '24010001']);
+
+        $this->get(route('demo'))->assertRedirect(route('dashboard'));
+
+        $this->get(route('login'))
+            ->assertOk()
+            ->assertSee('Masuk');
+
+        $this->assertGuest();
+        $this->get(route('dashboard'))->assertRedirect(route('login'));
+
+        // A real session is untouched: the login page still sends signed-in users to their dashboard.
+        $this->actingAs($user)->get(route('login'))->assertRedirect(route('dashboard'));
+        $this->assertAuthenticatedAs($user);
+    }
+
+    public function test_the_demo_banner_offers_a_way_out_of_the_demo(): void
+    {
+        $this->admin($this->kelas(), ['npm' => '24010001']);
+
+        config(['demo.npm' => '24010001']);
+
+        $this->get(route('demo'));
+
+        $this->get(route('dashboard'))
+            ->assertOk()
+            ->assertSee('Keluar dari demo')
+            ->assertSee(route('logout'));
+
+        $this->post(route('logout'))->assertRedirect(route('login'));
+        $this->assertGuest();
+    }
+
     public function test_the_demo_kelas_can_be_seeded_next_to_a_kelas_that_is_really_in_use(): void
     {
         $this->kelas(attributes: ['nama' => 'TI-R8']);

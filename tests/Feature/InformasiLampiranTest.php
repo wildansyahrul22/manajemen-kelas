@@ -9,6 +9,7 @@ use App\Models\ActivityLog;
 use App\Models\Informasi;
 use App\Models\InformasiLampiran;
 use App\Models\KategoriInformasi;
+use App\Models\Kelas;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
@@ -287,6 +288,25 @@ class InformasiLampiranTest extends TestCase
         $this->assertSame([], Storage::disk(Informasi::LAMPIRAN_DISK)->allFiles());
     }
 
+    public function test_the_form_explains_who_may_upload(): void
+    {
+        $kelas = $this->kelas();
+        $tanpaUpload = Kelas::factory()->tanpaUpload()->semester(3)->create();
+
+        Livewire::actingAs($this->admin($kelas))
+            ->test(InformasiIndex::class)
+            ->call('openCreate')
+            ->assertSee('Lampiran (gambar/file)')
+            ->assertDontSee('Hanya admin kelas yang bisa mengunggah');
+
+        Livewire::actingAs($this->admin($tanpaUpload))
+            ->test(InformasiIndex::class)
+            ->call('openCreate')
+            ->assertDontSee('Lampiran (gambar/file)')
+            ->assertDontSee('Hanya admin kelas yang bisa mengunggah')
+            ->assertSee('Paket kelas ini belum termasuk unggah file');
+    }
+
     public function test_mahasiswa_cannot_upload_or_remove_files(): void
     {
         $kelas = $this->kelas();
@@ -298,6 +318,7 @@ class InformasiLampiranTest extends TestCase
             ->assertSet('canUpload', false)
             ->call('openCreate')
             ->assertDontSee('Lampiran (gambar/file)')
+            ->assertSee('Hanya admin kelas yang bisa mengunggah file/gambar')
             ->set('form.judul', 'Coba upload')
             ->set('form.kategori_informasi_id', (string) $kategori->id)
             ->set('form.isi', 'Coba.')

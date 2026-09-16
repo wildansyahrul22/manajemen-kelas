@@ -3,6 +3,7 @@
 use App\Http\Middleware\EnsureKelasAktif;
 use App\Http\Middleware\EnsureKelasContext;
 use App\Http\Middleware\EnsureRole;
+use App\Http\Middleware\SignOutDemoAccount;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => EnsureRole::class,
             'kelas' => EnsureKelasContext::class,
             'kelas.aktif' => EnsureKelasAktif::class,
+            'demo.keluar' => SignOutDemoAccount::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));
