@@ -14,7 +14,7 @@ class LandingPageTest extends TestCase
             ->assertSee('Rp200.000')
             ->assertSee('Rp250.000')
             ->assertSee('Promo langganan pertama')
-            ->assertSee('62812790106175')
+            ->assertSee('6281279106175')
             ->assertSee('admin@kelaskampusku.com')
             ->assertSee(asset('images/dashboard.png'))
             ->assertSee(route('login'));
