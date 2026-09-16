@@ -4,6 +4,7 @@ namespace App\Livewire\Tugas;
 
 use App\Livewire\Concerns\ManagesModalForm;
 use App\Livewire\Forms\TugasForm;
+use App\Models\KategoriKelompok;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
 use Illuminate\Support\Collection;
@@ -22,6 +23,25 @@ trait ManagesTugas
     public function mataKuliahOptions(): Collection
     {
         return MataKuliah::query()->forKelasAktif($this->kelas)->orderBy('nama')->get(['id', 'nama']);
+    }
+
+    /**
+     * Kategori kelompok of the mata kuliah picked in the form (id => nama); empty until one is picked.
+     *
+     * @return Collection<int, string>
+     */
+    #[Computed]
+    public function kategoriKelompokOptions(): Collection
+    {
+        if ($this->form->mata_kuliah_id === '') {
+            return collect();
+        }
+
+        return KategoriKelompok::query()
+            ->where('mata_kuliah_id', (int) $this->form->mata_kuliah_id)
+            ->forKelasAktif($this->kelas)
+            ->orderBy('nama')
+            ->pluck('nama', 'id');
     }
 
     public function openCreate(): void

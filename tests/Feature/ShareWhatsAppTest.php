@@ -6,6 +6,7 @@ use App\Livewire\Informasi\Index as InformasiIndex;
 use App\Livewire\Jadwal\Index as JadwalIndex;
 use App\Livewire\JadwalLab\Index as JadwalLabIndex;
 use App\Livewire\Kelompok\Index as KelompokIndex;
+use App\Livewire\Tugas\Index as TugasIndex;
 use App\Models\Informasi;
 use App\Models\InformasiLampiran;
 use App\Models\JadwalKelas;
@@ -14,6 +15,7 @@ use App\Models\KategoriInformasi;
 use App\Models\KategoriKelompok;
 use App\Models\Kelompok;
 use App\Models\MataKuliah;
+use App\Models\Tugas;
 use App\Support\PesanWhatsApp;
 use Illuminate\Support\Carbon;
 use Livewire\Livewire;
@@ -200,5 +202,129 @@ class ShareWhatsAppTest extends TestCase
             ->test(KelompokIndex::class)
             ->set('kategoriId', (string) $kategoriLain->id)
             ->assertSet('teksWhatsApp', null);
+    }
+
+    public function test_tugas_is_shared_per_record_with_deadline_and_submission_link(): void
+    {
+        $this->travelTo(Carbon::create(2026, 9, 14, 9, 0));
+
+        $kelas = $this->kelas(attributes: ['nama' => 'TI-3A']);
+        $web = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Pemrograman Web', 'dosen' => 'Dr. Andi']);
+        $tugas = Tugas::factory()->create([
+            'mata_kuliah_id' => $web->id,
+            'nama' => 'Laporan Praktikum 2',
+            'deskripsi' => 'Kumpulkan dalam format PDF.',
+            'deadline' => '2026-09-21 23:59:00',
+            'link_pengumpulan' => 'https://forms.gle/abc',
+        ]);
+
+        $teks = PesanWhatsApp::tugas($tugas->fresh(['mataKuliah']), $kelas);
+
+        $this->assertSame(implode("\n", [
+            '📝 *TUGAS KELAS TI-3A*',
+            'Mata kuliah: Pemrograman Web (Dr. Andi)',
+            '',
+            '*Laporan Praktikum 2*',
+            '⏰ Deadline: Senin, 21 September 2026 pukul 23:59 (1 minggu lagi)',
+            '',
+            'Kumpulkan dalam format PDF.',
+            '',
+            '📤 Kumpulkan di: https://forms.gle/abc',
+            '👉 Detail tugas: '.route('tugas.show', $tugas),
+            'Jangan sampai terlewat ya 💪',
+        ]), $teks);
+
+        $mahasiswa = $this->mahasiswa($kelas);
+
+        Livewire::actingAs($mahasiswa)
+            ->test(TugasIndex::class)
+            ->assertSee(PesanWhatsApp::url($teks), false)
+            ->assertSee('Bagikan tugas ini ke WhatsApp');
+
+        $this->actingAs($mahasiswa)
+            ->get(route('tugas.show', $tugas))
+            ->assertOk()
+            ->assertSee(PesanWhatsApp::url($teks), false);
+
+        // Without deskripsi/link those lines are simply absent, and a passed deadline says so.
+        $lewat = Tugas::factory()->create(['mata_kuliah_id' => $web->id, 'nama' => 'Kuis', 'deskripsi' => null, 'deadline' => '2026-09-10 10:00:00', 'link_pengumpulan' => null]);
+        $teksLewat = PesanWhatsApp::tugas($lewat->fresh(['mataKuliah']), $kelas);
+        $this->assertStringContainsString('(sudah lewat)', $teksLewat);
+        $this->assertStringNotContainsString('📤', $teksLewat);
+        $this->assertStringNotContainsString("*Kuis*\n\n\n", $teksLewat);
+    }
+
+    public function test_whole_week_of_jadwal_kelas_can_be_shared_next_to_the_per_day_icons(): void
+    {
+        $this->travelTo(Carbon::create(2026, 9, 14, 9, 0)); // Senin
+
+        $kelas = $this->kelas(attributes: ['nama' => 'TI-3A']);
+        $web = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Pemrograman Web']);
+        $basisData = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Basis Data']);
+
+        $kosong = Livewire::actingAs($this->mahasiswa($kelas))->test(JadwalIndex::class);
+        $this->assertNull($kosong->get('teksWhatsAppMingguan'));
+        $kosong->assertDontSee('Bagikan Jadwal Seminggu');
+
+        JadwalKelas::factory()->create(['mata_kuliah_id' => $web->id, 'hari' => 1, 'jam_mulai' => '08:00', 'jam_selesai' => '09:40', 'ruangan' => 'Lab 2']);
+        JadwalKelas::factory()->create(['mata_kuliah_id' => $basisData->id, 'hari' => 3, 'jam_mulai' => '13:00', 'jam_selesai' => '14:40', 'ruangan' => null]);
+
+        $component = Livewire::actingAs($this->mahasiswa($kelas))->test(JadwalIndex::class);
+        $teks = $component->get('teksWhatsAppMingguan');
+
+        $this->assertSame(implode("\n", [
+            '📅 *JADWAL KELAS TI-3A*',
+            'Semester 3',
+            '',
+            '*SENIN* (hari ini)',
+            '1. 08:00–09:40 · Pemrograman Web · 📍 Lab 2',
+            '',
+            '*RABU*',
+            '1. 13:00–14:40 · Basis Data',
+            '',
+            'Simpan jadwalnya, jangan sampai salah ruangan 🙌',
+            '👉 Jadwal lengkap: '.route('jadwal.index'),
+        ]), $teks);
+
+        $component
+            ->assertSee('Bagikan Jadwal Seminggu')
+            ->assertSee(PesanWhatsApp::url($teks), false)
+            ->assertSee('Bagikan jadwal Senin ke WhatsApp')
+            ->assertSee('Bagikan jadwal Rabu ke WhatsApp');
+    }
+
+    public function test_all_lab_sessions_of_one_mata_kuliah_can_be_shared_next_to_the_per_date_icons(): void
+    {
+        $this->travelTo(Carbon::create(2026, 9, 14, 9, 0));
+
+        $kelas = $this->kelas(attributes: ['nama' => 'TI-3A']);
+        $web = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Pemrograman Web', 'dosen' => 'Dr. Andi']);
+        JadwalLab::factory()->create(['mata_kuliah_id' => $web->id, 'tanggal' => '2026-09-07', 'jam_mulai' => '13:00', 'jam_selesai' => '15:00', 'ruangan' => 'Lab 1', 'keterangan' => 'Instalasi']);
+        JadwalLab::factory()->create(['mata_kuliah_id' => $web->id, 'tanggal' => '2026-09-14', 'jam_mulai' => '13:00', 'jam_selesai' => '15:00', 'ruangan' => 'Lab 1', 'keterangan' => null]);
+        JadwalLab::factory()->create(['mata_kuliah_id' => $web->id, 'tanggal' => '2026-09-21', 'jam_mulai' => '13:00', 'jam_selesai' => '15:00', 'ruangan' => null, 'keterangan' => 'Routing']);
+
+        $component = Livewire::actingAs($this->mahasiswa($kelas))->test(JadwalLabIndex::class);
+        $teks = $component->get('teksWhatsAppMataKuliah');
+
+        $this->assertSame([$web->id], array_keys($teks));
+        $this->assertSame(implode("\n", [
+            '🔬 *JADWAL LAB PEMROGRAMAN WEB*',
+            'Kelas TI-3A · Dr. Andi',
+            '',
+            '1. Sen, 7 Sep 2026 · 13:00–15:00 ✅',
+            '    📍 Lab 1 · 📝 Instalasi',
+            '2. Sen, 14 Sep 2026 · 13:00–15:00 (hari ini)',
+            '    📍 Lab 1',
+            '3. Sen, 21 Sep 2026 · 13:00–15:00',
+            '    📝 Routing',
+            '',
+            'Catat tanggalnya dan siapkan perlengkapan praktikum 🙌',
+            '👉 Jadwal lab lengkap: '.route('jadwal-lab.index', ['mk' => $web->id]),
+        ]), $teks[$web->id]);
+
+        $component
+            ->assertSee('Bagikan semua jadwal lab Pemrograman Web ke WhatsApp')
+            ->assertSee(PesanWhatsApp::url($teks[$web->id]), false)
+            ->assertSee('Bagikan jadwal lab 14 Sep ke WhatsApp');
     }
 }

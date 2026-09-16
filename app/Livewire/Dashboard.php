@@ -69,7 +69,7 @@ class Dashboard extends Component
     public function tugasTerdekat(): Collection
     {
         return Tugas::query()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline'])
+            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline', 'link_pengumpulan'])
             ->with('mataKuliah:id,nama')
             ->forKelasAktif($this->kelas)
             ->belumDeadline()

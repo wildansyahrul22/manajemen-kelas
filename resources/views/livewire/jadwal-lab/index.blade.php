@@ -41,8 +41,9 @@
                                     <a href="{{ route('mata-kuliah.show', $mataKuliah) }}" wire:navigate class="block truncate font-semibold text-slate-900 hover:text-primary-900 hover:underline">{{ $mataKuliah->nama }}</a>
                                     <p class="truncate text-xs text-slate-500">{{ $mataKuliah->dosen }}</p>
                                 </div>
-                                <div class="flex shrink-0 items-center gap-2">
-                                    <span class="text-xs text-slate-400">{{ $mataKuliah->jadwalLab->count() }} sesi</span>
+                                <div class="flex shrink-0 items-center gap-1">
+                                    <span class="mr-1 text-xs text-slate-400">{{ $mataKuliah->jadwalLab->count() }} sesi</span>
+                                    <x-ui.whatsapp-button icon :text="$this->teksWhatsAppMataKuliah[$mataKuliah->id] ?? null" label="Bagikan semua jadwal lab {{ $mataKuliah->nama }} ke WhatsApp" />
                                     @if ($this->canManage)
                                         <button type="button" wire:click="openCreate({{ $mataKuliah->id }})" x-on:click="$wire.showForm = true" class="-mr-1.5 rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-primary-900" aria-label="Tambah jadwal lab {{ $mataKuliah->nama }}" title="Tambah jadwal lab {{ $mataKuliah->nama }}">
                                             <x-heroicon-m-plus class="size-4" />

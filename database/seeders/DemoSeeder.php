@@ -173,6 +173,7 @@ class DemoSeeder extends Seeder
             Tugas::factory()->count(2)->create([
                 'mata_kuliah_id' => $mataKuliah->id,
                 'created_by' => $admin->id,
+                'link_pengumpulan' => $index === 0 ? 'https://forms.gle/contoh-pengumpulan' : null,
             ]);
 
             if ($index % 2 === 0) {

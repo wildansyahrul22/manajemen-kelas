@@ -38,7 +38,8 @@ class ExportExcelTest extends TestCase
         $admin = $this->admin($kelas, ['name' => 'Rizky']);
         $web = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Pemrograman Web', 'dosen' => 'Dr. Andi']);
         $basisData = MataKuliah::factory()->create(['kelas_id' => $kelas->id, 'nama' => 'Basis Data']);
-        Tugas::factory()->create(['mata_kuliah_id' => $web->id, 'nama' => 'Laporan 1', 'deskripsi' => "Baris satu\nBaris dua", 'deadline' => '2026-09-20 23:59:00', 'created_by' => $admin->id]);
+        $kategori = KategoriKelompok::factory()->create(['mata_kuliah_id' => $web->id, 'nama' => 'Project Akhir']);
+        Tugas::factory()->create(['mata_kuliah_id' => $web->id, 'kategori_kelompok_id' => $kategori->id, 'nama' => 'Laporan 1', 'deskripsi' => "Baris satu\nBaris dua", 'deadline' => '2026-09-20 23:59:00', 'link_pengumpulan' => 'https://forms.gle/abc', 'created_by' => $admin->id]);
         Tugas::factory()->create(['mata_kuliah_id' => $web->id, 'nama' => '=SUM(1)', 'deskripsi' => null, 'deadline' => '2026-09-16 12:00:00', 'created_by' => $admin->id]);
         Tugas::factory()->lewat()->create(['mata_kuliah_id' => $web->id, 'nama' => 'Tugas Lewat', 'created_by' => $admin->id]);
         Tugas::factory()->create(['mata_kuliah_id' => $basisData->id, 'nama' => 'Tugas Basis Data', 'created_by' => $admin->id]);
@@ -57,9 +58,9 @@ class ExportExcelTest extends TestCase
         $this->assertSame('Kelas '.$kelas->nama.' · Semester 3', $rows[1][0]);
         $this->assertSame('Filter: Mata kuliah = Pemrograman Web · Status = Belum deadline', $rows[2][0]);
         $this->assertSame('Diekspor: 15 Sep 2026 09:00 oleh Rizky', $rows[3][0]);
-        $this->assertSame(['No', 'Nama Tugas', 'Mata Kuliah', 'Dosen', 'Deadline', 'Status', 'Deskripsi', 'Dibuat Oleh', 'Dibuat Pada'], $rows[5]);
-        $this->assertSame(['1', '=SUM(1)', 'Pemrograman Web', 'Dr. Andi', '16 Sep 2026 12:00', 'Segera', null, 'Rizky', '15 Sep 2026 09:00'], $rows[6]);
-        $this->assertSame(['2', 'Laporan 1', 'Pemrograman Web', 'Dr. Andi', '20 Sep 2026 23:59', 'Aktif', "Baris satu\nBaris dua", 'Rizky', '15 Sep 2026 09:00'], $rows[7]);
+        $this->assertSame(['No', 'Nama Tugas', 'Mata Kuliah', 'Dosen', 'Deadline', 'Status', 'Tugas Kelompok (Kategori)', 'Link Pengumpulan', 'Deskripsi', 'Dibuat Oleh', 'Dibuat Pada'], $rows[5]);
+        $this->assertSame(['1', '=SUM(1)', 'Pemrograman Web', 'Dr. Andi', '16 Sep 2026 12:00', 'Segera', null, null, null, 'Rizky', '15 Sep 2026 09:00'], $rows[6]);
+        $this->assertSame(['2', 'Laporan 1', 'Pemrograman Web', 'Dr. Andi', '20 Sep 2026 23:59', 'Aktif', 'Project Akhir', 'https://forms.gle/abc', "Baris satu\nBaris dua", 'Rizky', '15 Sep 2026 09:00'], $rows[7]);
         $this->assertCount(8, $rows);
 
         $this->assertSame('n', $sheet->getCell('A7')->getDataType());
@@ -69,8 +70,8 @@ class ExportExcelTest extends TestCase
         $this->assertSame('', $sheet->getAutoFilter()->getRange());
         $this->assertTrue($sheet->getStyle('A6')->getFont()->getBold());
         $this->assertSame('FF0F172A', $sheet->getStyle('A6')->getFill()->getStartColor()->getARGB());
-        $this->assertSame(50.0, $sheet->getColumnDimension('G')->getWidth());
-        $this->assertTrue($sheet->getStyle('G7')->getAlignment()->getWrapText());
+        $this->assertSame(50.0, $sheet->getColumnDimension('I')->getWidth());
+        $this->assertTrue($sheet->getStyle('I7')->getAlignment()->getWrapText());
     }
 
     public function test_export_without_data_says_so_instead_of_an_empty_table(): void

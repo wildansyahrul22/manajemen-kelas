@@ -49,17 +49,23 @@
                         <x-ui.th>Deadline</x-ui.th>
                         <x-ui.th class="hidden lg:table-cell">Dibuat</x-ui.th>
                         <x-ui.th class="hidden lg:table-cell">Diperbarui</x-ui.th>
-                        @if ($this->canManage)
-                            <x-ui.th class="text-right">Aksi</x-ui.th>
-                        @endif
+                        <x-ui.th class="text-right">{{ $this->canManage ? 'Aksi' : 'Bagikan' }}</x-ui.th>
                     </x-slot:head>
 
                     @foreach ($this->daftarTugas as $tugas)
                         @php [$warna, $label] = $statusBadge[$tugas->status()]; @endphp
                         <tr wire:key="tugas-{{ $tugas->id }}" class="transition hover:bg-slate-50/70">
                             <x-ui.td>
-                                <a href="{{ route('tugas.show', $tugas) }}" wire:navigate
-                                    class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $tugas->nama }}</a>
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('tugas.show', $tugas) }}" wire:navigate
+                                        class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $tugas->nama }}</a>
+                                    @if ($tugas->isTugasKelompok())
+                                        <x-ui.badge color="sky" title="Tugas kelompok · {{ $tugas->kategoriKelompok->nama }}"><x-heroicon-m-user-group class="size-3.5" /> Kelompok</x-ui.badge>
+                                    @endif
+                                    @if ($tugas->link_pengumpulan)
+                                        <a href="{{ $tugas->link_pengumpulan }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100" title="Buka link pengumpulan tugas"><x-heroicon-m-arrow-up-tray class="size-3.5" /> Kumpulkan</a>
+                                    @endif
+                                </div>
                                 <p class="mt-0.5 text-xs text-slate-500 md:hidden">{{ $tugas->mataKuliah->nama }}</p>
                             </x-ui.td>
                             <x-ui.td class="hidden md:table-cell">
@@ -80,18 +86,21 @@
                                 class="hidden whitespace-nowrap text-slate-500 lg:table-cell">{{ $tugas->created_at->isoFormat('D MMM YYYY') }}</x-ui.td>
                             <x-ui.td
                                 class="hidden whitespace-nowrap text-slate-500 lg:table-cell">{{ $tugas->updated_at->isoFormat('D MMM YYYY') }}</x-ui.td>
-                            @if ($this->canManage)
-                                <x-ui.td class="text-right">
-                                    <x-ui.action-menu>
-                                        <x-ui.menu-item :href="route('tugas.show', $tugas)" icon="heroicon-o-eye">Lihat
-                                            detail</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="openEdit({{ $tugas->id }})" opens="showForm"
-                                            icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
-                                        <x-ui.menu-item wire:click="confirmDelete({{ $tugas->id }})" opens="confirmingDelete"
-                                            icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
-                                    </x-ui.action-menu>
-                                </x-ui.td>
-                            @endif
+                            <x-ui.td class="text-right">
+                                <div class="inline-flex items-center gap-1">
+                                    <x-ui.whatsapp-button icon :text="$this->teksWhatsApp[$tugas->id] ?? null" label="Bagikan tugas ini ke WhatsApp" />
+                                    @if ($this->canManage)
+                                        <x-ui.action-menu>
+                                            <x-ui.menu-item :href="route('tugas.show', $tugas)" icon="heroicon-o-eye">Lihat
+                                                detail</x-ui.menu-item>
+                                            <x-ui.menu-item wire:click="openEdit({{ $tugas->id }})" opens="showForm"
+                                                icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
+                                            <x-ui.menu-item wire:click="confirmDelete({{ $tugas->id }})" opens="confirmingDelete"
+                                                icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>
+                                        </x-ui.action-menu>
+                                    @endif
+                                </div>
+                            </x-ui.td>
                         </tr>
                     @endforeach
                 </x-ui.table>

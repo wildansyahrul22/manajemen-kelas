@@ -77,6 +77,19 @@ class Index extends Component
     }
 
     /**
+     * WhatsApp share message per mata kuliah card (mata kuliah id => text), covering its listed sessions.
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function teksWhatsAppMataKuliah(): array
+    {
+        return $this->mataKuliahDenganJadwal
+            ->mapWithKeys(fn (MataKuliah $mataKuliah) => [$mataKuliah->id => PesanWhatsApp::jadwalLabMataKuliah($mataKuliah, $mataKuliah->jadwalLab, $this->kelas)])
+            ->all();
+    }
+
+    /**
      * Apply the status filter (mendatang / lewat) to a JadwalLab query.
      */
     protected function sesuaiStatus(mixed $query): mixed
@@ -186,7 +199,7 @@ class Index extends Component
         $saved = $this->form->save($this->kelas);
 
         $this->closeForm();
-        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp);
+        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp, $this->teksWhatsAppMataKuliah);
         $this->notify(match (true) {
             $isEdit => 'Jadwal lab berhasil diperbarui.',
             $saved->count() > 1 => $saved->count().' jadwal lab berhasil ditambahkan.',
@@ -211,7 +224,7 @@ class Index extends Component
         $jadwalLab->delete();
 
         $this->closeDelete();
-        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp);
+        unset($this->mataKuliahDenganJadwal, $this->teksWhatsApp, $this->teksWhatsAppMataKuliah);
         $this->notify('Jadwal lab berhasil dihapus.');
     }
 

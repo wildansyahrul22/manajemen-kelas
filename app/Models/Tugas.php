@@ -16,7 +16,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 #[Table('tugas')]
-#[Fillable(['mata_kuliah_id', 'nama', 'deskripsi', 'deadline', 'created_by'])]
+#[Fillable(['mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_by'])]
 class Tugas extends Model
 {
     /** @use HasFactory<TugasFactory> */
@@ -35,6 +35,19 @@ class Tugas extends Model
     public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Set when the tugas is done per kelompok; the kategori's kelompok are the working groups.
+     */
+    public function kategoriKelompok(): BelongsTo
+    {
+        return $this->belongsTo(KategoriKelompok::class, 'kategori_kelompok_id');
+    }
+
+    public function isTugasKelompok(): bool
+    {
+        return $this->kategori_kelompok_id !== null;
     }
 
     #[Scope]

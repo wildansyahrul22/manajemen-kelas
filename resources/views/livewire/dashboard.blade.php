@@ -70,7 +70,7 @@
                         <x-heroicon-o-document-text class="size-5" />
                     </span>
                     <div class="min-w-0 flex-1">
-                        <p class="truncate text-sm font-semibold text-slate-800">{{ $tugas->nama }}</p>
+                        <p class="flex items-center gap-1.5 truncate text-sm font-semibold text-slate-800">{{ $tugas->nama }}@if ($tugas->link_pengumpulan)<x-heroicon-m-arrow-up-tray class="size-3.5 shrink-0 text-emerald-600" title="Ada link pengumpulan" />@endif</p>
                         <p class="truncate text-xs text-slate-500">{{ $tugas->mataKuliah->nama }}</p>
                     </div>
                     <div class="shrink-0 text-right">

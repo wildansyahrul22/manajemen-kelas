@@ -9,6 +9,8 @@ use App\Models\JadwalLab;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
 use App\Models\Kelompok;
+use App\Models\MataKuliah;
+use App\Models\Tugas;
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
@@ -18,6 +20,8 @@ use Illuminate\Support\Str;
  * Ready-to-paste WhatsApp messages (WhatsApp markup: *bold*, _italic_) for the share buttons.
  * Each builder expects its relations already loaded; url() wraps the text in a wa.me link that
  * opens WhatsApp with the message prefilled so the user only has to pick the chat.
+ *
+ * Emoji render fine on WhatsApp mobile; the desktop apps may show them as "?" (a WhatsApp bug).
  */
 final class PesanWhatsApp
 {
@@ -55,6 +59,115 @@ final class PesanWhatsApp
         $baris[] = '';
         $baris[] = '👉 Selengkapnya: '.route('informasi.show', $informasi);
         $baris[] = "_Dibagikan dari aplikasi Manajemen Kelas {$kelas->nama}_";
+
+        return implode("\n", $baris);
+    }
+
+    public static function tugas(Tugas $tugas, Kelas $kelas): string
+    {
+        $status = match ($tugas->status()) {
+            'lewat' => 'sudah lewat',
+            'segera' => 'segera! '.$tugas->sisaWaktu(),
+            default => $tugas->sisaWaktu(),
+        };
+
+        $baris = [
+            "📝 *TUGAS KELAS {$kelas->nama}*",
+            "Mata kuliah: {$tugas->mataKuliah->nama} ({$tugas->mataKuliah->dosen})",
+            '',
+            "*{$tugas->nama}*",
+            '⏰ Deadline: '.$tugas->deadline->isoFormat('dddd, D MMMM YYYY [pukul] HH:mm')." ({$status})",
+        ];
+
+        if ($tugas->isTugasKelompok()) {
+            $baris[] = "👥 Tugas kelompok — kategori {$tugas->kategoriKelompok->nama} (cek kelompokmu di aplikasi)";
+        }
+
+        if (filled($tugas->deskripsi)) {
+            $baris[] = '';
+            $baris[] = Str::limit(trim($tugas->deskripsi), 1000, ' … (selengkapnya di aplikasi)');
+        }
+
+        $baris[] = '';
+
+        if ($tugas->link_pengumpulan) {
+            $baris[] = "📤 Kumpulkan di: {$tugas->link_pengumpulan}";
+        }
+
+        $baris[] = '👉 Detail tugas: '.route('tugas.show', $tugas);
+        $baris[] = 'Jangan sampai terlewat ya 💪';
+
+        return implode("\n", $baris);
+    }
+
+    /**
+     * The whole week in one message; days without sessions are left out.
+     *
+     * @param  Collection<int, Collection<int, JadwalKelas>>  $jadwalPerHari  hari value => sessions (ordered), mataKuliah loaded
+     */
+    public static function jadwalKelasMingguan(Collection $jadwalPerHari, Kelas $kelas): string
+    {
+        $baris = [
+            "📅 *JADWAL KELAS {$kelas->nama}*",
+            $kelas->semesterAktif->nama,
+        ];
+
+        foreach ($jadwalPerHari as $hariValue => $daftar) {
+            if ($daftar->isEmpty()) {
+                continue;
+            }
+
+            $hari = Hari::from((int) $hariValue);
+            $baris[] = '';
+            $baris[] = '*'.Str::upper($hari->label()).'*'.($hari === Hari::today() ? ' (hari ini)' : '');
+
+            foreach ($daftar->values() as $indeks => $sesi) {
+                $baris[] = ($indeks + 1).'. '.$sesi->jam_mulai->format('H:i').'–'.$sesi->jam_selesai->format('H:i')." · {$sesi->mataKuliah->nama}".($sesi->ruangan ? " · 📍 {$sesi->ruangan}" : '');
+            }
+        }
+
+        $baris[] = '';
+        $baris[] = 'Simpan jadwalnya, jangan sampai salah ruangan 🙌';
+        $baris[] = '👉 Jadwal lengkap: '.route('jadwal.index');
+
+        return implode("\n", $baris);
+    }
+
+    /**
+     * Every listed lab session of one mata kuliah, in date order.
+     *
+     * @param  Collection<int, JadwalLab>  $sesi  ordered by tanggal and jam mulai
+     */
+    public static function jadwalLabMataKuliah(MataKuliah $mataKuliah, Collection $sesi, Kelas $kelas): string
+    {
+        $baris = [
+            '🔬 *JADWAL LAB '.Str::upper($mataKuliah->nama).'*',
+            "Kelas {$kelas->nama} · {$mataKuliah->dosen}",
+            '',
+        ];
+
+        foreach ($sesi->values() as $indeks => $lab) {
+            $penanda = match (true) {
+                $lab->isLewat() => ' ✅',
+                $lab->isHariIni() => ' (hari ini)',
+                default => '',
+            };
+
+            $baris[] = ($indeks + 1).'. '.$lab->tanggal->isoFormat('ddd, D MMM YYYY').' · '.$lab->jam_mulai->format('H:i').'–'.$lab->jam_selesai->format('H:i').$penanda;
+
+            $detail = array_filter([
+                $lab->ruangan ? "📍 {$lab->ruangan}" : null,
+                $lab->keterangan ? "📝 {$lab->keterangan}" : null,
+            ]);
+
+            if ($detail !== []) {
+                $baris[] = '    '.implode(' · ', $detail);
+            }
+        }
+
+        $baris[] = '';
+        $baris[] = 'Catat tanggalnya dan siapkan perlengkapan praktikum 🙌';
+        $baris[] = '👉 Jadwal lab lengkap: '.route('jadwal-lab.index', ['mk' => $mataKuliah->id]);
 
         return implode("\n", $baris);
     }

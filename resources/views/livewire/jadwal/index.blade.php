@@ -1,6 +1,9 @@
 <div>
     <x-ui.page-header title="Jadwal Kelas" :description="'Jadwal kelas '.$this->kelas->nama.' pada '.$this->kelas->semesterAktif->nama.'.'">
         <x-slot:actions>
+            @if ($this->teksWhatsAppMingguan)
+                <x-ui.whatsapp-button :text="$this->teksWhatsAppMingguan" label="Bagikan Jadwal Seminggu" />
+            @endif
             <x-ui.export-button />
             @if ($this->canManage)
                 <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Jadwal</x-ui.button>

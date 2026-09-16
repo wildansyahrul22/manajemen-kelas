@@ -7,6 +7,7 @@ use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Models\Tugas;
 use App\Support\ExcelExport;
+use App\Support\PesanWhatsApp;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Builder;
 use Livewire\Attributes\Computed;
@@ -59,9 +60,22 @@ class Index extends Component
     public function daftarTugas(): LengthAwarePaginator
     {
         return $this->tugasQuery()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline', 'created_at', 'updated_at'])
-            ->with('mataKuliah:id,nama,dosen')
+            ->select(['id', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_at', 'updated_at'])
+            ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama'])
             ->paginate($this->perPage());
+    }
+
+    /**
+     * WhatsApp share message per tugas on the current page (tugas id => text).
+     *
+     * @return array<int, string>
+     */
+    #[Computed]
+    public function teksWhatsApp(): array
+    {
+        return $this->daftarTugas->getCollection()
+            ->mapWithKeys(fn (Tugas $tugas) => [$tugas->id => PesanWhatsApp::tugas($tugas, $this->kelas)])
+            ->all();
     }
 
     public function export(): StreamedResponse
@@ -69,7 +83,7 @@ class Index extends Component
         $statusLabel = ['aktif' => 'Aktif', 'segera' => 'Segera', 'lewat' => 'Lewat'];
 
         $baris = $this->tugasQuery()
-            ->with(['mataKuliah:id,nama,dosen', 'creator:id,name'])
+            ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama', 'creator:id,name'])
             ->get()
             ->map(fn (Tugas $tugas, int $indeks) => [
                 $indeks + 1,
@@ -78,6 +92,8 @@ class Index extends Component
                 $tugas->mataKuliah->dosen,
                 $tugas->deadline,
                 $statusLabel[$tugas->status()],
+                $tugas->kategoriKelompok?->nama,
+                $tugas->link_pengumpulan,
                 $tugas->deskripsi,
                 $tugas->creator?->name,
                 $tugas->created_at,
@@ -97,6 +113,8 @@ class Index extends Component
                 'Dosen',
                 ['Deadline', ExcelExport::TIPE_WAKTU],
                 'Status',
+                'Tugas Kelompok (Kategori)',
+                'Link Pengumpulan',
                 ['Deskripsi', ExcelExport::TIPE_PANJANG],
                 'Dibuat Oleh',
                 ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
@@ -107,12 +125,12 @@ class Index extends Component
 
     protected function afterSave(Tugas $tugas): void
     {
-        unset($this->daftarTugas);
+        unset($this->daftarTugas, $this->teksWhatsApp);
     }
 
     protected function afterDelete(): void
     {
-        unset($this->daftarTugas);
+        unset($this->daftarTugas, $this->teksWhatsApp);
     }
 
     public function render()

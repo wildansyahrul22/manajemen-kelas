@@ -58,6 +58,15 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * The whole week in one WhatsApp message; null while no session exists.
+     */
+    #[Computed]
+    public function teksWhatsAppMingguan(): ?string
+    {
+        return $this->teksWhatsApp === [] ? null : PesanWhatsApp::jadwalKelasMingguan($this->jadwalPerHari, $this->kelas);
+    }
+
     #[Computed]
     public function mataKuliahOptions(): Collection
     {
@@ -142,7 +151,7 @@ class Index extends Component
         $saved = $this->form->save($this->kelas);
 
         $this->closeForm();
-        unset($this->jadwalPerHari, $this->teksWhatsApp);
+        unset($this->jadwalPerHari, $this->teksWhatsApp, $this->teksWhatsAppMingguan);
         $this->notify(match (true) {
             $isEdit => 'Jadwal berhasil diperbarui.',
             $saved->count() > 1 => $saved->count().' jadwal berhasil ditambahkan.',
@@ -167,7 +176,7 @@ class Index extends Component
         $jadwal->delete();
 
         $this->closeDelete();
-        unset($this->jadwalPerHari, $this->teksWhatsApp);
+        unset($this->jadwalPerHari, $this->teksWhatsApp, $this->teksWhatsAppMingguan);
         $this->notify('Jadwal berhasil dihapus.');
     }
 
