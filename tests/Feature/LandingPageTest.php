@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Support\PesanWhatsApp;
 use Tests\TestCase;
 
 class LandingPageTest extends TestCase
@@ -14,10 +15,25 @@ class LandingPageTest extends TestCase
             ->assertSee('Rp200.000')
             ->assertSee('Rp250.000')
             ->assertSee('Promo langganan pertama')
-            ->assertSee('6281279106175')
-            ->assertSee('admin@kelaskampusku.com')
+            ->assertSee('https://wa.me/'.config('kontak.whatsapp').'?text=', escape: false)
+            ->assertSee(PesanWhatsApp::formatNomor(config('kontak.whatsapp')))
+            ->assertSee('mailto:'.config('kontak.email'), escape: false)
             ->assertSee(asset('images/dashboard.png'))
             ->assertSee(route('login'));
+    }
+
+    public function test_every_contact_link_and_the_displayed_number_come_from_the_kontak_config(): void
+    {
+        config(['kontak.whatsapp' => '628111222333', 'kontak.email' => 'halo@contoh.test']);
+
+        $this->get(route('landing'))
+            ->assertOk()
+            ->assertSee('https://wa.me/628111222333?text=', escape: false)
+            ->assertSee('+62 811-1222-333')
+            ->assertDontSee('wa.me/6281279106175', escape: false)
+            ->assertDontSee('81279106175')
+            ->assertSee('mailto:halo@contoh.test', escape: false)
+            ->assertDontSee('admin@kelaskampusku.com');
     }
 
     public function test_the_landing_page_says_only_admin_kelas_upload_and_never_mentions_a_super_admin(): void

@@ -28,6 +28,18 @@ class ShareWhatsAppTest extends TestCase
         $this->assertSame('https://wa.me/?text=Halo%20%2A%20dunia%0Abaris%20dua', PesanWhatsApp::url("Halo * dunia\nbaris dua"));
     }
 
+    public function test_url_with_a_number_opens_that_chat_with_the_message_prefilled(): void
+    {
+        $this->assertSame('https://wa.me/6281279106175?text=Halo%20admin', PesanWhatsApp::url('Halo admin', '6281279106175'));
+    }
+
+    public function test_format_nomor_turns_a_wa_me_number_into_the_dialable_international_form(): void
+    {
+        $this->assertSame('+62 812-7910-6175', PesanWhatsApp::formatNomor('6281279106175'));
+        $this->assertSame('+62 811-1222-333', PesanWhatsApp::formatNomor('628111222333'));
+        $this->assertSame('0812', PesanWhatsApp::formatNomor('0812'));
+    }
+
     public function test_informasi_message_and_share_links_on_list_and_detail(): void
     {
         $kelas = $this->kelas(attributes: ['nama' => 'TI-3A']);

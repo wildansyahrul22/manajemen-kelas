@@ -1,44 +1,34 @@
 @php
-    $wa =
-        'https://wa.me/6281279106175?text=' .
-        rawurlencode('Halo, saya mau tanya soal langganan Kelas KampusKu untuk kelas saya.');
-    $email = 'admin@kelaskampusku.com';
+    $nomorWa = config('kontak.whatsapp');
+    $pesanWa = 'Halo, saya mau tanya soal langganan Kelas KampusKu untuk kelas saya.';
+    $wa = \App\Support\PesanWhatsApp::url($pesanWa, $nomorWa);
+    $tampilanWa = \App\Support\PesanWhatsApp::formatNomor($nomorWa);
+    $email = config('kontak.email');
     $adaDemo = filled(config('demo.npm'));
     // Someone looking around as the demo account is still a prospect: offer them the login and the demo, not "their" dashboard.
     $tamu = auth()->guest() || auth()->user()->isDemo();
 
+    // [outline heroicon name, title, one-line description]
     $menu = [
         'Akademik' => [
-            [
-                'heroicon-o-clipboard-document-list',
-                'Daftar Tugas',
-                'Deadline, link pengumpulan, dan penanda tugas kelompok.',
-            ],
-            ['heroicon-o-book-open', 'Mata Kuliah', 'Dosen, SKS, dan seluruh isi satu mata kuliah dalam satu halaman.'],
-            ['heroicon-o-user-group', 'Kelompok', 'Anggota dan ketua tiap kelompok, lengkap dengan kontaknya.'],
-            [
-                'heroicon-o-rectangle-group',
-                'Kategori Kelompok',
-                'Pembagian berbeda untuk project akhir, presentasi, praktikum.',
-            ],
+            ['clipboard-document-list', 'Daftar Tugas', 'Deadline, link pengumpulan, dan penanda tugas kelompok.'],
+            ['book-open', 'Mata Kuliah', 'Dosen, SKS, dan seluruh isi satu mata kuliah dalam satu halaman.'],
+            ['user-group', 'Kelompok', 'Anggota dan ketua tiap kelompok, lengkap dengan kontaknya.'],
+            ['rectangle-group', 'Kategori Kelompok', 'Pembagian berbeda untuk project akhir, presentasi, praktikum.'],
         ],
         'Jadwal' => [
-            ['heroicon-o-calendar-days', 'Jadwal Kelas', 'Jadwal seminggu penuh, siap dibagikan ke grup WhatsApp.'],
-            ['heroicon-o-beaker', 'Jadwal Lab', 'Jadwal praktikum terpisah, per mata kuliah.'],
+            ['calendar-days', 'Jadwal Kelas', 'Jadwal seminggu penuh, siap dibagikan ke grup WhatsApp.'],
+            ['beaker', 'Jadwal Lab', 'Jadwal praktikum terpisah, per mata kuliah.'],
         ],
         'Informasi' => [
-            ['heroicon-o-megaphone', 'Pengumuman', 'Berkategori, bisa disematkan, dengan lampiran atau tautan.'],
-            ['heroicon-o-tag', 'Kategori Informasi', 'Warna sendiri untuk tiap jenis pengumuman.'],
+            ['megaphone', 'Pengumuman', 'Berkategori, bisa disematkan, dengan lampiran atau tautan.'],
+            ['tag', 'Kategori Informasi', 'Warna sendiri untuk tiap jenis pengumuman.'],
         ],
         'Pengelolaan' => [
-            ['heroicon-o-users', 'Data Mahasiswa', 'Dua peran akun: mahasiswa dan admin kelas.'],
-            [
-                'heroicon-o-adjustments-horizontal',
-                'Semester Aktif',
-                'Ganti semester tanpa kehilangan data semester lalu.',
-            ],
-            ['heroicon-o-arrow-down-tray', 'Export Excel', 'Setiap daftar bisa diunduh rapi untuk laporan.'],
-            ['heroicon-o-clock', 'Log Aktivitas', 'Catatan siapa mengubah apa, kapan.'],
+            ['users', 'Data Mahasiswa', 'Dua peran akun: mahasiswa dan admin kelas.'],
+            ['adjustments-horizontal', 'Semester Aktif', 'Ganti semester tanpa kehilangan data semester lalu.'],
+            ['arrow-down-tray', 'Export Excel', 'Setiap daftar bisa diunduh rapi untuk laporan.'],
+            ['clock', 'Log Aktivitas', 'Catatan siapa mengubah apa, kapan.'],
         ],
     ];
 @endphp
@@ -261,7 +251,7 @@
                             <ul class="mt-3 divide-y divide-[var(--garis)] border-t border-[var(--garis)]">
                                 @foreach ($item as [$ikon, $judul, $keterangan])
                                     <li class="flex gap-3.5 py-3.5">
-                                        <x-dynamic-component :component="$ikon"
+                                        <x-dynamic-component :component="'heroicon-o-'.$ikon"
                                             class="mt-0.5 size-5 shrink-0 text-[var(--redup)]" />
                                         <div>
                                             <p class="text-[15px] font-semibold leading-snug">{{ $judul }}</p>
@@ -375,7 +365,7 @@
                     <a href="{{ $wa }}" target="_blank" rel="noopener"
                         class="inline-flex items-center justify-center gap-2.5 rounded-xl bg-[#1f7a63] px-6 py-3.5 font-semibold text-white transition hover:bg-[#1a6653]">
                         <x-ui.whatsapp-icon class="size-5" />
-                        +62 81279106175
+                        {{ $tampilanWa }}
                     </a>
                     <a href="mailto:{{ $email }}"
                         class="inline-flex items-center justify-center gap-2.5 rounded-xl border border-[var(--garis)] bg-white px-6 py-3.5 font-semibold transition hover:bg-[var(--kertas)]">
@@ -393,7 +383,7 @@
             <p>&copy; {{ date('Y') }} Kelas KampusKu</p>
             <div class="flex flex-wrap items-center gap-x-6 gap-y-2 sm:ml-auto">
                 <a href="{{ $wa }}" target="_blank" rel="noopener"
-                    class="transition hover:text-[var(--tinta)]">WhatsApp 6281279106175</a>
+                    class="transition hover:text-[var(--tinta)]">WhatsApp {{ $tampilanWa }}</a>
                 <a href="mailto:{{ $email }}"
                     class="transition hover:text-[var(--tinta)]">{{ $email }}</a>
                 <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk ke aplikasi</a>

@@ -19,7 +19,8 @@ use Illuminate\Support\Str;
 /**
  * Ready-to-paste WhatsApp messages (WhatsApp markup: *bold*, _italic_) for the share buttons.
  * Each builder expects its relations already loaded; url() wraps the text in a wa.me link that
- * opens WhatsApp with the message prefilled so the user only has to pick the chat.
+ * opens WhatsApp with the message prefilled so the user only has to pick the chat — or, given a
+ * number, opens that chat directly (the landing page's "contact the admin" buttons).
  *
  * Emoji render fine on WhatsApp mobile; the desktop apps may show them as "?" (a WhatsApp bug).
  */
@@ -27,9 +28,20 @@ final class PesanWhatsApp
 {
     private const int PANJANG_ISI_MAKS = 1500;
 
-    public static function url(string $teks): string
+    /**
+     * @param  ?string  $nomor  international number as wa.me wants it (628…), null lets the user pick the chat
+     */
+    public static function url(string $teks, ?string $nomor = null): string
     {
-        return 'https://wa.me/?text='.rawurlencode($teks);
+        return 'https://wa.me/'.$nomor.'?text='.rawurlencode($teks);
+    }
+
+    /**
+     * The wa.me form of a number in the shape people expect to read and dial: 6281279106175 → +62 812-7910-6175.
+     */
+    public static function formatNomor(string $nomor): string
+    {
+        return preg_replace('/^(\d{2})(\d{3})(\d{4})(\d+)$/', '+$1 $2-$3-$4', $nomor);
     }
 
     public static function informasi(Informasi $informasi, Kelas $kelas): string
