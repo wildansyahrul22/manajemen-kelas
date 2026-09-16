@@ -22,7 +22,7 @@ class InformasiLampiran extends Model
     use HasFactory;
 
     /** @var list<string> */
-    public const array EKSTENSI_GAMBAR = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    public const array EKSTENSI_GAMBAR = ['jpg', 'jpeg', 'png', 'webp'];
 
     protected static function booted(): void
     {
@@ -42,6 +42,20 @@ class InformasiLampiran extends Model
     public function isImage(): bool
     {
         return in_array($this->ekstensi(), self::EKSTENSI_GAMBAR, true);
+    }
+
+    public function isPdf(): bool
+    {
+        return $this->ekstensi() === 'pdf';
+    }
+
+    /**
+     * Images and PDFs are streamed inline so they can be viewed (in a modal, or a new tab) instead
+     * of downloaded; every other type is only ever sent as a download.
+     */
+    public function bisaDipratinjau(): bool
+    {
+        return $this->isImage() || $this->isPdf();
     }
 
     /**

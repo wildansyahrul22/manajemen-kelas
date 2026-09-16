@@ -94,10 +94,21 @@ class InformasiLampiranTest extends TestCase
             ->assertOk()
             ->assertHeader('content-type', 'image/png');
 
+        // A PDF is streamed inline so it can be previewed in a new tab; ?unduh=1 downloads it instead.
         $this->actingAs($this->mahasiswa($kelas))
             ->get(route('informasi.lampiran', [$informasi, $lampiran[1]]))
             ->assertOk()
+            ->assertHeader('content-disposition', 'inline; filename=tata-tertib.pdf');
+
+        $this->actingAs($this->mahasiswa($kelas))
+            ->get(route('informasi.lampiran', [$informasi, $lampiran[1], 'unduh' => 1]))
+            ->assertOk()
             ->assertDownload('tata-tertib.pdf');
+
+        $this->actingAs($this->mahasiswa($kelas))
+            ->get(route('informasi.lampiran', [$informasi, $lampiran[0], 'unduh' => 1]))
+            ->assertOk()
+            ->assertDownload('jadwal-uas.png');
 
         $this->actingAs($this->mahasiswa($kelas))
             ->get(route('informasi.show', $informasi))
@@ -107,6 +118,41 @@ class InformasiLampiranTest extends TestCase
         $this->actingAs($this->mahasiswa($this->kelas()))
             ->get(route('informasi.lampiran', [$informasi, $lampiran[0]]))
             ->assertForbidden();
+    }
+
+    public function test_files_that_are_not_images_or_pdf_are_always_downloaded(): void
+    {
+        $kelas = $this->kelas();
+        $informasi = Informasi::factory()->create(['kelas_id' => $kelas->id]);
+        $lampiran = InformasiLampiran::factory()->create(['informasi_id' => $informasi->id, 'nama' => 'modul.docx']);
+        Storage::disk(Informasi::LAMPIRAN_DISK)->put($lampiran->path, 'isi');
+
+        $this->actingAs($this->mahasiswa($kelas))
+            ->get(route('informasi.lampiran', [$informasi, $lampiran]))
+            ->assertOk()
+            ->assertDownload('modul.docx');
+    }
+
+    public function test_zip_and_gif_files_are_rejected(): void
+    {
+        $kelas = $this->kelas();
+        $kategori = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id]);
+
+        Livewire::actingAs($this->admin($kelas))
+            ->test(InformasiIndex::class)
+            ->call('openCreate')
+            ->set('form.judul', 'Arsip')
+            ->set('form.kategori_informasi_id', (string) $kategori->id)
+            ->set('form.isi', 'Coba.')
+            ->set('form.lampiran', [
+                UploadedFile::fake()->create('arsip.zip', 10, 'application/zip'),
+                UploadedFile::fake()->create('animasi.gif', 10, 'image/gif'),
+            ])
+            ->call('save')
+            ->assertHasErrors(['form.lampiran.0', 'form.lampiran.1'])
+            ->assertSee('Jenis file lampiran tidak didukung.');
+
+        $this->assertSame(0, Informasi::query()->count());
     }
 
     public function test_lampiran_route_is_scoped_to_its_informasi(): void

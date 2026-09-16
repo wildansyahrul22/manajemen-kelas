@@ -27,7 +27,7 @@ class Informasi extends Model
     public const string LAMPIRAN_DIR = 'informasi';
 
     /** @var list<string> */
-    public const array LAMPIRAN_EKSTENSI = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'];
+    public const array LAMPIRAN_EKSTENSI = ['jpg', 'jpeg', 'png', 'webp', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt'];
 
     /** Per file. */
     public const int LAMPIRAN_MAKS_KB = 2048;
