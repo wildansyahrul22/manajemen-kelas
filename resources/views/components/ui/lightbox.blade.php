@@ -37,7 +37,7 @@
                 x-transition:leave="transition duration-150 ease-in"
                 x-transition:leave-end="translate-y-4 opacity-0 sm:scale-95"
                 x-trap.noscroll="aktif !== null"
-                class="relative flex w-full max-w-2xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
+                class="relative flex w-full max-w-5xl flex-col overflow-hidden rounded-2xl bg-white shadow-xl"
             >
                 <div class="flex shrink-0 items-start justify-between gap-3 px-4 py-3 sm:px-5">
                     <div class="min-w-0">
@@ -58,13 +58,13 @@
                 </div>
 
                 <div class="flex items-center justify-center border-t border-slate-100 bg-slate-50 p-3 sm:p-4">
-                    <img :src="item.src" :alt="item.nama" class="max-h-[58dvh] w-auto max-w-full rounded-lg object-contain sm:max-h-[66dvh]">
+                    <img :src="item.src" :alt="item.nama" class="max-h-[70dvh] w-auto max-w-full rounded-lg object-contain sm:max-h-[78dvh]">
                 </div>
             </div>
         </div>
 
         {{-- Anchored to the viewport, aligned with the panel's edges, so they never move. --}}
-        <div x-show="aktif !== null && gambar.length > 1" class="pointer-events-none fixed inset-x-0 top-1/2 mx-auto flex w-full max-w-2xl -translate-y-1/2 justify-between px-6 sm:px-8">
+        <div x-show="aktif !== null && gambar.length > 1" class="pointer-events-none fixed inset-x-0 top-1/2 mx-auto flex w-full max-w-5xl -translate-y-1/2 justify-between px-6 sm:px-8">
             <button type="button" x-on:click="geser(-1)" class="pointer-events-auto rounded-full border border-slate-200 bg-white p-2 text-slate-600 shadow-md transition hover:bg-slate-50 hover:text-slate-900" aria-label="Gambar sebelumnya">
                 <x-heroicon-m-chevron-left class="size-5" />
             </button>
