@@ -1,5 +1,5 @@
 <div>
-    <x-ui.page-header title="Kategori Kelompok" :description="'Pengelompokan kelompok per mata kuliah pada '.$this->kelas->semesterAktif->nama.'. Satu mahasiswa hanya bisa berada di satu kelompok per kategori.'">
+    <x-ui.page-header title="Kategori Kelompok" :description="'Pengelompokan kelompok per mata kuliah pada '.$this->kelas->semesterAktif->nama.'. Satu mahasiswa hanya bisa berada di satu kelompok per kategori. Selama kategori masih terbuka, seluruh anggota kelas bisa menyusun kelompoknya; setelah ditandai final oleh admin kelas, kelompoknya terkunci.'">
         <x-slot:actions>
             <x-ui.export-button />
             <x-ui.button wire:click="openCreate" opens="showForm"><x-heroicon-m-plus class="size-4" /> Tambah Kategori</x-ui.button>
@@ -33,6 +33,7 @@
                     <x-slot:head>
                         <x-ui.th>Kategori</x-ui.th>
                         <x-ui.th>Mata Kuliah</x-ui.th>
+                        <x-ui.th>Status</x-ui.th>
                         <x-ui.th class="text-center">Jumlah Kelompok</x-ui.th>
                         <x-ui.th class="hidden sm:table-cell">Dibuat</x-ui.th>
                         <x-ui.th class="text-right">Aksi</x-ui.th>
@@ -41,6 +42,13 @@
                         <tr wire:key="kategori-{{ $kategori->id }}" class="transition hover:bg-slate-50/70">
                             <x-ui.td class="font-semibold text-slate-800">{{ $kategori->nama }}</x-ui.td>
                             <x-ui.td class="text-slate-600">{{ $kategori->mataKuliah->nama }}</x-ui.td>
+                            <x-ui.td>
+                                @if ($kategori->isFinal())
+                                    <x-ui.badge color="amber" title="Kelompok pada kategori ini dikunci"><x-heroicon-m-lock-closed class="size-3.5" /> Final</x-ui.badge>
+                                @else
+                                    <x-ui.badge color="emerald" title="Semua anggota kelas bisa menyusun kelompoknya"><x-heroicon-m-lock-open class="size-3.5" /> Terbuka</x-ui.badge>
+                                @endif
+                            </x-ui.td>
                             <x-ui.td class="text-center">
                                 <a href="{{ route('kelompok.index', ['kategori' => $kategori->id]) }}" wire:navigate class="font-medium text-primary-700 hover:underline">{{ $kategori->kelompok_count }}</a>
                             </x-ui.td>
@@ -48,6 +56,11 @@
                             <x-ui.td class="text-right">
                                 <x-ui.action-menu>
                                     <x-ui.menu-item :href="route('kelompok.index', ['kategori' => $kategori->id])" icon="heroicon-o-user-group">Lihat kelompok</x-ui.menu-item>
+                                    @can('setFinal', $kategori)
+                                        <x-ui.menu-item wire:click="toggleFinal({{ $kategori->id }})" :icon="$kategori->isFinal() ? 'heroicon-o-lock-open' : 'heroicon-o-lock-closed'">
+                                            {{ $kategori->isFinal() ? 'Lepas status final' : 'Tandai final' }}
+                                        </x-ui.menu-item>
+                                    @endcan
                                     @can('update', $kategori)
                                         <x-ui.menu-item wire:click="openEdit({{ $kategori->id }})" opens="showForm" icon="heroicon-o-pencil-square">Edit</x-ui.menu-item>
                                         <x-ui.menu-item wire:click="confirmDelete({{ $kategori->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus</x-ui.menu-item>

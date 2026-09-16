@@ -1,6 +1,8 @@
-# Manajemen Kelas
+# Kelas KampusKu
 
 Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, jadwal lab (praktikum), mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, pengaturan semester aktif, dan log aktivitas. Hampir semua daftar bisa diekspor ke Excel.
+
+Halaman depan (`/`) adalah landing page penawaran langganan; aplikasinya sendiri ada di `/login` (pengguna yang sudah masuk langsung diarahkan ke dashboard).
 
 Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL** (MAMP).
 
@@ -49,8 +51,10 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 |-----------------------------------------|-----------|-------------------|-------------|
 | Dashboard, Daftar Tugas, Jadwal, Jadwal Lab, Mata Kuliah | Lihat | CRUD (kelasnya) | CRUD (semua) |
 | Informasi & Kategori Informasi          | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
-| Lampiran file/gambar pada informasi     | —         | Upload            | Upload      |
-| Kelompok & Kategori Kelompok            | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
+| Lampiran file/gambar pada informasi     | —         | Upload (bila paket kelas mengizinkan) | Upload (bila paket kelas mengizinkan) |
+| Kategori Kelompok                       | CRUD (edit/hapus hanya data buatan sendiri, selama belum final) | CRUD | CRUD |
+| Kelompok                                | CRUD selama kategorinya belum final | CRUD selama kategorinya belum final | CRUD selama kategorinya belum final |
+| Tandai kategori kelompok final          | —         | Kelasnya          | Semua kelas |
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
 | Semester Aktif                          | —         | Kelasnya          | Semua kelas |
@@ -73,6 +77,15 @@ Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aks
 **Jadwal Lab** mencatat sesi praktikum per mata kuliah pada tanggal tertentu (tanggal, jam, ruangan, keterangan). Pilih mata kuliah pada form (atau lewat tombol "+" pada kartu mata kuliah yang sudah punya sesi), lalu isi beberapa sesi sekaligus — sesi baru otomatis mengikuti jam & ruangan sesi sebelumnya dengan tanggal seminggu berikutnya. Halaman hanya menampilkan mata kuliah yang sudah memiliki jadwal lab. Sesi hari ini ikut tampil di "Jadwal Hari Ini" pada dashboard.
 
 Kelompok selalu berada di bawah sebuah **kategori kelompok** (misal "Project Akhir" pada mata kuliah Pemrograman Web). Satu mahasiswa hanya bisa tergabung di satu kelompok per kategori, sehingga saat membuat kelompok hanya mahasiswa yang belum punya kelompok pada kategori itu yang ditawarkan.
+
+Selama kategori masih **terbuka**, seluruh anggota kelas boleh menyusun kelompok di dalamnya — membuat, mengubah, maupun menghapus, siapa pun yang membuatnya. Admin kelas (dan super admin) bisa menandainya **final** lewat menu aksi di Kategori Kelompok: setelah itu tidak ada yang bisa mengubah kelompoknya, termasuk admin sendiri, sampai status final dilepas kembali. Kategori yang sudah final juga hanya bisa diedit/dihapus oleh admin kelas.
+
+## Masa aktif & paket kelas
+
+Setiap kelas punya **masa aktif** (rentang tanggal) dan penanda **fitur upload**, keduanya hanya bisa diatur super admin lewat menu Kelas:
+
+- Di luar masa aktif, seluruh akun kelas tersebut tidak bisa masuk — dan sesi yang sedang terbuka ikut dikeluarkan pada permintaan berikutnya. Kosongkan kedua tanggal untuk kelas tanpa batas waktu. Super admin tidak terpengaruh karena tidak terikat kelas.
+- Bila fitur upload dimatikan, admin kelas tidak bisa melampirkan file pada informasi; lampiran tetap bisa dibagikan sebagai tautan Google Drive.
 
 ## Import mahasiswa dari CSV
 

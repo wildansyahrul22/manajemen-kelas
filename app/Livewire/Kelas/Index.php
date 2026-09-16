@@ -39,7 +39,7 @@ class Index extends Component
     protected function kelasQuery(): Builder
     {
         return Kelas::query()
-            ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'created_at'])
+            ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'masa_aktif_mulai', 'masa_aktif_selesai', 'upload', 'created_at'])
             ->with('semesterAktif:id,nama')
             ->withCount(['mahasiswa' => fn ($query) => $query->aktifDiSemesterKelas(), 'mataKuliah'])
             ->when(trim($this->search) !== '', fn ($query) => $query->where('nama', 'like', '%'.trim($this->search).'%'))
@@ -64,6 +64,9 @@ class Index extends Component
                 $kelas->prodi,
                 $kelas->angkatan,
                 $kelas->semesterAktif->nama,
+                $kelas->masaAktifTerbaca() ?? 'Tanpa batas',
+                $kelas->isAktif() ? 'Aktif' : ($kelas->sudahBerakhir() ? 'Kedaluwarsa' : 'Belum mulai'),
+                $kelas->bolehUpload() ? 'Ya' : 'Tidak',
                 $kelas->mahasiswa_count,
                 $kelas->mata_kuliah_count,
                 $kelas->created_at,
@@ -78,6 +81,9 @@ class Index extends Component
                 'Prodi',
                 ['Angkatan', ExcelExport::TIPE_ANGKA],
                 'Semester Aktif',
+                'Masa Aktif',
+                'Status',
+                'Fitur Upload',
                 ['Jumlah Mahasiswa', ExcelExport::TIPE_ANGKA],
                 ['Jumlah Mata Kuliah', ExcelExport::TIPE_ANGKA],
                 ['Dibuat Pada', ExcelExport::TIPE_WAKTU],

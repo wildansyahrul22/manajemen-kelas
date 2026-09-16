@@ -194,7 +194,7 @@ class DemoSeeder extends Seeder
         Informasi::query()->create([
             'kelas_id' => $kelasA->id,
             'kategori_informasi_id' => $kategori[0]->id,
-            'judul' => 'Selamat datang di Manajemen Kelas TI-3A',
+            'judul' => 'Selamat datang di Kelas KampusKu TI-3A',
             'isi' => "Gunakan aplikasi ini untuk memantau tugas, jadwal, dan informasi kelas.\n\nJika ada pertanyaan, hubungi admin kelas.",
             'is_pinned' => true,
             'created_by' => $admin->id,

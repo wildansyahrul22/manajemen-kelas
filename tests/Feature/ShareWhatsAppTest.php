@@ -55,7 +55,7 @@ class ShareWhatsAppTest extends TestCase
             '📎 2 lampiran (buka di aplikasi, login dengan NPM)',
             '',
             '👉 Selengkapnya: '.route('informasi.show', $informasi),
-            '_Dibagikan dari aplikasi Manajemen Kelas TI-3A_',
+            '_Dibagikan dari aplikasi Kelas KampusKu TI-3A_',
         ]), $teks);
 
         $mahasiswa = $this->mahasiswa($kelas);

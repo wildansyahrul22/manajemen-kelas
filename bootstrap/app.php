@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\EnsureKelasAktif;
 use App\Http\Middleware\EnsureKelasContext;
 use App\Http\Middleware\EnsureRole;
 use Illuminate\Foundation\Application;
@@ -17,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'role' => EnsureRole::class,
             'kelas' => EnsureKelasContext::class,
+            'kelas.aktif' => EnsureKelasAktif::class,
         ]);
 
         $middleware->redirectGuestsTo(fn () => route('login'));

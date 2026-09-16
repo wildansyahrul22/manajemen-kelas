@@ -40,7 +40,7 @@ class Index extends Component
     protected function kategoriQuery(): Builder
     {
         return KategoriKelompok::query()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'created_by', 'created_at'])
+            ->select(['id', 'mata_kuliah_id', 'nama', 'final', 'created_by', 'created_at'])
             ->with('mataKuliah:id,kelas_id,nama')
             ->withCount('kelompok')
             ->forKelasAktif($this->kelas)
@@ -65,6 +65,7 @@ class Index extends Component
                 $indeks + 1,
                 $kategori->mataKuliah->nama,
                 $kategori->nama,
+                $kategori->isFinal() ? 'Final' : 'Terbuka',
                 $kategori->kelompok_count,
                 $kategori->creator?->name,
                 $kategori->created_at,
@@ -80,6 +81,7 @@ class Index extends Component
                 ['No', ExcelExport::TIPE_ANGKA],
                 'Mata Kuliah',
                 'Nama Kategori',
+                'Status',
                 ['Jumlah Kelompok', ExcelExport::TIPE_ANGKA],
                 'Dibuat Oleh',
                 ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
@@ -126,6 +128,23 @@ class Index extends Component
         $this->closeForm();
         unset($this->daftarKategori);
         $this->notify($isEdit ? 'Kategori berhasil diperbarui.' : 'Kategori berhasil ditambahkan.');
+    }
+
+    /**
+     * Lock the kategori so its kelompok are frozen, or unlock it again. Admin kelas only.
+     */
+    public function toggleFinal(int $id): void
+    {
+        $kategori = KategoriKelompok::query()->findOrFail($id);
+
+        $this->authorize('setFinal', $kategori);
+
+        $kategori->update(['final' => ! $kategori->isFinal()]);
+
+        unset($this->daftarKategori);
+        $this->notify($kategori->isFinal()
+            ? 'Kategori ditandai final. Kelompok di dalamnya tidak bisa diubah lagi.'
+            : 'Status final dilepas. Anggota kelas bisa menyusun kelompoknya lagi.');
     }
 
     public function confirmDelete(int $id): void

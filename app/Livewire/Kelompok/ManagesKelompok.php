@@ -32,7 +32,7 @@ trait ManagesKelompok
     public function kategoriOptions(): Collection
     {
         return KategoriKelompok::query()
-            ->select(['id', 'mata_kuliah_id', 'nama'])
+            ->select(['id', 'mata_kuliah_id', 'nama', 'final'])
             ->with('mataKuliah:id,nama')
             ->forKelasAktif($this->kelas)
             ->get()
@@ -65,6 +65,10 @@ trait ManagesKelompok
     public function openCreate(?int $kategoriId = null): void
     {
         $this->authorize('create', Kelompok::class);
+
+        if ($kategoriId !== null) {
+            $this->authorize('kelolaKelompok', KategoriKelompok::query()->findOrFail($kategoriId));
+        }
 
         $this->form->reset();
         $this->form->kategori_kelompok_id = (string) ($kategoriId ?? '');

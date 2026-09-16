@@ -58,7 +58,7 @@ final class PesanWhatsApp
 
         $baris[] = '';
         $baris[] = '👉 Selengkapnya: '.route('informasi.show', $informasi);
-        $baris[] = "_Dibagikan dari aplikasi Manajemen Kelas {$kelas->nama}_";
+        $baris[] = "_Dibagikan dari aplikasi Kelas KampusKu {$kelas->nama}_";
 
         return implode("\n", $baris);
     }

@@ -20,11 +20,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
+// Public sales page; members land on their dashboard instead.
+Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view('landing'))->name('landing');
+
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', Login::class)->name('login');
 });
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'kelas.aktif'])->group(function () {
     Route::post('/logout', function (Request $request) {
         Auth::logout();
         $request->session()->invalidate();
@@ -32,8 +35,6 @@ Route::middleware('auth')->group(function () {
 
         return redirect()->route('login');
     })->name('logout');
-
-    Route::redirect('/', '/dashboard');
 
     Route::livewire('/profile', Profile\Edit::class)->name('profile.edit');
 

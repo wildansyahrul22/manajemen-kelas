@@ -22,7 +22,34 @@ class KelasFactory extends Factory
             'angkatan' => (int) now()->subYears(2)->format('Y'),
             'semester_aktif_id' => fn () => Semester::query()->where('nomor', 1)->value('id')
                 ?? Semester::factory()->create(['nomor' => 1, 'nama' => 'Semester 1'])->id,
+            'masa_aktif_mulai' => null,
+            'masa_aktif_selesai' => null,
+            'upload' => true,
         ];
+    }
+
+    /** Subscription that ran out yesterday: its members can no longer sign in. */
+    public function kedaluwarsa(): static
+    {
+        return $this->state(fn () => [
+            'masa_aktif_mulai' => now()->subMonths(6)->toDateString(),
+            'masa_aktif_selesai' => now()->subDay()->toDateString(),
+        ]);
+    }
+
+    /** Subscription that has not started yet. */
+    public function belumMulai(): static
+    {
+        return $this->state(fn () => [
+            'masa_aktif_mulai' => now()->addWeek()->toDateString(),
+            'masa_aktif_selesai' => now()->addMonths(6)->toDateString(),
+        ]);
+    }
+
+    /** Plan without the upload features. */
+    public function tanpaUpload(): static
+    {
+        return $this->state(fn () => ['upload' => false]);
     }
 
     public function semester(int $nomor): static

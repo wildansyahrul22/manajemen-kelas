@@ -59,7 +59,12 @@
                                 <div class="min-w-0">
                                     <p class="truncate text-xs font-medium text-slate-500">
                                         {{ $kelompok->mataKuliah->nama }}</p>
-                                    <x-ui.badge class="mt-1 bg-slate-100 text-slate-700">{{ $kelompok->kategori->nama }}</x-ui.badge>
+                                    <span class="mt-1 flex flex-wrap items-center gap-1.5">
+                                        <x-ui.badge class="bg-slate-100 text-slate-700">{{ $kelompok->kategori->nama }}</x-ui.badge>
+                                        @if ($kelompok->kategori->isFinal())
+                                            <x-ui.badge color="amber" title="Kategori sudah final, kelompok tidak bisa diubah"><x-heroicon-m-lock-closed class="size-3.5" /> Final</x-ui.badge>
+                                        @endif
+                                    </span>
                                     <a href="{{ route('kelompok.show', $kelompok) }}" wire:navigate
                                         class="mt-0.5 block truncate text-lg font-bold text-slate-900 hover:text-primary-900 hover:underline">{{ $kelompok->nama }}</a>
                                 </div>

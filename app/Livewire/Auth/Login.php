@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Auth;
 
+use App\Support\MasaAktifKelas;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
@@ -35,6 +36,16 @@ class Login extends Component
 
             throw ValidationException::withMessages([
                 'npm' => 'NPM atau password salah.',
+            ]);
+        }
+
+        $kelas = Auth::user()->kelas;
+
+        if ($kelas !== null && ! $kelas->isAktif()) {
+            Auth::logout();
+
+            throw ValidationException::withMessages([
+                'npm' => MasaAktifKelas::pesan($kelas),
             ]);
         }
 

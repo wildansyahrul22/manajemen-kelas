@@ -1,7 +1,7 @@
 <div>
     <div class="mb-8 flex flex-col items-center text-center">
         <x-ui.logo size="size-20" class="rounded-2xl shadow-lg" />
-        <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Manajemen Kelas</h1>
+        <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Kelas KampusKu</h1>
         <p class="mt-1 text-sm text-slate-500">Masuk dengan NPM dan password Anda.</p>
     </div>
 

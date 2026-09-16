@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Informasi;
+use App\Models\Kelas;
 use App\Models\User;
 
 class InformasiPolicy
@@ -42,10 +43,11 @@ class InformasiPolicy
     }
 
     /**
-     * Admin kelas and super admin may attach files; mahasiswa share a link instead.
+     * Admin kelas and super admin may attach files; mahasiswa share a link instead. The kelas must
+     * also be on a plan that includes uploading.
      */
-    public function upload(User $user): bool
+    public function upload(User $user, Kelas $kelas): bool
     {
-        return $user->isAdmin() || $user->isSuperAdmin();
+        return $kelas->bolehUpload() && $user->canManageKelas($kelas->id);
     }
 }

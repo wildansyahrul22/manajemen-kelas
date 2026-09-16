@@ -10,9 +10,9 @@
     }"
 >
     <div class="flex h-16 items-center gap-3 px-4" :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : 'px-5'">
-        <a href="{{ route('dashboard') }}" wire:navigate class="flex min-w-0 items-center gap-3" :title="sidebarCollapsed ? 'Manajemen Kelas' : null">
+        <a href="{{ route('dashboard') }}" wire:navigate class="flex min-w-0 items-center gap-3" :title="sidebarCollapsed ? 'Kelas KampusKu' : null">
             <x-ui.logo />
-            <span class="truncate text-base font-bold tracking-tight text-slate-900" :class="sidebarCollapsed && 'lg:hidden'">Manajemen Kelas</span>
+            <span class="truncate text-base font-bold tracking-tight text-slate-900" :class="sidebarCollapsed && 'lg:hidden'">Kelas KampusKu</span>
         </a>
         <button type="button" x-on:click="sidebarOpen = false" class="ml-auto rounded-lg p-1.5 text-slate-500 hover:bg-slate-100 lg:hidden" aria-label="Tutup menu">
             <x-heroicon-o-x-mark class="size-5" />

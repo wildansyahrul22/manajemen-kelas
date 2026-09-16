@@ -19,6 +19,13 @@ class KategoriKelompokFactory extends Factory
         return [
             'mata_kuliah_id' => MataKuliah::factory(),
             'nama' => fake()->randomElement(['Project Akhir', 'Presentasi', 'Praktikum', 'Tugas Besar', 'Diskusi']).' '.fake()->numberBetween(1, 99),
+            'final' => false,
         ];
+    }
+
+    /** Locked: its kelompok can no longer be changed by anyone. */
+    public function final(): static
+    {
+        return $this->state(fn () => ['final' => true]);
     }
 }

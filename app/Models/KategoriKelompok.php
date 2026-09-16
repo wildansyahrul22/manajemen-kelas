@@ -17,14 +17,25 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Groups kelompok of one mata kuliah (e.g. "Project Akhir", "Presentasi"). A student may only be in
- * one kelompok per kategori.
+ * one kelompok per kategori. While the kategori is not final every member of the kelas may arrange
+ * its kelompok; marking it final freezes them.
  */
 #[Table('kategori_kelompok')]
-#[Fillable(['mata_kuliah_id', 'nama', 'created_by'])]
+#[Fillable(['mata_kuliah_id', 'nama', 'final', 'created_by'])]
 class KategoriKelompok extends Model
 {
     /** @use HasFactory<KategoriKelompokFactory> */
     use HasFactory, LogsActivity, ScopedByMataKuliah;
+
+    /**
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'final' => 'boolean',
+        ];
+    }
 
     public function kelompok(): HasMany
     {
@@ -44,6 +55,15 @@ class KategoriKelompok extends Model
         if ($term !== '') {
             $query->where('nama', 'like', "%{$term}%");
         }
+    }
+
+    /**
+     * A final kategori is locked: its kelompok may not be created, edited or removed by anyone
+     * until an admin kelas (or super admin) unlocks it.
+     */
+    public function isFinal(): bool
+    {
+        return (bool) $this->final;
     }
 
     /**

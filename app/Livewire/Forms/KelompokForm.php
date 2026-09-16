@@ -41,6 +41,7 @@ class KelompokForm extends Form
             'kategori_kelompok_id' => [
                 'required',
                 Rule::exists('kategori_kelompok', 'id')->whereIn('mata_kuliah_id', MataKuliah::query()->select('id')->where('kelas_id', $this->kelas?->id)),
+                $this->kategoriBelumFinal(),
             ],
             'deskripsi' => ['nullable', 'string', 'max:2000'],
             'anggota' => ['required', 'array', 'min:1'],
@@ -184,6 +185,20 @@ class KelompokForm extends Form
     /**
      * A student can only sit in one kelompok per kategori.
      */
+    /**
+     * A kategori marked final is frozen: no kelompok may be created in it or moved into it.
+     */
+    protected function kategoriBelumFinal(): Closure
+    {
+        return function (string $attribute, mixed $value, Closure $fail) {
+            $kategori = KategoriKelompok::query()->find((int) $value);
+
+            if ($kategori?->isFinal()) {
+                $fail("Kategori {$kategori->nama} sudah final, kelompoknya tidak bisa diubah lagi.");
+            }
+        };
+    }
+
     protected function belumPunyaKelompokDiKategori(): Closure
     {
         return function (string $attribute, mixed $value, Closure $fail): void {

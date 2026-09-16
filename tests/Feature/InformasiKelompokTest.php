@@ -126,20 +126,17 @@ class InformasiKelompokTest extends TestCase
         $this->assertModelMissing($kategori);
     }
 
-    public function test_mahasiswa_cannot_edit_or_delete_kelompok_created_by_someone_else(): void
+    public function test_any_member_of_the_kelas_may_edit_kelompok_of_an_open_kategori(): void
     {
         $kelas = $this->kelas();
         $kategori = KategoriKelompok::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $kelas->id])->id]);
         $pembuat = $this->mahasiswa($kelas);
-        $anggota = $this->mahasiswa($kelas);
+        $orangLain = $this->mahasiswa($kelas);
         $kelompok = Kelompok::factory()->create(['kategori_kelompok_id' => $kategori->id, 'created_by' => $pembuat->id]);
-        $kelompok->anggota()->attach([$pembuat->id, $anggota->id]);
+        $kelompok->anggota()->attach([$pembuat->id, $orangLain->id]);
 
-        // Being a member is not enough; only the creator (or an admin) may change it.
-        Livewire::actingAs($anggota)->test(KelompokIndex::class)->call('openEdit', $kelompok->id)->assertForbidden();
-        Livewire::actingAs($anggota)->test(KelompokIndex::class)->call('confirmDelete', $kelompok->id)->assertForbidden();
-
-        Livewire::actingAs($pembuat)
+        // While the kategori is open it does not matter who created the kelompok.
+        Livewire::actingAs($orangLain)
             ->test(KelompokIndex::class)
             ->call('openEdit', $kelompok->id)
             ->set('form.nama', 'Kelompok Diubah')
@@ -147,6 +144,12 @@ class InformasiKelompokTest extends TestCase
             ->assertHasNoErrors();
 
         $this->assertSame('Kelompok Diubah', $kelompok->fresh()->nama);
+
+        // Someone from another kelas still cannot touch it.
+        Livewire::actingAs($this->mahasiswa($this->kelas()))
+            ->test(KelompokIndex::class)
+            ->call('openEdit', $kelompok->id)
+            ->assertForbidden();
     }
 
     public function test_kelompok_members_must_be_students_of_the_kelas(): void

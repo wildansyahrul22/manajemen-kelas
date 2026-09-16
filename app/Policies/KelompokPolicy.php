@@ -23,14 +23,16 @@ class KelompokPolicy
     }
 
     /**
-     * Admin of the kelas may edit everything; mahasiswa only kelompok they created.
+     * As long as the kategori is open every member of the kelas may arrange its kelompok; once it is
+     * final nobody can, until an admin kelas unlocks the kategori again.
      */
     public function update(User $user, Kelompok $kelompok): bool
     {
-        $kelasId = $kelompok->mataKuliah->kelas_id;
+        $kategori = $kelompok->kategori;
 
-        return $user->canManageKelas($kelasId)
-            || ($kelompok->created_by === $user->id && $user->belongsToKelas($kelasId));
+        return $kategori !== null
+            && ! $kategori->isFinal()
+            && $user->belongsToKelas($kelompok->mataKuliah->kelas_id);
     }
 
     public function delete(User $user, Kelompok $kelompok): bool

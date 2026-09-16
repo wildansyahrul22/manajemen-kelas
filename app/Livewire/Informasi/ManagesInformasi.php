@@ -17,12 +17,13 @@ trait ManagesInformasi
     public InformasiForm $form;
 
     /**
-     * Whether the current user may attach files (admin kelas and super admin); mahasiswa share links.
+     * Whether the current user may attach files: admin kelas and super admin, and only when the
+     * kelas' plan includes uploading. Mahasiswa share links instead.
      */
     #[Computed]
     public function canUpload(): bool
     {
-        return auth()->user()->can('upload', Informasi::class);
+        return auth()->user()->can('upload', [Informasi::class, $this->kelas]);
     }
 
     #[Computed]

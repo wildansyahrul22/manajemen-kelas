@@ -18,18 +18,41 @@ class KategoriKelompokPolicy
     }
 
     /**
-     * Admin of the kelas may edit everything; mahasiswa only kategori they created.
+     * Admin of the kelas may edit everything; mahasiswa only kategori they created, and never one
+     * that has been marked final.
      */
     public function update(User $user, KategoriKelompok $kategori): bool
     {
         $kelasId = $kategori->mataKuliah->kelas_id;
 
-        return $user->canManageKelas($kelasId)
-            || ($kategori->created_by === $user->id && $user->belongsToKelas($kelasId));
+        if ($user->canManageKelas($kelasId)) {
+            return true;
+        }
+
+        return ! $kategori->isFinal()
+            && $kategori->created_by === $user->id
+            && $user->belongsToKelas($kelasId);
     }
 
     public function delete(User $user, KategoriKelompok $kategori): bool
     {
         return $this->update($user, $kategori);
+    }
+
+    /**
+     * Whether kelompok inside this kategori may be arranged: every member of the kelas while the
+     * kategori is open, nobody once it is final.
+     */
+    public function kelolaKelompok(User $user, KategoriKelompok $kategori): bool
+    {
+        return ! $kategori->isFinal() && $user->belongsToKelas($kategori->mataKuliah->kelas_id);
+    }
+
+    /**
+     * Locking a kategori (and unlocking it again) is reserved for admin kelas and super admin.
+     */
+    public function setFinal(User $user, KategoriKelompok $kategori): bool
+    {
+        return $user->canManageKelas($kategori->mataKuliah->kelas_id);
     }
 }
