@@ -5,6 +5,7 @@ namespace Tests;
 use App\Enums\Role;
 use App\Models\Kelas;
 use App\Models\User;
+use Database\Seeders\KampusSeeder;
 use Database\Seeders\SemesterSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -17,7 +18,7 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        $this->seed(SemesterSeeder::class);
+        $this->seed([SemesterSeeder::class, KampusSeeder::class]);
     }
 
     protected function kelas(int $semester = 3, array $attributes = []): Kelas

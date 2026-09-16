@@ -6,6 +6,7 @@ use App\Livewire\Concerns\ManagesModalForm;
 use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Livewire\Forms\KelasForm;
+use App\Models\Kampus;
 use App\Models\Kelas;
 use App\Models\Semester;
 use App\Support\ExcelExport;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
+use Livewire\Attributes\Url;
 use Livewire\Component;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,9 +27,23 @@ class Index extends Component
 
     public KelasForm $form;
 
+    #[Url(as: 'kampus', except: '')]
+    public string $kampusId = '';
+
     public function mount(): void
     {
         $this->authorize('viewAny', Kelas::class);
+    }
+
+    public function updatedKampusId(): void
+    {
+        $this->resetPage();
+    }
+
+    #[Computed]
+    public function kampusOptions(): Collection
+    {
+        return Kampus::query()->orderBy('nama')->get(['id', 'nama']);
     }
 
     #[Computed]
@@ -39,9 +55,10 @@ class Index extends Component
     protected function kelasQuery(): Builder
     {
         return Kelas::query()
-            ->select(['id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'masa_aktif_mulai', 'masa_aktif_selesai', 'upload', 'created_at'])
-            ->with('semesterAktif:id,nama')
+            ->select(['id', 'kampus_id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'masa_aktif_mulai', 'masa_aktif_selesai', 'upload', 'created_at'])
+            ->with(['kampus:id,nama', 'semesterAktif:id,nama'])
             ->withCount(['mahasiswa' => fn ($query) => $query->aktifDiSemesterKelas(), 'mataKuliah'])
+            ->when($this->kampusId !== '', fn ($query) => $query->where('kampus_id', (int) $this->kampusId))
             ->when(trim($this->search) !== '', fn ($query) => $query->where('nama', 'like', '%'.trim($this->search).'%'))
             ->orderBy('nama');
     }
@@ -61,6 +78,7 @@ class Index extends Component
             ->map(fn (Kelas $kelas, int $indeks) => [
                 $indeks + 1,
                 $kelas->nama,
+                $kelas->kampus->nama,
                 $kelas->prodi,
                 $kelas->angkatan,
                 $kelas->semesterAktif->nama,
@@ -74,10 +92,14 @@ class Index extends Component
 
         return ExcelExport::buat('Kelas')
             ->subjudul('Semua kelas')
-            ->filter(['Pencarian' => $this->search])
+            ->filter([
+                'Kampus' => $this->kampusId !== '' ? $this->kampusOptions->firstWhere('id', (int) $this->kampusId)?->nama : null,
+                'Pencarian' => $this->search,
+            ])
             ->kolom(
                 ['No', ExcelExport::TIPE_ANGKA],
                 'Nama Kelas',
+                'Kampus',
                 'Prodi',
                 ['Angkatan', ExcelExport::TIPE_ANGKA],
                 'Semester Aktif',
@@ -97,6 +119,7 @@ class Index extends Component
         $this->authorize('create', Kelas::class);
 
         $this->form->reset();
+        $this->form->kampus_id = (string) $this->kampusOptions->first()?->id;
         $this->form->angkatan = (string) now()->year;
         $this->form->semester_aktif_id = (string) $this->semesterOptions->first()?->id;
         $this->openForm();

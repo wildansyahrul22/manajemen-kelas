@@ -63,6 +63,7 @@
                 <div class="space-y-1">
                     <x-ui.nav-link :href="route('users.index')" :active="request()->routeIs('users.*')" icon="heroicon-o-users">Users</x-ui.nav-link>
                     @if ($user->isSuperAdmin())
+                        <x-ui.nav-link :href="route('kampus.index')" :active="request()->routeIs('kampus.*')" icon="heroicon-o-academic-cap">Kampus</x-ui.nav-link>
                         <x-ui.nav-link :href="route('kelas.index')" :active="request()->routeIs('kelas.*')" icon="heroicon-o-building-library">Kelas</x-ui.nav-link>
                     @endif
                     <x-ui.nav-link :href="route('semester-aktif.index')" :active="request()->routeIs('semester-aktif.*')" icon="heroicon-o-adjustments-horizontal">Semester Aktif</x-ui.nav-link>

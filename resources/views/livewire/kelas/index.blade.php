@@ -7,16 +7,18 @@
     </x-ui.page-header>
 
     <x-ui.card :padding="false">
-        <div class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:items-center sm:p-5">
+        <div class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:flex-row sm:flex-wrap sm:items-center sm:p-5">
             <div class="flex-1 sm:max-w-xs">
                 <x-ui.search wire:model.live.debounce.500ms="search" placeholder="Cari kelas..." />
             </div>
+            <x-ui.combobox name="kampusId" wire:model.live="kampusId" :options="$this->kampusOptions->pluck('nama', 'id')"
+                placeholder="Semua kampus" clearable class="sm:w-64" />
             <div class="sm:ml-auto">
                 <x-ui.per-page wire:model.live="perPage" />
             </div>
         </div>
 
-        <div wire:loading.class="opacity-50" wire:target="search, perPage, gotoPage, nextPage, previousPage"
+        <div wire:loading.class="opacity-50" wire:target="search, kampusId, perPage, gotoPage, nextPage, previousPage"
             class="transition-opacity">
             @if ($this->daftarKelas->isEmpty())
                 <x-ui.empty-state title="Belum ada kelas"
@@ -40,6 +42,7 @@
                         <tr wire:key="kelas-{{ $kelas->id }}" class="transition hover:bg-slate-50/70">
                             <x-ui.td>
                                 <p class="font-semibold text-slate-800">{{ $kelas->nama }}</p>
+                                <p class="text-xs text-slate-500">{{ $kelas->kampus->nama }}</p>
                                 <p class="text-xs text-slate-500">{{ $kelas->prodi ?: '—' }}<span class="md:hidden"> ·
                                         {{ $kelas->angkatan }}</span></p>
                                 <div class="mt-1.5 flex flex-wrap items-center gap-1.5">
@@ -80,6 +83,8 @@
 
     <x-ui.modal model="showForm" :title="$form->kelas ? 'Edit Kelas' : 'Tambah Kelas'" loading="openCreate, openEdit">
         <form id="form-kelas" wire:submit="save" class="space-y-4">
+            <x-ui.combobox label="Kampus" name="form.kampus_id" wire:model="form.kampus_id"
+                :options="$this->kampusOptions->pluck('nama', 'id')" placeholder="Pilih kampus" required />
             <x-ui.input label="Nama kelas" name="form.nama" wire:model="form.nama" placeholder="Contoh: TI-3A"
                 required />
             <x-ui.input label="Program studi" name="form.prodi" wire:model="form.prodi"

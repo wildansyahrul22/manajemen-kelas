@@ -18,7 +18,7 @@ Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL*
    composer install
    cp .env.example .env        # lewati jika .env sudah ada
    php artisan key:generate
-   php artisan migrate --seed  # membuat tabel + data semester 1-14 dan akun super admin
+   php artisan migrate --seed  # membuat tabel + data semester 1-14, kampus awal, dan akun super admin
    npm install
    npm run build               # atau `npm run dev` saat mengembangkan
    composer run serve          # = php artisan serve + batas unggah dari public/.user.ini

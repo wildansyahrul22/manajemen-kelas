@@ -7,6 +7,7 @@ use App\Livewire\Dashboard;
 use App\Livewire\Informasi;
 use App\Livewire\Jadwal;
 use App\Livewire\JadwalLab;
+use App\Livewire\Kampus;
 use App\Livewire\KategoriInformasi;
 use App\Livewire\KategoriKelompok;
 use App\Livewire\Kelas;
@@ -79,6 +80,7 @@ Route::middleware(['auth', 'kelas.aktif'])->group(function () {
     });
 
     Route::middleware('role:super_admin')->group(function () {
+        Route::livewire('/kampus', Kampus\Index::class)->name('kampus.index');
         Route::livewire('/kelas', Kelas\Index::class)->name('kelas.index');
     });
 });

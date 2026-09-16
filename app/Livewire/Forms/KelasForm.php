@@ -10,6 +10,8 @@ class KelasForm extends Form
 {
     public ?Kelas $kelas = null;
 
+    public string $kampus_id = '';
+
     public string $nama = '';
 
     public string $prodi = '';
@@ -30,6 +32,7 @@ class KelasForm extends Form
     public function rules(): array
     {
         return [
+            'kampus_id' => ['required', Rule::exists('kampus', 'id')],
             'nama' => ['required', 'string', 'max:50', Rule::unique('kelas', 'nama')->ignore($this->kelas?->id)],
             'prodi' => ['nullable', 'string', 'max:100'],
             'angkatan' => ['required', 'integer', 'min:2000', 'max:'.(now()->year + 1)],
@@ -46,6 +49,7 @@ class KelasForm extends Form
     public function validationAttributes(): array
     {
         return [
+            'kampus_id' => 'kampus',
             'nama' => 'nama kelas',
             'prodi' => 'program studi',
             'angkatan' => 'angkatan',
@@ -71,6 +75,7 @@ class KelasForm extends Form
     public function fillFrom(Kelas $kelas): void
     {
         $this->kelas = $kelas;
+        $this->kampus_id = (string) $kelas->kampus_id;
         $this->nama = $kelas->nama;
         $this->prodi = (string) $kelas->prodi;
         $this->angkatan = (string) $kelas->angkatan;
@@ -85,6 +90,7 @@ class KelasForm extends Form
         $data = $this->validate();
 
         $attributes = [
+            'kampus_id' => (int) $data['kampus_id'],
             'nama' => $data['nama'],
             'prodi' => $data['prodi'] !== '' ? $data['prodi'] : null,
             'angkatan' => (int) $data['angkatan'],

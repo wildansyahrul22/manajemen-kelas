@@ -19,7 +19,7 @@ class RoleAccessTest extends TestCase
     {
         $user = $this->mahasiswa($this->kelas());
 
-        foreach (['users.index', 'semester-aktif.index', 'kelas.index'] as $route) {
+        foreach (['users.index', 'semester-aktif.index', 'kampus.index', 'kelas.index'] as $route) {
             $this->actingAs($user)->get(route($route))->assertForbidden();
         }
     }
@@ -30,6 +30,7 @@ class RoleAccessTest extends TestCase
 
         $this->actingAs($admin)->get(route('users.index'))->assertOk();
         $this->actingAs($admin)->get(route('semester-aktif.index'))->assertOk();
+        $this->actingAs($admin)->get(route('kampus.index'))->assertForbidden();
         $this->actingAs($admin)->get(route('kelas.index'))->assertForbidden();
     }
 
@@ -38,7 +39,7 @@ class RoleAccessTest extends TestCase
         $this->kelas();
         $superAdmin = $this->superAdmin();
 
-        foreach (['dashboard', 'users.index', 'semester-aktif.index', 'kelas.index'] as $route) {
+        foreach (['dashboard', 'users.index', 'semester-aktif.index', 'kampus.index', 'kelas.index'] as $route) {
             $this->actingAs($superAdmin)->get(route($route))->assertOk();
         }
     }

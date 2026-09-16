@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Kampus;
 use App\Models\Kelas;
 use App\Models\Semester;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -17,6 +18,7 @@ class KelasFactory extends Factory
     public function definition(): array
     {
         return [
+            'kampus_id' => fn () => Kampus::query()->value('id') ?? Kampus::factory()->create()->id,
             'nama' => 'TI-'.fake()->unique()->numberBetween(1, 9).fake()->randomElement(['A', 'B', 'C']),
             'prodi' => 'Teknik Informatika',
             'angkatan' => (int) now()->subYears(2)->format('Y'),

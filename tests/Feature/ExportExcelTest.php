@@ -318,8 +318,8 @@ class ExportExcelTest extends TestCase
 
         $rows = $this->downloadedSpreadsheet($component)->getSheet(0)->toArray(null, true, true, false);
         $this->assertSame('Filter: Pencarian = TI-3', $rows[2][0]);
-        $this->assertSame(['No', 'Nama Kelas', 'Prodi', 'Angkatan', 'Semester Aktif', 'Masa Aktif', 'Status', 'Fitur Upload', 'Jumlah Mahasiswa', 'Jumlah Mata Kuliah', 'Dibuat Pada'], $rows[5]);
-        $this->assertSame(['1', 'TI-3A', 'Teknik Informatika', '2024', 'Semester 3', 'Tanpa batas', 'Aktif', 'Ya', '2', '2'], array_slice($rows[6], 0, 10));
+        $this->assertSame(['No', 'Nama Kelas', 'Kampus', 'Prodi', 'Angkatan', 'Semester Aktif', 'Masa Aktif', 'Status', 'Fitur Upload', 'Jumlah Mahasiswa', 'Jumlah Mata Kuliah', 'Dibuat Pada'], $rows[5]);
+        $this->assertSame(['1', 'TI-3A', 'Universitas Indraprasta PGRI', 'Teknik Informatika', '2024', 'Semester 3', 'Tanpa batas', 'Aktif', 'Ya', '2', '2'], array_slice($rows[6], 0, 11));
         $this->assertCount(7, $rows);
     }
 

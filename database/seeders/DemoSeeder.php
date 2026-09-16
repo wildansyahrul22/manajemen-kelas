@@ -6,6 +6,7 @@ use App\Enums\Role;
 use App\Models\Informasi;
 use App\Models\JadwalKelas;
 use App\Models\JadwalLab;
+use App\Models\Kampus;
 use App\Models\KategoriInformasi;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
@@ -38,8 +39,10 @@ class DemoSeeder extends Seeder
         }
 
         $semester = fn (int $nomor) => Semester::query()->where('nomor', $nomor)->value('id');
+        $kampusId = Kampus::query()->firstOrCreate(['nama' => Kampus::AWAL])->id;
 
         $kelasA = Kelas::query()->create([
+            'kampus_id' => $kampusId,
             'nama' => self::KELAS_DEMO,
             'prodi' => 'Teknik Informatika',
             'angkatan' => 2024,
@@ -47,6 +50,7 @@ class DemoSeeder extends Seeder
         ]);
 
         $kelasB = Kelas::query()->create([
+            'kampus_id' => $kampusId,
             'nama' => self::KELAS_LAIN,
             'prodi' => 'Teknik Informatika',
             'angkatan' => 2025,

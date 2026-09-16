@@ -14,7 +14,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Table('kelas')]
-#[Fillable(['nama', 'prodi', 'angkatan', 'semester_aktif_id', 'masa_aktif_mulai', 'masa_aktif_selesai', 'upload'])]
+#[Fillable(['kampus_id', 'nama', 'prodi', 'angkatan', 'semester_aktif_id', 'masa_aktif_mulai', 'masa_aktif_selesai', 'upload'])]
 class Kelas extends Model
 {
     /** @use HasFactory<KelasFactory> */
@@ -30,6 +30,11 @@ class Kelas extends Model
             'masa_aktif_selesai' => 'date',
             'upload' => 'boolean',
         ];
+    }
+
+    public function kampus(): BelongsTo
+    {
+        return $this->belongsTo(Kampus::class, 'kampus_id');
     }
 
     public function semesterAktif(): BelongsTo
