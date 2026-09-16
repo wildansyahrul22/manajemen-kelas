@@ -33,14 +33,6 @@ final class BatasUnggah
         return $post === null ? null : max($post - self::OVERHEAD_BYTES, self::perFileBytes());
     }
 
-    /**
-     * Whether PHP on this server allows less per file than the application does.
-     */
-    public static function dibatasiServer(): bool
-    {
-        return self::perFileBytes() < Informasi::LAMPIRAN_MAKS_KB * 1024;
-    }
-
     public static function mb(int $bytes): string
     {
         $mb = $bytes / 1024 / 1024;

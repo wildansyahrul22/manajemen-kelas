@@ -1,6 +1,14 @@
 @php $isSuperAdmin = $this->actor->isSuperAdmin(); @endphp
 <div>
-    <x-ui.page-header title="Log Aktivitas" :description="$isSuperAdmin ? 'Riwayat aktivitas seluruh kelas: siapa membuat, mengubah, atau menghapus data, serta masuk/keluar.' : 'Riwayat aktivitas kelas '.$this->actor->kelas?->nama.': siapa membuat, mengubah, atau menghapus data, serta masuk/keluar.'" />
+    <x-ui.page-header title="Log Aktivitas" :description="$isSuperAdmin ? 'Riwayat aktivitas seluruh kelas: siapa membuat, mengubah, atau menghapus data, serta masuk/keluar.' : 'Riwayat aktivitas kelas '.$this->actor->kelas?->nama.': siapa membuat, mengubah, atau menghapus data, serta masuk/keluar.'">
+        @if ($isSuperAdmin && $this->daftarLog->total() > 0)
+            <x-slot:actions>
+                <x-ui.button variant="danger" wire:click="confirmDeleteFiltered" opens="confirmingDeleteFiltered">
+                    <x-heroicon-m-trash class="size-4" /> Hapus {{ $this->daftarLog->total() }} entri
+                </x-ui.button>
+            </x-slot:actions>
+        @endif
+    </x-ui.page-header>
 
     <x-ui.card :padding="false">
         <div class="flex flex-col gap-3 border-b border-slate-100 p-4 sm:p-5 lg:flex-row lg:flex-wrap lg:items-center">
@@ -29,6 +37,7 @@
                         <x-ui.th>Data</x-ui.th>
                         @if ($isSuperAdmin)<x-ui.th class="hidden md:table-cell">Kelas</x-ui.th>@endif
                         <x-ui.th class="hidden lg:table-cell">IP</x-ui.th>
+                        @if ($isSuperAdmin)<x-ui.th class="text-right">Aksi</x-ui.th>@endif
                     </x-slot:head>
                     @foreach ($this->daftarLog as $log)
                         <tr wire:key="log-{{ $log->id }}" x-data="{ buka: false }" class="align-top transition hover:bg-slate-50/70">
@@ -72,6 +81,13 @@
                                 <x-ui.td class="hidden text-slate-600 md:table-cell">{{ $log->kelas?->nama ?? '—' }}</x-ui.td>
                             @endif
                             <x-ui.td class="hidden font-mono text-xs text-slate-400 lg:table-cell">{{ $log->ip ?? '—' }}</x-ui.td>
+                            @if ($isSuperAdmin)
+                                <x-ui.td class="text-right">
+                                    <x-ui.action-menu>
+                                        <x-ui.menu-item wire:click="confirmDelete({{ $log->id }})" opens="confirmingDelete" icon="heroicon-o-trash" danger>Hapus entri</x-ui.menu-item>
+                                    </x-ui.action-menu>
+                                </x-ui.td>
+                            @endif
                         </tr>
                     @endforeach
                 </x-ui.table>
@@ -82,4 +98,9 @@
             {{ $this->daftarLog->links() }}
         </div>
     </x-ui.card>
+
+    @if ($isSuperAdmin)
+        <x-ui.confirm model="confirmingDelete" title="Hapus entri log?" description="Entri ini akan dihapus permanen dari log aktivitas." />
+        <x-ui.confirm model="confirmingDeleteFiltered" action="deleteFiltered" loading="confirmDeleteFiltered" :title="'Hapus '.$this->daftarLog->total().' entri log?'" :description="'Semua entri yang cocok dengan filter saat ini ('.$this->ringkasanFilter.') akan dihapus permanen. Penghapusan ini sendiri akan dicatat di log.'" :label="'Hapus '.$this->daftarLog->total().' entri'" />
+    @endif
 </div>

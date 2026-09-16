@@ -162,12 +162,13 @@ return [
         // Livewire's temporary upload endpoint validates `files.*`; PHP rejects oversized files
         // before Laravel sees them, which surfaces as the `file` rule failing.
         'files.*' => [
-            'file' => 'Lampiran gagal diunggah: ukuran file melebihi batas unggah server.',
-            'max' => 'Lampiran gagal diunggah: ukuran file melebihi batas unggah server.',
+            'file' => 'Lampiran gagal diunggah karena ukurannya melebihi batas yang diizinkan.',
+            'max' => 'Lampiran gagal diunggah karena ukurannya melebihi batas yang diizinkan.',
         ],
     ],
 
     'attributes' => [
+        'form.lampiran' => 'lampiran',
         'address' => 'alamat',
         'affiliate_url' => 'URL afiliasi',
         'age' => 'usia',

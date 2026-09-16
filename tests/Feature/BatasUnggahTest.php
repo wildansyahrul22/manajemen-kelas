@@ -32,7 +32,6 @@ class BatasUnggahTest extends TestCase
 
         $this->assertLessThanOrEqual($appBytes, BatasUnggah::perFileBytes());
         $this->assertSame($server === null ? $appBytes : min($appBytes, $server), BatasUnggah::perFileBytes());
-        $this->assertSame(BatasUnggah::perFileBytes() < $appBytes, BatasUnggah::dibatasiServer());
     }
 
     public function test_mb_is_formatted_for_indonesian_readers(): void
@@ -42,18 +41,17 @@ class BatasUnggahTest extends TestCase
         $this->assertSame('0,3', BatasUnggah::mb(300 * 1024));
     }
 
-    public function test_form_hint_shows_the_effective_limit_and_warns_when_the_server_is_stricter(): void
+    public function test_form_hint_shows_the_effective_limit_without_technical_details(): void
     {
         $kelas = $this->kelas();
         $perFile = BatasUnggah::mb(BatasUnggah::perFileBytes());
 
-        $component = Livewire::actingAs($this->admin($kelas))
+        Livewire::actingAs($this->admin($kelas))
             ->test(InformasiIndex::class)
             ->call('openCreate')
-            ->assertSee("Maks. {$perFile} MB per file, 5 file per informasi");
-
-        BatasUnggah::dibatasiServer()
-            ? $component->assertSee("Server saat ini hanya menerima {$perFile} MB per file")
-            : $component->assertDontSee('Server saat ini hanya menerima');
+            ->assertSee("Maks. {$perFile} MB per file, 2 file per informasi")
+            ->assertDontSee('upload_max_filesize')
+            ->assertDontSee('PHP')
+            ->assertDontSee('server');
     }
 }

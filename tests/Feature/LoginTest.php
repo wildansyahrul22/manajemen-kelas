@@ -40,7 +40,12 @@ class LoginTest extends TestCase
 
         $this->assertNotEmpty($user->fresh()->remember_token);
         $this->assertTrue(auth()->viaRemember() || auth()->check());
-        $this->assertNotNull(collect(app('cookie')->getQueuedCookies())->first(fn ($cookie) => str_starts_with($cookie->getName(), 'remember_web_')));
+
+        $cookie = collect(app('cookie')->getQueuedCookies())->first(fn ($cookie) => str_starts_with($cookie->getName(), 'remember_web_'));
+        $this->assertNotNull($cookie);
+
+        // The cookie lasts 30 days (Laravel's default would be 400).
+        $this->assertEqualsWithDelta(now()->addDays(30)->getTimestamp(), $cookie->getExpiresTime(), 60);
     }
 
     public function test_without_remember_me_no_remember_token_is_issued(): void

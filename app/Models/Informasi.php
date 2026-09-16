@@ -30,10 +30,10 @@ class Informasi extends Model
     public const array LAMPIRAN_EKSTENSI = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'txt', 'zip'];
 
     /** Per file. */
-    public const int LAMPIRAN_MAKS_KB = 5120;
+    public const int LAMPIRAN_MAKS_KB = 2048;
 
     /** Per informasi. */
-    public const int LAMPIRAN_MAKS_JUMLAH = 5;
+    public const int LAMPIRAN_MAKS_JUMLAH = 2;
 
     protected static function booted(): void
     {

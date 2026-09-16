@@ -46,7 +46,7 @@
                         this.progres = 0;
                         $wire.$uploadMultiple('form.lampiran', files,
                             () => { this.progres = null; this.$refs.input.value = ''; },
-                            () => { this.progres = null; this.pesan = 'Gagal mengunggah. Periksa koneksi, atau ukuran file melebihi batas server ({{ \App\Support\BatasUnggah::mb($perFile) }} MB per file).'; this.$refs.input.value = ''; },
+                            () => { this.progres = null; this.pesan = 'File gagal diunggah. Pastikan ukurannya maksimal {{ \App\Support\BatasUnggah::mb($perFile) }} MB, lalu coba lagi.'; this.$refs.input.value = ''; },
                             (event) => { this.progres = event.detail.progress; },
                         );
                     },
@@ -119,9 +119,6 @@
                 @else
                     <p class="mt-1.5 text-xs text-slate-500">
                         Bisa pilih beberapa file sekaligus. Maks. {{ \App\Support\BatasUnggah::mb($perFile) }} MB per file, {{ \App\Models\Informasi::LAMPIRAN_MAKS_JUMLAH }} file per informasi; format {{ strtoupper(implode(', ', \App\Models\Informasi::LAMPIRAN_EKSTENSI)) }}. File hanya bisa dibuka oleh anggota kelas.
-                        @if (\App\Support\BatasUnggah::dibatasiServer())
-                            <span class="block text-amber-700">Server saat ini hanya menerima {{ \App\Support\BatasUnggah::mb($perFile) }} MB per file (batas aplikasi {{ \App\Models\Informasi::LAMPIRAN_MAKS_KB / 1024 }} MB) — cek upload_max_filesize di PHP.</span>
-                        @endif
                     </p>
                 @endif
             </div>

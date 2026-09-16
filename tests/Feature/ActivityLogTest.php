@@ -171,4 +171,77 @@ class ActivityLogTest extends TestCase
         $this->actingAs($this->mahasiswa($kelas))->get(route('log-aktivitas.index'))->assertForbidden();
         $this->actingAs($this->admin($kelas))->get(route('log-aktivitas.index'))->assertOk()->assertSee('Log Aktivitas');
     }
+
+    public function test_super_admin_can_delete_a_single_log_entry(): void
+    {
+        $kelas = $this->kelas();
+        Informasi::factory()->create(['kelas_id' => $kelas->id, 'judul' => 'Info Hapus']);
+        $log = ActivityLog::query()->where('subjek_label', 'Info Hapus')->firstOrFail();
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(LogIndex::class)
+            ->assertSee('Hapus entri')
+            ->call('confirmDelete', $log->id)
+            ->assertSet('confirmingDelete', true)
+            ->call('delete')
+            ->assertDispatched('notify')
+            ->assertDontSee('Info Hapus');
+
+        $this->assertModelMissing($log);
+    }
+
+    public function test_super_admin_can_delete_every_entry_matching_the_filters_and_the_purge_is_logged(): void
+    {
+        $kelasA = $this->kelas(3, ['nama' => 'TI-A']);
+        $kelasB = $this->kelas(3, ['nama' => 'TI-B']);
+        Informasi::factory()->count(2)->create(['kelas_id' => $kelasA->id]);
+        Informasi::factory()->create(['kelas_id' => $kelasB->id]);
+        $superAdmin = $this->superAdmin(['name' => 'Super']);
+
+        $sebelum = ActivityLog::query()->count();
+        $milikA = ActivityLog::query()->where('kelas_id', $kelasA->id)->count();
+        $this->assertGreaterThan(0, $milikA);
+
+        Livewire::actingAs($superAdmin)
+            ->test(LogIndex::class)
+            ->set('kelasId', (string) $kelasA->id)
+            ->assertSee("Hapus {$milikA} entri")
+            ->call('confirmDeleteFiltered')
+            ->assertSet('confirmingDeleteFiltered', true)
+            ->assertSee('kelas TI-A')
+            ->call('deleteFiltered')
+            ->assertSet('confirmingDeleteFiltered', false)
+            ->assertDispatched('notify');
+
+        // Entries of TI-A are gone except the new purge record; TI-B is untouched.
+        $purge = ActivityLog::query()->where('modul', ModulLog::LogAktivitas->value)->where('aksi', AksiLog::Hapus->value)->firstOrFail();
+        $this->assertSame($superAdmin->id, $purge->user_id);
+        $this->assertSame($kelasA->id, $purge->kelas_id);
+        $this->assertSame("{$milikA} entri log (kelas TI-A)", $purge->subjek_label);
+        $this->assertSame(1, ActivityLog::query()->where('kelas_id', $kelasA->id)->count());
+        $this->assertSame($sebelum - $milikA + 1, ActivityLog::query()->count());
+    }
+
+    public function test_admin_kelas_cannot_delete_log_entries(): void
+    {
+        $kelas = $this->kelas();
+        Informasi::factory()->create(['kelas_id' => $kelas->id, 'judul' => 'Info Tetap']);
+        $log = ActivityLog::query()->where('subjek_label', 'Info Tetap')->firstOrFail();
+        $admin = $this->admin($kelas);
+
+        Livewire::actingAs($admin)
+            ->test(LogIndex::class)
+            ->assertSee('Info Tetap')
+            ->assertDontSee('Hapus entri')
+            ->assertDontSee('Hapus '.ActivityLog::query()->count().' entri')
+            ->call('confirmDelete', $log->id)
+            ->assertForbidden();
+
+        Livewire::actingAs($admin)
+            ->test(LogIndex::class)
+            ->call('deleteFiltered')
+            ->assertForbidden();
+
+        $this->assertModelExists($log);
+    }
 }

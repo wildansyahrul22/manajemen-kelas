@@ -14,6 +14,7 @@ enum ModulLog: string
     case MataKuliah = 'mata_kuliah';
     case User = 'user';
     case Kelas = 'kelas';
+    case LogAktivitas = 'log_aktivitas';
     case Auth = 'auth';
 
     public function label(): string
@@ -29,6 +30,7 @@ enum ModulLog: string
             self::MataKuliah => 'Mata Kuliah',
             self::User => 'User',
             self::Kelas => 'Kelas',
+            self::LogAktivitas => 'Log Aktivitas',
             self::Auth => 'Autentikasi',
         };
     }

@@ -23,7 +23,7 @@ Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL*
    ```
 4. Buka <http://localhost:8000>.
 
-> `php artisan serve` biasa memakai php.ini CLI (bawaan Homebrew: `upload_max_filesize = 2M`) dan **mengabaikan** `public/.user.ini`, sehingga lampiran > 2 MB gagal diunggah. `composer run serve` / `composer run dev` menambahkan `PHP_INI_SCAN_DIR=:public` agar batas 6M/32M ikut terbaca. Alternatif: naikkan `upload_max_filesize` dan `post_max_size` di php.ini CLI.
+> `php artisan serve` biasa memakai php.ini CLI (bawaan Homebrew: `upload_max_filesize = 2M`) dan **mengabaikan** `public/.user.ini`, sehingga lampiran > 2 MB gagal diunggah. `composer run serve` / `composer run dev` menambahkan `PHP_INI_SCAN_DIR=:public` agar batas 3M/8M ikut terbaca. Alternatif: naikkan `upload_max_filesize` dan `post_max_size` di php.ini CLI.
 
 Pengaturan koneksi database ada di `.env` (`DB_HOST=127.0.0.1`, `DB_PORT=8889`, `DB_DATABASE=manajemen_kelas`, `DB_USERNAME=root`, `DB_PASSWORD=root`).
 
@@ -33,7 +33,7 @@ Pengaturan koneksi database ada di `.env` (`DB_HOST=127.0.0.1`, `DB_PORT=8889`, 
 |-------------|--------------|------------|
 | Super Admin | `superadmin` | `password` |
 
-Segera ganti password lewat menu **Profil Saya** setelah login pertama. Kelas dan akun lain dibuat dari menu **Kelas** dan **Users**.
+Segera ganti password lewat menu **Profil Saya** setelah login pertama. Sesi login berlaku 2 hari sejak aktivitas terakhir (`SESSION_LIFETIME=2880`); dengan **Ingat saya**, login bertahan hingga 30 hari. Kelas dan akun lain dibuat dari menu **Kelas** dan **Users**.
 
 Data contoh (2 kelas, mahasiswa, mata kuliah, jadwal, jadwal lab, tugas, informasi, kelompok) bersifat opsional:
 
@@ -54,17 +54,17 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 | Users                                   | —         | Kelasnya          | Semua       |
 | Kelas                                   | —         | —                 | CRUD        |
 | Semester Aktif                          | —         | Kelasnya          | Semua kelas |
-| Log Aktivitas                           | —         | Kelasnya          | Semua kelas (filter kelas) |
+| Log Aktivitas                           | —         | Kelasnya (lihat)  | Semua kelas (filter kelas, hapus) |
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
 
-Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara mahasiswa membagikan gambar/file. Admin kelas dan super admin bisa mengunggah **beberapa lampiran** sekaligus (maks. 5 MB per file, 5 file per informasi — di hosting dijamin oleh `public/.user.ini`: `upload_max_filesize = 6M`, `post_max_size = 32M`; form menampilkan batas efektif server dan menolak file kebesaran sebelum diunggah; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran/{lampiran}`).
+Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara mahasiswa membagikan gambar/file. Admin kelas dan super admin bisa mengunggah **beberapa lampiran** sekaligus (maks. 2 MB per file, 2 file per informasi — di hosting dijamin oleh `public/.user.ini`: `upload_max_filesize = 3M`, `post_max_size = 8M`; form menampilkan batas efektif server dan menolak file kebesaran sebelum diunggah; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran/{lampiran}`).
 
 **Bagikan ke WhatsApp**: tombol/ikon WhatsApp membuka WhatsApp dengan pesan siap kirim (tinggal pilih grup) — per informasi (daftar & detail), per hari pada Jadwal Kelas, per tanggal pada Jadwal Lab, dan per kategori pada Kelompok (pilih kategori dulu; pesan memuat semua kelompok beserta anggota + NPM dan mahasiswa yang belum masuk kelompok). Teks pesan disusun di `App\Support\PesanWhatsApp`.
 
 **Kelas terbang**: saat menambah/mengedit user, centang *Kelas terbang* lalu pilih semesternya untuk mahasiswa dari kelas lain yang hanya ikut kelas ini pada satu semester. User tersebut hanya dihitung sebagai anggota kelas saat semester itu aktif — di dashboard, pilihan anggota kelompok (dan validasinya), pesan WhatsApp kelompok, jumlah mahasiswa di daftar Kelas/Semester Aktif, serta daftar Users (centang "Tampilkan kelas terbang semester lain" untuk melihat yang lain). Export Users memuat kolom *Keanggotaan* (Reguler / Kelas terbang · Semester N).
 
-**Log Aktivitas** (`activity_log`) mencatat otomatis setiap buat/ubah/hapus pada informasi, kategori, kelompok (termasuk perubahan anggota/ketua), tugas, jadwal, jadwal lab, mata kuliah, user, dan kelas, plus masuk/keluar — lengkap dengan pelaku, kelas, perubahan field (sebelum → sesudah; password disamarkan), dan IP. Admin kelas hanya melihat log kelasnya; super admin melihat semua dan bisa memfilter per kelas.
+**Log Aktivitas** (`activity_log`) mencatat otomatis setiap buat/ubah/hapus pada informasi, kategori, kelompok (termasuk perubahan anggota/ketua), tugas, jadwal, jadwal lab, mata kuliah, user, dan kelas, plus masuk/keluar — lengkap dengan pelaku, kelas, perubahan field (sebelum → sesudah; password disamarkan), dan IP. Admin kelas hanya melihat log kelasnya; super admin melihat semua, bisa memfilter per kelas, dan satu-satunya yang boleh menghapus entri (per entri atau semua yang cocok dengan filter aktif — penghapusan itu sendiri dicatat sebagai entri log baru).
 
 **Export Excel** tersedia di halaman Daftar Tugas, Mata Kuliah, Kelompok, Kategori Kelompok, Jadwal Kelas, Jadwal Lab, Daftar Informasi, Kategori Informasi, Users, dan Kelas. Isinya mengikuti filter yang sedang aktif (pencarian, mata kuliah, status, semester, kategori, role) tanpa dibatasi halaman; file berisi judul, kelas/semester, filter aktif, waktu ekspor, header tebal yang dibekukan, tanggal/jam sebagai nilai tanggal Excel, dan lebar kolom otomatis. Data majemuk tidak pernah digabung dalam satu sel: export Kelompok punya lembar "Anggota" (satu baris per mahasiswa, dengan NPM) dan lembar "Kelompok" (ringkasan per kelompok). Dibangun dengan `phpoffice/phpspreadsheet` lewat helper `App\Support\ExcelExport`.
 

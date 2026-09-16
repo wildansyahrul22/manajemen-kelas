@@ -135,14 +135,14 @@ class InformasiLampiranTest extends TestCase
             ->set('form.kategori_informasi_id', (string) $kategori->id)
             ->set('form.isi', 'Coba.')
             ->set('form.lampiran', [
-                UploadedFile::fake()->create('modul.pdf', 100, 'application/pdf'),
                 UploadedFile::fake()->create('script.exe', 10, 'application/octet-stream'),
                 UploadedFile::fake()->create('besar.pdf', Informasi::LAMPIRAN_MAKS_KB + 1, 'application/pdf'),
             ])
             ->call('save')
-            ->assertHasErrors(['form.lampiran.1', 'form.lampiran.2' => 'max'])
-            ->assertHasNoErrors(['form.lampiran.0'])
-            ->assertSee('Ukuran tiap lampiran maksimal 5 MB.');
+            ->assertHasErrors(['form.lampiran.0', 'form.lampiran.1' => 'max'])
+            ->assertHasNoErrors(['form.lampiran'])
+            ->assertSee('Jenis file lampiran tidak didukung.')
+            ->assertSee('Ukuran tiap lampiran maksimal 2 MB.');
 
         Livewire::actingAs($admin)
             ->test(InformasiIndex::class)
@@ -155,7 +155,7 @@ class InformasiLampiranTest extends TestCase
                 ->all())
             ->call('save')
             ->assertHasErrors(['form.lampiran' => 'max'])
-            ->assertSee('Maksimal 5 file per informasi.');
+            ->assertSee('Maksimal 2 file per informasi.');
 
         $this->assertSame(0, Informasi::query()->count());
         $this->assertSame([], Storage::disk(Informasi::LAMPIRAN_DISK)->allFiles());
@@ -165,25 +165,25 @@ class InformasiLampiranTest extends TestCase
     {
         $kelas = $this->kelas();
         $informasi = Informasi::factory()->create(['kelas_id' => $kelas->id]);
-        $tersimpan = InformasiLampiran::factory()->count(4)->create(['informasi_id' => $informasi->id]);
+        $tersimpan = InformasiLampiran::factory()->count(1)->create(['informasi_id' => $informasi->id]);
         $tersimpan->each(fn (InformasiLampiran $file) => Storage::disk(Informasi::LAMPIRAN_DISK)->put($file->path, 'x'));
         $duaBaru = fn () => [
             UploadedFile::fake()->create('a.pdf', 10, 'application/pdf'),
             UploadedFile::fake()->create('b.pdf', 10, 'application/pdf'),
         ];
 
-        // 4 stored + 2 new = 6 > 5.
+        // 1 stored + 2 new = 3 > 2.
         Livewire::actingAs($this->admin($kelas))
             ->test(InformasiIndex::class)
             ->call('openEdit', $informasi->id)
             ->set('form.lampiran', $duaBaru())
             ->call('save')
             ->assertHasErrors(['form.lampiran'])
-            ->assertSee('Maksimal 5 file per informasi (sudah ada 4).');
+            ->assertSee('Maksimal 2 file per informasi (sudah ada 1).');
 
-        $this->assertSame(4, $informasi->lampiran()->count());
+        $this->assertSame(1, $informasi->lampiran()->count());
 
-        // Removing one first makes room: 4 - 1 + 2 = 5.
+        // Removing the stored one first makes room: 1 - 1 + 2 = 2.
         Livewire::actingAs($this->admin($kelas))
             ->test(InformasiIndex::class)
             ->call('openEdit', $informasi->id)
@@ -192,7 +192,7 @@ class InformasiLampiranTest extends TestCase
             ->call('save')
             ->assertHasNoErrors();
 
-        $this->assertSame(5, $informasi->lampiran()->count());
+        $this->assertSame(2, $informasi->lampiran()->count());
     }
 
     public function test_admin_can_remove_some_lampiran_add_new_ones_and_the_change_is_logged(): void
