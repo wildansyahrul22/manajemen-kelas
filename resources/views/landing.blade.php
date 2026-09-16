@@ -238,7 +238,7 @@
                 <figure class="mt-10">
                     <div
                         class="overflow-hidden rounded-2xl border border-[var(--garis)] bg-[var(--kertas)] p-1.5 shadow-xl shadow-[#16243f]/10 sm:p-2">
-                        <img src="{{ asset('images/dashboard.png') }}" width="3558" height="1892" loading="lazy"
+                        <img src="{{ asset('images/dashboard.webp') }}" width="1600" height="851" loading="lazy"
                             decoding="async"
                             alt="Dashboard kelas: jadwal hari ini, tugas mendekati deadline, dan informasi terbaru"
                             class="w-full rounded-xl">

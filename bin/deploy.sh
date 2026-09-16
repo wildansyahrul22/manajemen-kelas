@@ -18,7 +18,7 @@ trap '"$PHP" artisan up >/dev/null 2>&1 || true' EXIT
 git fetch --prune origin main
 git reset --hard origin/main
 
-"$COMPOSER" install --no-dev --optimize-autoloader --no-interaction --prefer-dist --no-progress
+"$COMPOSER" install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --prefer-dist --no-progress
 
 "$PHP" artisan migrate --force
 "$PHP" artisan optimize

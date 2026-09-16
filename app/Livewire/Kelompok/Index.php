@@ -49,13 +49,8 @@ class Index extends Component
     #[Computed]
     public function kategoriFilterOptions(): Collection
     {
-        return KategoriKelompok::query()
-            ->select(['id', 'mata_kuliah_id', 'nama'])
-            ->with('mataKuliah:id,nama')
-            ->forKelasAktif($this->kelas)
-            ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))
-            ->get()
-            ->sortBy([['mataKuliah.nama', 'asc'], ['nama', 'asc']])
+        return $this->kategoriAktif
+            ->when($this->mataKuliahId !== '', fn (Collection $kategori) => $kategori->where('mata_kuliah_id', (int) $this->mataKuliahId))
             ->mapWithKeys(fn (KategoriKelompok $kategori) => [
                 $kategori->id => $this->mataKuliahId !== '' ? $kategori->nama : $kategori->nama.' · '.$kategori->mataKuliah->nama,
             ]);

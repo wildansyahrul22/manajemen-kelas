@@ -24,12 +24,13 @@ trait ManagesKelompok
     }
 
     /**
-     * Kategori of the active semester, labelled "Kategori · Mata kuliah" (id => label).
+     * Kategori of the active semester with their mata kuliah, sorted by mata kuliah then nama. Loaded
+     * once per request; the form options and the list filter are both derived from it.
      *
-     * @return Collection<int, string>
+     * @return Collection<int, KategoriKelompok>
      */
     #[Computed]
-    public function kategoriOptions(): Collection
+    public function kategoriAktif(): Collection
     {
         return KategoriKelompok::query()
             ->select(['id', 'mata_kuliah_id', 'nama', 'final'])
@@ -37,6 +38,18 @@ trait ManagesKelompok
             ->forKelasAktif($this->kelas)
             ->get()
             ->sortBy([['mataKuliah.nama', 'asc'], ['nama', 'asc']])
+            ->values();
+    }
+
+    /**
+     * Kategori of the active semester, labelled "Kategori · Mata kuliah" (id => label).
+     *
+     * @return Collection<int, string>
+     */
+    #[Computed]
+    public function kategoriOptions(): Collection
+    {
+        return $this->kategoriAktif
             ->mapWithKeys(fn (KategoriKelompok $kategori) => [$kategori->id => $kategori->nama.' · '.$kategori->mataKuliah->nama]);
     }
 

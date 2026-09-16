@@ -18,7 +18,7 @@ class LandingPageTest extends TestCase
             ->assertSee('https://wa.me/'.config('kontak.whatsapp').'?text=', escape: false)
             ->assertSee(PesanWhatsApp::formatNomor(config('kontak.whatsapp')))
             ->assertSee('mailto:'.config('kontak.email'), escape: false)
-            ->assertSee(asset('images/dashboard.png'))
+            ->assertSee(asset('images/dashboard.webp'))
             ->assertSee(route('login'));
     }
 
