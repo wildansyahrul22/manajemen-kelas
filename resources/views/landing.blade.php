@@ -1,6 +1,7 @@
 @php
     $wa = 'https://wa.me/62812790106175?text='.rawurlencode('Halo, saya mau tanya soal langganan Kelas KampusKu untuk kelas saya.');
     $email = 'admin@kelaskampusku.com';
+    $adaDemo = filled(config('demo.npm'));
 
     $menu = [
         'Akademik' => [
@@ -112,7 +113,11 @@
         <nav class="ml-auto hidden items-center gap-7 text-sm text-[var(--redup)] sm:flex">
             <a href="#isinya" class="transition hover:text-[var(--tinta)]">Isi aplikasinya</a>
             <a href="#harga" class="transition hover:text-[var(--tinta)]">Harga</a>
-            <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk</a>
+            @auth
+                <a href="{{ route('dashboard') }}" class="transition hover:text-[var(--tinta)]">Buka dashboard</a>
+            @else
+                <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk</a>
+            @endauth
         </nav>
 
         <a href="{{ $wa }}" target="_blank" rel="noopener"
@@ -133,6 +138,19 @@
                 Jadwal kuliah, deadline tugas, daftar kelompok, dan pengumuman berhenti tenggelam di grup
                 WhatsApp. Semuanya rapi di satu aplikasi yang dipakai bareng sekelas.
             </p>
+
+            @guest
+                @if ($adaDemo)
+                    <div class="mt-8 flex flex-wrap items-center gap-x-5 gap-y-3">
+                        <a href="{{ route('demo') }}"
+                           class="inline-flex items-center gap-2 rounded-xl bg-[var(--tinta)] px-6 py-3.5 font-semibold text-white transition hover:bg-[#0f1a2e]">
+                            <x-heroicon-m-play class="size-5" />
+                            Coba demo sekarang
+                        </a>
+                        <p class="text-sm text-[var(--redup)]">Tanpa daftar, langsung masuk ke kelas contoh.</p>
+                    </div>
+                @endif
+            @endguest
         </div>
 
         <div class="mt-12 border-t border-[var(--garis)] pt-10">
@@ -192,7 +210,19 @@
                 Bukan daftar janji — ini menu yang benar-benar ada di dalam aplikasinya begitu kelas kamu aktif.
             </p>
 
-            <div class="mt-12 grid gap-x-12 gap-y-10 sm:grid-cols-2">
+            <figure class="mt-10">
+                <div class="overflow-hidden rounded-2xl border border-[var(--garis)] bg-[var(--kertas)] p-1.5 shadow-xl shadow-[#16243f]/10 sm:p-2">
+                    <img src="{{ asset('images/dashboard.png') }}" width="3558" height="1892" loading="lazy" decoding="async"
+                         alt="Dashboard kelas: jadwal hari ini, tugas mendekati deadline, dan informasi terbaru"
+                         class="w-full rounded-xl">
+                </div>
+                <figcaption class="mt-3 text-sm text-[var(--redup)]">
+                    Dashboard yang dilihat setiap anggota kelas begitu masuk: jadwal hari ini, tugas yang deadline-nya
+                    paling dekat, dan pengumuman terbaru dalam satu layar.
+                </figcaption>
+            </figure>
+
+            <div class="mt-14 grid gap-x-12 gap-y-10 sm:grid-cols-2">
                 @foreach ($menu as $grup => $item)
                     <div>
                         <h3 class="text-sm font-semibold text-[var(--kunyit-tua)]">{{ $grup }}</h3>
@@ -224,7 +254,7 @@
             <h2 class="max-w-xl text-3xl font-bold tracking-[-0.03em] sm:text-4xl">Harga per kelas, bukan per mahasiswa</h2>
             <p class="mt-4 max-w-xl text-white/65">
                 Satu kali bayar untuk satu semester penuh — enam bulan. Tidak ada biaya per akun, berapa pun
-                jumlah mahasiswanya.
+                jumlah mahasiswanya.@guest @if ($adaDemo) Belum yakin? <a href="{{ route('demo') }}" class="font-semibold text-white underline underline-offset-4 hover:no-underline">Coba demonya dulu</a>. @endif @endguest
             </p>
 
             <div class="mt-12 grid gap-6 lg:grid-cols-2">

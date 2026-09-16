@@ -45,6 +45,14 @@
         <div class="flex min-h-screen flex-col transition-[padding] duration-200 ease-in-out" :class="sidebarCollapsed ? 'lg:pl-20' : 'lg:pl-72'">
             @include('layouts.partials.header')
 
+            @if ($user->isDemo())
+                <div class="flex flex-wrap items-center gap-x-3 gap-y-1 border-b border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900 sm:px-6 lg:px-8">
+                    <span class="inline-flex items-center gap-2 font-semibold"><x-heroicon-m-beaker class="size-4" /> Mode demo</span>
+                    <span class="text-amber-800">Datanya dipakai bersama pengunjung lain — silakan coba apa saja.</span>
+                    <a href="{{ route('landing') }}#harga" class="ml-auto font-semibold underline underline-offset-2 hover:no-underline">Lihat harga langganan</a>
+                </div>
+            @endif
+
             <main class="flex-1 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
                 <div class="mx-auto w-full max-w-7xl">
                     <div data-page-content>

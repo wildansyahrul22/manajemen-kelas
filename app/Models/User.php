@@ -124,6 +124,26 @@ class User extends Authenticatable
         return $this->role === Role::Mahasiswa;
     }
 
+    /**
+     * The shared account /demo signs visitors in as, or null when no demo is configured.
+     */
+    public static function demoAccount(): ?self
+    {
+        $npm = config('demo.npm');
+
+        return $npm === null || $npm === '' ? null : self::query()->where('npm', $npm)->first();
+    }
+
+    /**
+     * Whether this is that account, so the app can say so while someone is looking around.
+     */
+    public function isDemo(): bool
+    {
+        $npm = config('demo.npm');
+
+        return $npm !== null && $npm !== '' && $this->npm === $npm;
+    }
+
     public function isKelasTerbang(): bool
     {
         return $this->kelas_terbang_semester_id !== null;

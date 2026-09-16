@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\DemoLoginController;
 use App\Http\Controllers\InformasiLampiranController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
@@ -20,8 +21,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 
-// Public sales page; members land on their dashboard instead.
-Route::get('/', fn () => auth()->check() ? redirect()->route('dashboard') : view('landing'))->name('landing');
+// Public sales page, reachable whether or not someone is signed in.
+Route::view('/', 'landing')->name('landing');
+
+// Try the app before subscribing: signs the visitor in as the shared demo account.
+Route::get('/demo', DemoLoginController::class)->name('demo');
 
 Route::middleware('guest')->group(function () {
     Route::livewire('/login', Login::class)->name('login');

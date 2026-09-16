@@ -10,7 +10,7 @@
     }"
 >
     <div class="flex h-16 items-center gap-3 px-4" :class="sidebarCollapsed ? 'lg:justify-center lg:px-0' : 'px-5'">
-        <a href="{{ route('dashboard') }}" wire:navigate class="flex min-w-0 items-center gap-3" :title="sidebarCollapsed ? 'Kelas KampusKu' : null">
+        <a href="{{ route('landing') }}" class="flex min-w-0 items-center gap-3" :title="sidebarCollapsed ? 'Kelas KampusKu' : null">
             <x-ui.logo />
             <span class="truncate text-base font-bold tracking-tight text-slate-900" :class="sidebarCollapsed && 'lg:hidden'">Kelas KampusKu</span>
         </a>

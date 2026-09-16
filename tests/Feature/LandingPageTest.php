@@ -16,13 +16,27 @@ class LandingPageTest extends TestCase
             ->assertSee('Promo langganan pertama')
             ->assertSee('62812790106175')
             ->assertSee('admin@kelaskampusku.com')
+            ->assertSee(asset('images/dashboard.png'))
             ->assertSee(route('login'));
     }
 
-    public function test_a_signed_in_user_goes_straight_to_the_dashboard(): void
+    public function test_a_signed_in_user_still_gets_the_landing_page_with_a_link_to_their_dashboard(): void
     {
         $this->actingAs($this->mahasiswa($this->kelas()))
             ->get(route('landing'))
-            ->assertRedirect(route('dashboard'));
+            ->assertOk()
+            ->assertSee('Buka dashboard')
+            ->assertDontSee('Coba demo sekarang');
+    }
+
+    public function test_the_demo_call_to_action_only_shows_when_a_demo_account_is_configured(): void
+    {
+        $this->get(route('landing'))->assertDontSee('Coba demo sekarang');
+
+        config(['demo.npm' => '24010001']);
+
+        $this->get(route('landing'))
+            ->assertSee('Coba demo sekarang')
+            ->assertSee(route('demo'));
     }
 }

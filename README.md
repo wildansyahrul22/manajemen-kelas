@@ -2,7 +2,7 @@
 
 Aplikasi manajemen kelas perkuliahan: dashboard, daftar tugas, jadwal kelas, jadwal lab (praktikum), mata kuliah, kelompok (per kategori), informasi kelas, manajemen user/kelas, pengaturan semester aktif, dan log aktivitas. Hampir semua daftar bisa diekspor ke Excel.
 
-Halaman depan (`/`) adalah landing page penawaran langganan; aplikasinya sendiri ada di `/login` (pengguna yang sudah masuk langsung diarahkan ke dashboard).
+Halaman depan (`/`) adalah landing page penawaran langganan — terbuka untuk siapa saja, termasuk pengguna yang sedang masuk (menu headernya berubah jadi *Buka dashboard*). Aplikasinya sendiri ada di `/login`, dan tautan nama aplikasi di sidebar mengarah balik ke `/`.
 
 Dibangun dengan **Laravel 13**, **Livewire 4**, **Tailwind CSS 4**, dan **MySQL** (MAMP).
 
@@ -79,6 +79,18 @@ Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aks
 Kelompok selalu berada di bawah sebuah **kategori kelompok** (misal "Project Akhir" pada mata kuliah Pemrograman Web). Satu mahasiswa hanya bisa tergabung di satu kelompok per kategori, sehingga saat membuat kelompok hanya mahasiswa yang belum punya kelompok pada kategori itu yang ditawarkan.
 
 Selama kategori masih **terbuka**, seluruh anggota kelas boleh menyusun kelompok di dalamnya — membuat, mengubah, maupun menghapus, siapa pun yang membuatnya. Admin kelas (dan super admin) bisa menandainya **final** lewat menu aksi di Kategori Kelompok: setelah itu tidak ada yang bisa mengubah kelompoknya, termasuk admin sendiri, sampai status final dilepas kembali. Kategori yang sudah final juga hanya bisa diedit/dihapus oleh admin kelas.
+
+## Demo sebelum berlangganan
+
+Tombol **Coba demo** di landing page membawa pengunjung ke `/demo`, yang langsung memasukkan mereka sebagai satu akun demo bersama — tanpa daftar. Akun itu ditentukan lewat `DEMO_NPM` di `.env`:
+
+```dotenv
+DEMO_NPM=24010001   # NPM akun demo; kosongkan untuk mematikan demo
+```
+
+Selama `DEMO_NPM` kosong, `/demo` menjawab 404 dan tombolnya tidak muncul — jadi tidak ada jalan masuk tanpa password kecuali kamu sendiri yang membukanya. Hanya NPM yang persis tertulis di situ yang bisa dimasuki; akun lain tidak terpengaruh. Saat akun demo sedang dipakai, aplikasi menampilkan pita **Mode demo** di atas setiap halaman beserta tautan ke harga langganan.
+
+Akun demo sebaiknya berupa admin kelas pada kelas contoh (mis. hasil `DemoSeeder`), bukan super admin, dan datanya dipakai bersama semua pengunjung. Kalau ingin bersih lagi, kosongkan kelas contohnya lalu jalankan ulang `php artisan db:seed --class=DemoSeeder`.
 
 ## Masa aktif & paket kelas
 
