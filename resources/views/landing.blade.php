@@ -164,31 +164,17 @@
     </header>
 
     <main id="atas" class="pt-16">
-        <section class="overflow-hidden">
-            <div
-                class="mx-auto grid w-full max-w-6xl items-center gap-12 px-5 pb-16 pt-14 sm:px-8 sm:pb-20 sm:pt-20 lg:grid-cols-2 lg:gap-10">
-                <div class="text-center lg:text-left">
-                    <h1 class="text-[2.5rem] font-bold leading-[1.05] tracking-[-0.035em] sm:text-6xl">
-                        Satu kelas,<br>satu tempat.
-                    </h1>
-                    <p class="mx-auto mt-5 max-w-[30rem] text-base leading-relaxed text-[var(--redup)] lg:mx-0">
-                        Jadwal, tugas, kelompok, dan pengumuman kelas — rapi di satu aplikasi, bukan tenggelam di grup
-                        WhatsApp.
-                    </p>
+        <section>
+            <div class="mx-auto w-full max-w-6xl px-5 pb-16 pt-14 text-center sm:px-8 sm:pb-20 sm:pt-20">
+                <h1 class="text-[2.5rem] font-bold leading-[1.05] tracking-[-0.035em] sm:text-6xl">
+                    Satu kelas,<br class="sm:hidden"> satu tempat.
+                </h1>
+                <p class="mx-auto mt-5 max-w-[30rem] text-base leading-relaxed text-[var(--redup)]">
+                    Jadwal, tugas, kelompok, dan pengumuman kelas — rapi di satu aplikasi, bukan tenggelam di grup
+                    WhatsApp.
+                </p>
 
-                    @if ($tamu && $adaDemo)
-                        <div class="mt-8">
-                            <a href="{{ route('demo') }}"
-                                class="inline-flex items-center gap-2 rounded-xl bg-[var(--tinta)] px-6 py-3.5 font-semibold text-white transition hover:bg-[#0f1a2e]">
-                                <x-heroicon-m-play class="size-5" />
-                                Coba demo sekarang
-                            </a>
-                            <p class="mt-3 text-sm text-[var(--redup)]">Tanpa daftar, langsung masuk ke kelas contoh.</p>
-                        </div>
-                    @endif
-                </div>
-
-                <figure>
+                <figure class="mx-auto mt-10 max-w-5xl">
                     <div
                         class="overflow-hidden rounded-2xl border border-[var(--garis)] bg-white p-1.5 shadow-2xl shadow-[#16243f]/15 sm:p-2">
                         <img src="{{ asset('images/dashboard.webp') }}" width="1600" height="851" fetchpriority="high"
@@ -197,6 +183,17 @@
                             class="w-full rounded-xl">
                     </div>
                 </figure>
+
+                @if ($tamu && $adaDemo)
+                    <div class="mt-10">
+                        <a href="{{ route('demo') }}"
+                            class="inline-flex items-center gap-2 rounded-xl bg-[var(--tinta)] px-6 py-3.5 font-semibold text-white transition hover:bg-[#0f1a2e]">
+                            <x-heroicon-m-play class="size-5" />
+                            Coba demo sekarang
+                        </a>
+                        <p class="mt-3 text-sm text-[var(--redup)]">Tanpa daftar, langsung masuk ke kelas contoh.</p>
+                    </div>
+                @endif
             </div>
         </section>
 
@@ -236,7 +233,8 @@
                                 <input type="radio" name="paket" value="150000"
                                     class="mt-0.5 size-4 accent-[#16243f]" data-paket checked>
                                 <span class="text-sm">
-                                    <span class="angka block font-semibold">Rp150.000</span>
+                                    <span class="angka block font-semibold">Rp150.000 <s
+                                            class="ml-1 font-normal text-[var(--redup)]">Rp200.000</s></span>
                                     <span class="mt-0.5 block text-[var(--redup)]">Semua fitur, lampiran lewat tautan
                                         Drive.</span>
                                 </span>
@@ -246,7 +244,8 @@
                                 <input type="radio" name="paket" value="200000"
                                     class="mt-0.5 size-4 accent-[#16243f]" data-paket>
                                 <span class="text-sm">
-                                    <span class="angka block font-semibold">Rp200.000</span>
+                                    <span class="angka block font-semibold">Rp200.000 <s
+                                            class="ml-1 font-normal text-[var(--redup)]">Rp250.000</s></span>
                                     <span class="mt-0.5 block text-[var(--redup)]">Termasuk unggah berkas langsung di
                                         aplikasi.</span>
                                 </span>
@@ -347,7 +346,10 @@
                             Promo langganan pertama
                         </div>
                         <p class="text-base font-semibold">Paket Kelas</p>
-                        <p class="angka mt-3 text-5xl font-bold">Rp150.000</p>
+                        <p class="mt-3 flex flex-wrap items-baseline gap-x-3">
+                            <span class="angka text-5xl font-bold">Rp150.000</span>
+                            <s class="angka text-xl font-semibold text-[var(--redup)]">Rp200.000</s>
+                        </p>
                         <p class="mt-1.5 text-sm text-[var(--redup)]">satu semester, 6 bulan</p>
 
                         <ul class="mt-7 mb-8 space-y-3 text-[15px]">
@@ -374,7 +376,10 @@
 
                     <div class="flex flex-col rounded-2xl border border-white/20 p-7 sm:p-9">
                         <p class="text-base font-semibold">Paket Kelas + Berkas</p>
-                        <p class="angka mt-3 text-5xl font-bold">Rp200.000</p>
+                        <p class="mt-3 flex flex-wrap items-baseline gap-x-3">
+                            <span class="angka text-5xl font-bold">Rp200.000</span>
+                            <s class="angka text-xl font-semibold text-white/50">Rp250.000</s>
+                        </p>
                         <p class="mt-1.5 text-sm text-white/55">satu semester, 6 bulan</p>
 
                         <ul class="mt-7 mb-8 space-y-3 text-[15px] text-white/85">
