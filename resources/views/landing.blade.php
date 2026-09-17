@@ -33,7 +33,7 @@
     ];
 @endphp
 <!DOCTYPE html>
-<html lang="id" class="h-full scroll-smooth">
+<html lang="id" class="h-full scroll-smooth scroll-pt-20">
 
 <head>
     <meta charset="utf-8">
@@ -59,6 +59,28 @@
         .angka {
             font-variant-numeric: tabular-nums;
             letter-spacing: -0.03em;
+        }
+
+        /* Fixed header that slides away while reading down and comes back on the first scroll up. */
+        .kepala {
+            background: rgb(246 245 241 / 92%);
+            -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .kepala--sembunyi {
+            transform: translateY(-100%);
+        }
+
+        .kepala--menempel {
+            box-shadow: 0 8px 24px -16px rgb(22 36 63 / 35%);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .kepala {
+                transition: none;
+            }
         }
 
         /* The one control on the page: make it feel like a physical slider. */
@@ -112,8 +134,8 @@
 
 <body class="h-full bg-[var(--kertas)] font-sans text-[var(--tinta)] antialiased">
 
-    <header class="border-b border-[var(--garis)]">
-        <div class="mx-auto flex w-full max-w-5xl items-center gap-3 px-5 py-4 sm:gap-7 sm:px-8">
+    <header id="kepala" class="kepala fixed inset-x-0 top-0 z-40 border-b border-[var(--garis)]">
+        <div class="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 px-5 sm:gap-7 sm:px-8">
             <a href="#atas" class="flex items-center gap-2.5">
                 <x-ui.logo size="size-8" />
                 <span class="text-[15px] font-bold tracking-tight">Kelas KampusKu</span>
@@ -143,7 +165,7 @@
         </div>
     </header>
 
-    <main id="atas">
+    <main id="atas" class="pt-16">
         <section class="mx-auto w-full max-w-5xl px-5 pb-16 pt-14 sm:px-8 sm:pb-24 sm:pt-20">
             <div class="max-w-2xl">
                 <h1 class="text-[2.5rem] font-bold leading-[1.05] tracking-[-0.035em] sm:text-6xl">
@@ -383,21 +405,99 @@
         </section>
     </main>
 
-    <footer class="border-t border-[var(--garis)]">
-        <div
-            class="mx-auto flex w-full max-w-5xl flex-col gap-3 px-5 py-8 text-sm text-[var(--redup)] sm:flex-row sm:items-center sm:px-8">
-            <p>&copy; {{ date('Y') }} Kelas KampusKu</p>
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 sm:ml-auto">
-                <a href="{{ $wa }}" target="_blank" rel="noopener"
-                    class="transition hover:text-[var(--tinta)]">WhatsApp {{ $tampilanWa }}</a>
-                <a href="mailto:{{ $email }}"
-                    class="transition hover:text-[var(--tinta)]">{{ $email }}</a>
-                <a href="{{ route('login') }}" class="transition hover:text-[var(--tinta)]">Masuk ke aplikasi</a>
+    <footer class="border-t border-[var(--garis)] bg-white">
+        <div class="mx-auto w-full max-w-5xl px-5 py-12 sm:px-8 sm:py-16">
+            <div class="grid gap-10 md:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)_minmax(0,1.2fr)] md:gap-8">
+                <div>
+                    <a href="#atas" class="inline-block" aria-label="Kembali ke atas">
+                        <x-ui.logo variant="full" size="w-40" />
+                    </a>
+                    <p class="mt-5 max-w-xs text-sm leading-relaxed text-[var(--redup)]">
+                        Jadwal, tugas, kelompok, dan pengumuman satu kelas kuliah — rapi di satu tempat, dipakai
+                        bareng sekelas.
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-[var(--redup)]">Jelajahi</p>
+                    <ul class="mt-4 space-y-2.5 text-sm font-medium">
+                        <li><a href="#isinya" class="transition hover:text-[var(--kunyit-tua)]">Isi aplikasinya</a></li>
+                        <li><a href="#harga" class="transition hover:text-[var(--kunyit-tua)]">Harga</a></li>
+                        @if ($tamu && $adaDemo)
+                            <li><a href="{{ route('demo') }}" class="transition hover:text-[var(--kunyit-tua)]">Coba demo</a></li>
+                        @endif
+                        @if ($tamu)
+                            <li><a href="{{ route('login') }}" class="transition hover:text-[var(--kunyit-tua)]">Masuk ke aplikasi</a></li>
+                        @else
+                            <li><a href="{{ route('dashboard') }}" class="transition hover:text-[var(--kunyit-tua)]">Dashboard</a></li>
+                        @endif
+                    </ul>
+                </div>
+
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wider text-[var(--redup)]">Hubungi kami</p>
+                    <ul class="mt-4 space-y-3">
+                        <li>
+                            <a href="{{ $wa }}" target="_blank" rel="noopener"
+                                class="group flex items-center gap-3 rounded-xl border border-[var(--garis)] p-2.5 pr-4 transition hover:border-[#1f7a63]/40 hover:bg-[#1f7a63]/5">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#1f7a63]/10 text-[#1f7a63] transition group-hover:bg-[#1f7a63] group-hover:text-white">
+                                    <x-ui.whatsapp-icon class="size-5" />
+                                </span>
+                                <span class="min-w-0">
+                                    <span class="block text-xs text-[var(--redup)]">WhatsApp</span>
+                                    <span class="block truncate text-sm font-semibold">{{ $tampilanWa }}</span>
+                                </span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="mailto:{{ $email }}"
+                                class="group flex items-center gap-3 rounded-xl border border-[var(--garis)] p-2.5 pr-4 transition hover:border-[#e0a22c]/60 hover:bg-[#e0a22c]/5">
+                                <span class="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#e0a22c]/15 text-[var(--kunyit-tua)] transition group-hover:bg-[var(--kunyit)] group-hover:text-white">
+                                    <x-heroicon-o-envelope class="size-5" />
+                                </span>
+                                <span class="min-w-0">
+                                    <span class="block text-xs text-[var(--redup)]">Email</span>
+                                    <span class="block truncate text-sm font-semibold">{{ $email }}</span>
+                                </span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="mt-12 flex flex-col gap-2 border-t border-[var(--garis)] pt-6 text-xs text-[var(--redup)] sm:flex-row sm:items-center sm:justify-between">
+                <p>&copy; {{ date('Y') }} Kelas KampusKu. Semua hak dilindungi.</p>
+                <p>Dibuat untuk kelas kuliah di Indonesia.</p>
             </div>
         </div>
     </footer>
 
     <script>
+        (() => {
+            const kepala = document.getElementById('kepala');
+            let posisiTerakhir = window.scrollY;
+            let menunggu = false;
+
+            const perbarui = () => {
+                const posisi = window.scrollY;
+                const turun = posisi > posisiTerakhir;
+
+                // Only hide once the header would actually cover content, and never near the top.
+                kepala.classList.toggle('kepala--sembunyi', turun && posisi > kepala.offsetHeight);
+                kepala.classList.toggle('kepala--menempel', posisi > 8);
+
+                posisiTerakhir = posisi;
+                menunggu = false;
+            };
+
+            window.addEventListener('scroll', () => {
+                if (! menunggu) {
+                    menunggu = true;
+                    window.requestAnimationFrame(perbarui);
+                }
+            }, { passive: true });
+        })();
+
         (() => {
             const rupiah = new Intl.NumberFormat('id-ID');
             const geser = document.getElementById('jumlah');
