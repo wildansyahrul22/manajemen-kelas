@@ -1,8 +1,8 @@
 <div>
     <div class="mb-8 flex flex-col items-center text-center">
         <a href="{{ route('landing') }}" class="flex flex-col items-center rounded-2xl transition hover:opacity-80 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary-500/40 focus-visible:ring-offset-4">
-            <x-ui.logo size="size-20" class="rounded-2xl shadow-lg" />
-            <h1 class="mt-5 text-2xl font-bold tracking-tight text-slate-900">Kelas KampusKu</h1>
+            <x-ui.logo variant="full" size="w-52 sm:w-60" />
+            <h1 class="sr-only">Kelas KampusKu</h1>
         </a>
         <p class="mt-1 text-sm text-slate-500">Masuk dengan NPM dan password Anda.</p>
     </div>
