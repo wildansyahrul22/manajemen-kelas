@@ -41,8 +41,7 @@
     <title>Kelas KampusKu — sistem informasi untuk satu kelas kuliah</title>
     <meta name="description"
         content="Jadwal, tugas, kelompok, dan pengumuman kelas dalam satu aplikasi. Mulai Rp200.000 per semester untuk satu kelas.">
-    <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
-    <link rel="apple-touch-icon" href="{{ asset('apple-touch-icon.png') }}">
+    @include('layouts.partials.ikon')
     @fonts
     @vite(['resources/css/app.css'])
     <style>
