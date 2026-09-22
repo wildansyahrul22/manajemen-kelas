@@ -96,7 +96,7 @@ class Index extends Component
         $showSuperAdmins = $this->showSuperAdmins();
 
         return User::query()
-            ->select(['id', 'npm', 'name', 'no_hp', 'role', 'kelas_id', 'kelas_terbang_semester_id', 'created_at'])
+            ->select(['id', 'ulid', 'npm', 'name', 'no_hp', 'role', 'kelas_id', 'kelas_terbang_semester_id', 'created_at'])
             ->with(['kelas:id,nama', 'semesterKelasTerbang:id,nama'])
             ->when($showSuperAdmins, fn ($query) => $query->where('role', Role::SuperAdmin))
             ->unless($showSuperAdmins, function ($query) {

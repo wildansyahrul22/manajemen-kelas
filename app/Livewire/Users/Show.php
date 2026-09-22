@@ -22,7 +22,7 @@ class Show extends Component
     public function kelompok(): Collection
     {
         return $this->user->kelompok()
-            ->select(['kelompok.id', 'kelompok.nama', 'kelompok.mata_kuliah_id'])
+            ->select(['kelompok.id', 'kelompok.ulid', 'kelompok.nama', 'kelompok.mata_kuliah_id'])
             ->with('mataKuliah:id,nama')
             ->orderBy('kelompok.nama')
             ->get();

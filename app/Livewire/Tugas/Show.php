@@ -51,7 +51,7 @@ class Show extends Component
     #[Computed]
     public function teksWhatsApp(): string
     {
-        return PesanWhatsApp::tugas($this->tugas->loadMissing(['mataKuliah:id,kelas_id,kode,nama,dosen,sks', 'kategoriKelompok:id,nama', 'lampiran']), $this->kelas);
+        return PesanWhatsApp::tugas($this->tugas->loadMissing(['mataKuliah:id,ulid,kelas_id,kode,nama,dosen,sks', 'kategoriKelompok:id,nama', 'lampiran']), $this->kelas);
     }
 
     protected function afterSave(Tugas $tugas): void
@@ -68,7 +68,7 @@ class Show extends Component
 
     public function render()
     {
-        $this->tugas->loadMissing(['mataKuliah:id,kelas_id,kode,nama,dosen,sks', 'creator:id,name', 'kategoriKelompok:id,nama', 'lampiran']);
+        $this->tugas->loadMissing(['mataKuliah:id,ulid,kelas_id,kode,nama,dosen,sks', 'creator:id,name', 'kategoriKelompok:id,nama', 'lampiran']);
 
         return view('livewire.tugas.show')->title($this->tugas->nama);
     }

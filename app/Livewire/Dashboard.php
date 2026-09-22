@@ -69,7 +69,7 @@ class Dashboard extends Component
     public function tugasTerdekat(): Collection
     {
         return Tugas::query()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline', 'link_pengumpulan'])
+            ->select(['id', 'ulid', 'mata_kuliah_id', 'nama', 'deadline', 'link_pengumpulan'])
             ->with('mataKuliah:id,nama')
             ->forKelasAktif($this->kelas)
             ->belumDeadline()
@@ -82,7 +82,7 @@ class Dashboard extends Component
     public function informasiTerbaru(): Collection
     {
         return Informasi::query()
-            ->select(['id', 'kategori_informasi_id', 'judul', 'is_pinned', 'created_at'])
+            ->select(['id', 'ulid', 'kategori_informasi_id', 'judul', 'is_pinned', 'created_at'])
             ->with('kategori:id,nama,warna')
             ->forKelas($this->kelas->id)
             ->terbaru()

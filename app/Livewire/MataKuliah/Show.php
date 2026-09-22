@@ -44,7 +44,7 @@ class Show extends Component
     public function tugas(): Collection
     {
         return $this->mataKuliah->tugas()
-            ->select(['id', 'mata_kuliah_id', 'nama', 'deadline'])
+            ->select(['id', 'ulid', 'mata_kuliah_id', 'nama', 'deadline'])
             ->orderByDesc('deadline')
             ->limit(10)
             ->get();
@@ -54,7 +54,7 @@ class Show extends Component
     public function kelompok(): Collection
     {
         return $this->mataKuliah->kelompok()
-            ->select(['id', 'kategori_kelompok_id', 'nama'])
+            ->select(['id', 'ulid', 'kategori_kelompok_id', 'nama'])
             ->with('kategori:id,nama')
             ->withCount('anggota')
             ->orderBy('kategori_kelompok_id')

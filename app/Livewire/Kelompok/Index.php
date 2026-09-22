@@ -62,7 +62,7 @@ class Index extends Component
     protected function kelompokQuery(): Builder
     {
         return Kelompok::query()
-            ->select(['id', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'created_by'])
+            ->select(['id', 'ulid', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'created_by'])
             ->with(['mataKuliah:id,kelas_id,nama', 'kategori:id,mata_kuliah_id,nama,final'])
             ->forKelasAktif($this->kelas)
             ->when($this->mataKuliahId !== '', fn ($query) => $query->where('mata_kuliah_id', (int) $this->mataKuliahId))

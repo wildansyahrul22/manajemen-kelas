@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ModulLog;
 use App\Enums\Role;
 use App\Models\Concerns\LogsActivity;
+use App\Models\Concerns\RoutesByUlid;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -21,7 +22,7 @@ use Illuminate\Notifications\Notifiable;
 class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
-    use HasFactory, LogsActivity, Notifiable;
+    use HasFactory, LogsActivity, Notifiable, RoutesByUlid;
 
     /**
      * @return array<string, string>

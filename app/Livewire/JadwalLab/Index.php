@@ -45,7 +45,7 @@ class Index extends Component
     public function mataKuliahDenganJadwal(): Collection
     {
         return MataKuliah::query()
-            ->select(['id', 'kode', 'nama', 'dosen'])
+            ->select(['id', 'ulid', 'kode', 'nama', 'dosen'])
             ->whereHas('jadwalLab', fn (Builder $query) => $this->sesuaiStatus($query))
             ->with(['jadwalLab' => fn ($query) => $this->sesuaiStatus($query)
                 ->select(['id', 'mata_kuliah_id', 'tanggal', 'jam_mulai', 'jam_selesai', 'ruangan', 'keterangan'])

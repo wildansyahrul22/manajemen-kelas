@@ -42,7 +42,7 @@ class Show extends Component
 
     public function render()
     {
-        $this->kelompok->loadMissing(['mataKuliah:id,kelas_id,nama,dosen', 'kategori:id,mata_kuliah_id,nama,final', 'creator:id,name']);
+        $this->kelompok->loadMissing(['mataKuliah:id,ulid,kelas_id,nama,dosen', 'kategori:id,mata_kuliah_id,nama,final', 'creator:id,name']);
 
         return view('livewire.kelompok.show')->title($this->kelompok->nama);
     }

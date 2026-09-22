@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ModulLog;
 use App\Models\Concerns\LogsActivity;
+use App\Models\Concerns\RoutesByUlid;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Database\Factories\KelompokFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class Kelompok extends Model
 {
     /** @use HasFactory<KelompokFactory> */
-    use HasFactory, LogsActivity, ScopedByMataKuliah;
+    use HasFactory, LogsActivity, RoutesByUlid, ScopedByMataKuliah;
 
     public function anggota(): BelongsToMany
     {

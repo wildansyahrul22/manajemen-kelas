@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\LampiranFile;
+use App\Models\Concerns\RoutesByUlid;
 use Database\Factories\InformasiLampiranFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Table;
@@ -18,7 +19,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class InformasiLampiran extends Model
 {
     /** @use HasFactory<InformasiLampiranFactory> */
-    use HasFactory, LampiranFile;
+    use HasFactory, LampiranFile, RoutesByUlid;
 
     public static function diskLampiran(): string
     {

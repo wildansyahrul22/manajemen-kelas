@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ModulLog;
 use App\Models\Concerns\HasLampiran;
 use App\Models\Concerns\LogsActivity;
+use App\Models\Concerns\RoutesByUlid;
 use Database\Factories\InformasiFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -20,7 +21,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Informasi extends Model
 {
     /** @use HasFactory<InformasiFactory> */
-    use HasFactory, HasLampiran, LogsActivity;
+    use HasFactory, HasLampiran, LogsActivity, RoutesByUlid;
 
     public const string LAMPIRAN_DIR = 'informasi';
 

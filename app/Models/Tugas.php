@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\ModulLog;
 use App\Models\Concerns\HasLampiran;
 use App\Models\Concerns\LogsActivity;
+use App\Models\Concerns\RoutesByUlid;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Carbon\CarbonInterface;
 use Database\Factories\TugasFactory;
@@ -22,7 +23,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Tugas extends Model
 {
     /** @use HasFactory<TugasFactory> */
-    use HasFactory, HasLampiran, LogsActivity, ScopedByMataKuliah;
+    use HasFactory, HasLampiran, LogsActivity, RoutesByUlid, ScopedByMataKuliah;
 
     public const string LAMPIRAN_DIR = 'tugas';
 

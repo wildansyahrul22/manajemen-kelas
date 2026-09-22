@@ -61,7 +61,7 @@ class Index extends Component
     public function daftarTugas(): LengthAwarePaginator
     {
         return $this->tugasQuery()
-            ->select(['id', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_at', 'updated_at'])
+            ->select(['id', 'ulid', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_at', 'updated_at'])
             ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama'])
             ->withCount('lampiran')
             ->paginate($this->perPage());

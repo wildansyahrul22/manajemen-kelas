@@ -47,7 +47,7 @@
                                 <p class="text-xs text-slate-400">{{ $jadwal->jam_selesai->format('H:i') }}</p>
                             </div>
                             <div @class(['min-w-0 flex-1 border-l-2 pl-3', 'border-primary-900' => $isToday, 'border-slate-200' => ! $isToday])>
-                                <a href="{{ route('mata-kuliah.show', $jadwal->mata_kuliah_id) }}" wire:navigate class="block truncate text-sm font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $jadwal->mataKuliah->nama }}</a>
+                                <a href="{{ route('mata-kuliah.show', $jadwal->mataKuliah) }}" wire:navigate class="block truncate text-sm font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $jadwal->mataKuliah->nama }}</a>
                                 <p class="truncate text-xs text-slate-500">{{ $jadwal->mataKuliah->dosen }}</p>
                                 @if ($jadwal->ruangan)
                                     <p class="mt-1 inline-flex items-center gap-1 text-xs text-slate-500"><x-heroicon-m-map-pin class="size-3.5" /> {{ $jadwal->ruangan }}</p>

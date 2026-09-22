@@ -43,7 +43,7 @@
 
         <x-ui.card title="Tentang Kelompok">
             <dl class="space-y-4 text-sm">
-                <div><dt class="text-slate-500">Mata kuliah</dt><dd class="mt-0.5"><a href="{{ route('mata-kuliah.show', $kelompok->mata_kuliah_id) }}" wire:navigate class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $kelompok->mataKuliah->nama }}</a></dd></div>
+                <div><dt class="text-slate-500">Mata kuliah</dt><dd class="mt-0.5"><a href="{{ route('mata-kuliah.show', $kelompok->mataKuliah) }}" wire:navigate class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $kelompok->mataKuliah->nama }}</a></dd></div>
                 <div><dt class="text-slate-500">Kategori</dt><dd class="mt-0.5 flex flex-wrap items-center gap-2"><a href="{{ route('kelompok.index', ['kategori' => $kelompok->kategori_kelompok_id]) }}" wire:navigate class="font-semibold text-slate-800 hover:text-primary-900 hover:underline">{{ $kelompok->kategori->nama }}</a>@if ($kelompok->kategori->isFinal())<x-ui.badge color="amber"><x-heroicon-m-lock-closed class="size-3.5" /> Final</x-ui.badge>@endif</dd></div>
                 <div><dt class="text-slate-500">Deskripsi</dt><dd class="mt-0.5 whitespace-pre-line text-slate-700">{{ $kelompok->deskripsi ?: '—' }}</dd></div>
                 <div><dt class="text-slate-500">Dibuat oleh</dt><dd class="mt-0.5 font-medium text-slate-800">{{ $kelompok->creator?->name ?? '—' }}</dd></div>

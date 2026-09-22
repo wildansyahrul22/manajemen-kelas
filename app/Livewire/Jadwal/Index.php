@@ -34,7 +34,7 @@ class Index extends Component
     {
         $jadwal = JadwalKelas::query()
             ->select(['id', 'mata_kuliah_id', 'hari', 'jam_mulai', 'jam_selesai', 'ruangan'])
-            ->with('mataKuliah:id,nama,dosen,kode')
+            ->with('mataKuliah:id,ulid,nama,dosen,kode')
             ->forKelasAktif($this->kelas)
             ->urut()
             ->get()

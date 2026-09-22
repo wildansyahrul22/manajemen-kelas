@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\ModulLog;
 use App\Models\Concerns\LogsActivity;
+use App\Models\Concerns\RoutesByUlid;
 use Database\Factories\MataKuliahFactory;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Scope;
@@ -19,7 +20,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class MataKuliah extends Model
 {
     /** @use HasFactory<MataKuliahFactory> */
-    use HasFactory, LogsActivity;
+    use HasFactory, LogsActivity, RoutesByUlid;
 
     public function kelas(): BelongsTo
     {

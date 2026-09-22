@@ -37,13 +37,15 @@ trait HasLampiran
     }
 
     /**
-     * Scoped route binding for /{induk}/{id}/lampiran/{lampiran}: the relation is named "lampiran"
+     * Scoped route binding for /{induk}/{ulid}/lampiran/{lampiran}: the relation is named "lampiran"
      * (Indonesian has no plural form), not the "lampirans" Laravel would guess.
      */
     public function resolveChildRouteBinding($childType, $value, $field): ?Model
     {
         if ($childType === 'lampiran') {
-            return $this->lampiran()->where($field ?? 'id', $value)->first();
+            $relasi = $this->lampiran();
+
+            return $relasi->where($field ?? $relasi->getRelated()->getRouteKeyName(), $value)->first();
         }
 
         return parent::resolveChildRouteBinding($childType, $value, $field);

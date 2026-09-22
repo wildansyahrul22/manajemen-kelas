@@ -36,7 +36,7 @@ class Index extends Component
     protected function informasiQuery(): Builder
     {
         return Informasi::query()
-            ->select(['id', 'kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'is_pinned', 'created_by', 'created_at'])
+            ->select(['id', 'ulid', 'kelas_id', 'kategori_informasi_id', 'judul', 'isi', 'link', 'is_pinned', 'created_by', 'created_at'])
             ->with(['kategori:id,nama,warna', 'creator:id,name'])
             ->withCount('lampiran')
             ->forKelas($this->kelas->id)
