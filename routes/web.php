@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\DemoLoginController;
 use App\Http\Controllers\InformasiLampiranController;
+use App\Http\Controllers\TugasLampiranController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Dashboard;
 use App\Livewire\Informasi;
@@ -50,6 +51,7 @@ Route::middleware(['auth', 'kelas.aktif'])->group(function () {
 
         Route::livewire('/tugas', Tugas\Index::class)->name('tugas.index');
         Route::livewire('/tugas/{tugas}', Tugas\Show::class)->name('tugas.show');
+        Route::get('/tugas/{tugas}/lampiran/{lampiran}', TugasLampiranController::class)->scopeBindings()->name('tugas.lampiran');
 
         Route::livewire('/jadwal', Jadwal\Index::class)->name('jadwal.index');
         Route::livewire('/jadwal-lab', JadwalLab\Index::class)->name('jadwal-lab.index');

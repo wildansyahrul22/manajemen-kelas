@@ -132,6 +132,32 @@ class MasaAktifKelasTest extends TestCase
         Livewire::actingAs($this->admin($kelas))->test(InformasiIndex::class)->assertSet('canUpload', true);
     }
 
+    public function test_super_admin_can_attach_files_even_when_the_plan_has_no_upload(): void
+    {
+        Storage::fake(Informasi::LAMPIRAN_DISK);
+
+        $kelas = $this->kelas(attributes: ['upload' => false]);
+        $kategori = KategoriInformasi::factory()->create(['kelas_id' => $kelas->id]);
+
+        Livewire::actingAs($this->superAdmin())
+            ->test(InformasiIndex::class)
+            ->assertSet('canUpload', true)
+            ->call('openCreate')
+            ->assertSee('Lampiran (gambar/file)')
+            ->assertDontSee('Paket kelas ini belum termasuk unggah file')
+            ->set('form.judul', 'Jadwal UAS')
+            ->set('form.kategori_informasi_id', (string) $kategori->id)
+            ->set('form.isi', 'Terlampir.')
+            ->set('form.lampiran', [UploadedFile::fake()->create('jadwal.pdf', 100, 'application/pdf')])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $informasi = Informasi::query()->where('judul', 'Jadwal UAS')->firstOrFail();
+
+        $this->assertSame(['jadwal.pdf'], $informasi->lampiran()->pluck('nama')->all());
+        $this->assertCount(1, Storage::disk(Informasi::LAMPIRAN_DISK)->allFiles());
+    }
+
     /**
      * Sign in as the given user with the factory password.
      */

@@ -14,6 +14,7 @@ use App\Models\Informasi;
 use App\Models\KategoriInformasi;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
+use App\Models\TugasLampiran;
 use App\Models\User;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Hash;
@@ -92,6 +93,28 @@ class DemoReadOnlyTest extends TestCase
             ->assertDispatched('notify', type: 'warning');
 
         $this->assertSame('Tugas Asli', $tugas->fresh()->nama);
+    }
+
+    public function test_demo_cannot_delete_a_record_with_attachments_either(): void
+    {
+        Storage::fake(Tugas::LAMPIRAN_DISK);
+
+        $demo = $this->demo();
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $demo->kelas_id]);
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
+        $lampiran = TugasLampiran::factory()->create(['tugas_id' => $tugas->id]);
+        Storage::disk(Tugas::LAMPIRAN_DISK)->put($lampiran->path, 'isi');
+
+        Livewire::actingAs($demo)
+            ->test(TugasIndex::class)
+            ->call('confirmDelete', $tugas->id)
+            ->call('delete')
+            ->assertSet('confirmingDelete', false)
+            ->assertDispatched('notify', type: 'warning');
+
+        $this->assertModelExists($tugas);
+        $this->assertModelExists($lampiran);
+        Storage::disk(Tugas::LAMPIRAN_DISK)->assertExists($lampiran->path);
     }
 
     public function test_demo_cannot_store_attachments_or_change_the_shared_password(): void

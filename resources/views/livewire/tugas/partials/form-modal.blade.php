@@ -23,6 +23,15 @@
             hint="Opsional. Tautan tempat mahasiswa mengumpulkan tugas (Google Form, folder Drive, LMS, dll.). Tampil sebagai tombol Kumpulkan Tugas." />
 
         <x-ui.textarea label="Deskripsi" name="form.deskripsi" wire:model="form.deskripsi" rows="4" placeholder="Detail tugas, format pengumpulan, dll. (opsional)" />
+
+        @if ($this->canUpload)
+            <x-ui.lampiran-field :form="$form" :model="\App\Models\Tugas::class" sebutan="tugas" label="Lampiran (soal, template, dll.)" />
+        @else
+            <p class="flex gap-2.5 rounded-xl border border-slate-200 bg-slate-50/60 px-3.5 py-3 text-xs leading-relaxed text-slate-600">
+                <x-heroicon-m-lock-closed class="mt-0.5 size-4 shrink-0 text-slate-400" />
+                <span>Paket kelas ini belum termasuk unggah file, jadi soal atau template tugas dibagikan lewat tautan (mis. Google Drive) di kolom <strong class="font-semibold">Deskripsi</strong> atau <strong class="font-semibold">Link pengumpulan</strong> di atas.</span>
+            </p>
+        @endif
     </form>
 
     <x-slot:footer>

@@ -65,6 +65,9 @@
                                     @if ($tugas->link_pengumpulan)
                                         <a href="{{ $tugas->link_pengumpulan }}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700 hover:bg-emerald-100" title="Buka link pengumpulan tugas"><x-heroicon-m-arrow-up-tray class="size-3.5" /> Kumpulkan</a>
                                     @endif
+                                    @if ($tugas->hasLampiran())
+                                        <span class="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2 py-0.5 text-xs text-slate-600" title="{{ $tugas->lampiran_count }} lampiran"><x-heroicon-m-paper-clip class="size-3.5" /> {{ $tugas->lampiran_count }} lampiran</span>
+                                    @endif
                                 </div>
                                 <p class="mt-0.5 text-xs text-slate-500 md:hidden">{{ $tugas->mataKuliah->nama }}</p>
                             </x-ui.td>

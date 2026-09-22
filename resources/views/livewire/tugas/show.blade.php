@@ -51,6 +51,11 @@
             @else
                 <p class="mt-2 text-sm italic text-slate-400">Belum ada link pengumpulan. Ikuti petunjuk dosen atau admin kelas.</p>
             @endif
+
+            @if ($tugas->hasLampiran())
+                <h3 class="mt-6 text-sm font-semibold uppercase tracking-wider text-slate-400">Lampiran</h3>
+                <x-ui.lampiran-list :daftar="$tugas->lampiran" route="tugas.lampiran" :induk="$tugas" class="mt-2" />
+            @endif
         </x-ui.card>
 
         <div class="space-y-6">

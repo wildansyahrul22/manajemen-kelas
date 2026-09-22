@@ -2,6 +2,7 @@
 
 namespace App\Policies;
 
+use App\Models\Kelas;
 use App\Models\Tugas;
 use App\Models\User;
 
@@ -30,5 +31,14 @@ class TugasPolicy
     public function delete(User $user, Tugas $tugas): bool
     {
         return $this->update($user, $tugas);
+    }
+
+    /**
+     * Super admin may always attach files; admin kelas only when the kelas is on a plan that
+     * includes uploading (otherwise the tugas links to the files instead).
+     */
+    public function upload(User $user, Kelas $kelas): bool
+    {
+        return $user->isSuperAdmin() || ($kelas->bolehUpload() && $user->canManageKelas($kelas->id));
     }
 }

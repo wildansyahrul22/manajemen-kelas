@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\ModulLog;
+use App\Models\Concerns\HasLampiran;
 use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\ScopedByMataKuliah;
 use Carbon\CarbonInterface;
@@ -14,13 +15,16 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Table('tugas')]
 #[Fillable(['mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_by'])]
 class Tugas extends Model
 {
     /** @use HasFactory<TugasFactory> */
-    use HasFactory, LogsActivity, ScopedByMataKuliah;
+    use HasFactory, HasLampiran, LogsActivity, ScopedByMataKuliah;
+
+    public const string LAMPIRAN_DIR = 'tugas';
 
     /**
      * @return array<string, string>
@@ -43,6 +47,11 @@ class Tugas extends Model
     public function kategoriKelompok(): BelongsTo
     {
         return $this->belongsTo(KategoriKelompok::class, 'kategori_kelompok_id');
+    }
+
+    public function lampiran(): HasMany
+    {
+        return $this->hasMany(TugasLampiran::class, 'tugas_id')->orderBy('id');
     }
 
     public function isTugasKelompok(): bool

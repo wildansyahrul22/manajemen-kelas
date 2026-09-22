@@ -10,7 +10,7 @@
     // [outline heroicon name, title, one-line description]
     $menu = [
         'Akademik' => [
-            ['clipboard-document-list', 'Daftar Tugas', 'Deadline, link pengumpulan, dan penanda tugas kelompok.'],
+            ['clipboard-document-list', 'Daftar Tugas', 'Deadline, link pengumpulan, lampiran soal, dan penanda tugas kelompok.'],
             ['book-open', 'Mata Kuliah', 'Dosen, SKS, dan seluruh isi satu mata kuliah dalam satu halaman.'],
             ['user-group', 'Kelompok', 'Anggota dan ketua tiap kelompok, lengkap dengan kontaknya.'],
             ['rectangle-group', 'Kategori Kelompok', 'Pembagian berbeda untuk project akhir, presentasi, praktikum.'],

@@ -20,12 +20,13 @@ class TugasFactory extends Factory
             'mata_kuliah_id' => MataKuliah::factory(),
             'nama' => fake()->randomElement(['Tugas', 'Laporan', 'Kuis', 'Project']).' '.fake()->numberBetween(1, 5),
             'deskripsi' => fake()->paragraph(),
-            'deadline' => fake()->dateTimeBetween('+1 day', '+3 weeks'),
+            // Relative to now() (not faker's clock) so tests that travel in time still get the right side of the deadline.
+            'deadline' => now()->addDays(fake()->numberBetween(1, 21))->setTime(fake()->numberBetween(8, 23), fake()->randomElement([0, 30])),
         ];
     }
 
     public function lewat(): static
     {
-        return $this->state(fn () => ['deadline' => fake()->dateTimeBetween('-2 weeks', '-1 day')]);
+        return $this->state(fn () => ['deadline' => now()->subDays(fake()->numberBetween(1, 14))->setTime(fake()->numberBetween(8, 23), fake()->randomElement([0, 30]))]);
     }
 }

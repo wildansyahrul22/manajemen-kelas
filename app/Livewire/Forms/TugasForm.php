@@ -2,16 +2,20 @@
 
 namespace App\Livewire\Forms;
 
+use App\Livewire\Concerns\WithLampiran;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
 use App\Models\Tugas;
 use App\Models\User;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
 use Livewire\Form;
 
 class TugasForm extends Form
 {
+    use WithLampiran;
+
     public ?Tugas $tugas = null;
 
     public string $nama = '';
@@ -51,6 +55,7 @@ class TugasForm extends Form
             'deadline' => ['required', 'date'],
             'link_pengumpulan' => ['nullable', 'url:http,https', 'max:2048'],
             'deskripsi' => ['nullable', 'string', 'max:5000'],
+            ...$this->rulesLampiran(),
         ];
     }
 
@@ -63,6 +68,7 @@ class TugasForm extends Form
             'link_pengumpulan.url' => 'Link pengumpulan harus berupa alamat lengkap yang diawali http:// atau https://.',
             'kategori_kelompok_id.required' => 'Pilih kategori kelompok untuk tugas kelompok ini.',
             'kategori_kelompok_id.exists' => 'Kategori kelompok harus berasal dari mata kuliah yang sama dengan tugas.',
+            ...$this->messagesLampiran(),
         ];
     }
 
@@ -79,7 +85,18 @@ class TugasForm extends Form
             'deadline' => 'deadline',
             'link_pengumpulan' => 'link pengumpulan',
             'deskripsi' => 'deskripsi',
+            ...$this->validationAttributesLampiran(),
         ];
+    }
+
+    protected function modelLampiran(): string
+    {
+        return Tugas::class;
+    }
+
+    protected function indukLampiran(): ?Model
+    {
+        return $this->tugas;
     }
 
     /**
@@ -94,7 +111,8 @@ class TugasForm extends Form
 
     public function fillFrom(Tugas $tugas): void
     {
-        $this->tugas = $tugas;
+        $this->reset();
+        $this->tugas = $tugas->loadMissing('lampiran');
         $this->nama = $tugas->nama;
         $this->mata_kuliah_id = (string) $tugas->mata_kuliah_id;
         $this->tugas_kelompok = $tugas->isTugasKelompok();
@@ -104,10 +122,11 @@ class TugasForm extends Form
         $this->deskripsi = (string) $tugas->deskripsi;
     }
 
-    public function save(Kelas $kelas, User $user): Tugas
+    public function save(Kelas $kelas, User $user, bool $canUpload): Tugas
     {
         $this->kelas = $kelas;
         $this->link_pengumpulan = trim($this->link_pengumpulan);
+        $this->siapkanValidasiLampiran($canUpload);
 
         $data = $this->validate();
 
@@ -122,10 +141,15 @@ class TugasForm extends Form
 
         if ($this->tugas !== null) {
             $this->tugas->update($attributes);
+            $this->sinkronkanLampiran($this->tugas, $kelas);
 
             return $this->tugas;
         }
 
-        return Tugas::query()->create([...$attributes, 'created_by' => $user->id]);
+        $tugas = Tugas::query()->create([...$attributes, 'created_by' => $user->id]);
+
+        $this->sinkronkanLampiran($tugas, $kelas, log: false);
+
+        return $tugas;
     }
 }

@@ -9,15 +9,26 @@ use App\Models\MataKuliah;
 use App\Models\Tugas;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
+use Livewire\WithFileUploads;
 
 /**
  * Create / edit / delete behaviour shared by the tugas list and detail pages.
  */
 trait ManagesTugas
 {
-    use ManagesModalForm;
+    use ManagesModalForm, WithFileUploads;
 
     public TugasForm $form;
+
+    /**
+     * Whether the current user may attach files: admin kelas and super admin, and only when the
+     * kelas' plan includes uploading.
+     */
+    #[Computed]
+    public function canUpload(): bool
+    {
+        return auth()->user()->can('upload', [Tugas::class, $this->kelas]);
+    }
 
     #[Computed]
     public function mataKuliahOptions(): Collection
@@ -70,7 +81,7 @@ trait ManagesTugas
             ? $this->authorize('update', $this->form->tugas)
             : $this->authorize('create', Tugas::class);
 
-        $tugas = $this->form->save($this->kelas, auth()->user());
+        $tugas = $this->form->save($this->kelas, auth()->user(), $this->canUpload);
 
         $this->closeForm();
         $this->notify($isEdit ? 'Tugas berhasil diperbarui.' : 'Tugas berhasil ditambahkan.');
@@ -92,6 +103,9 @@ trait ManagesTugas
         $this->authorize('delete', $tugas);
 
         $tugas->delete();
+
+        // The modal template reads the attachments off form.tugas, so never keep a deleted model there.
+        $this->form->reset();
 
         $this->closeDelete();
         $this->notify('Tugas berhasil dihapus.');

@@ -106,6 +106,10 @@ final class PesanWhatsApp
             $baris[] = "📤 Kumpulkan di: {$tugas->link_pengumpulan}";
         }
 
+        if ($tugas->hasLampiran()) {
+            $baris[] = "📎 {$tugas->jumlahLampiran()} lampiran (buka di aplikasi, login dengan NPM)";
+        }
+
         $baris[] = '👉 Detail tugas: '.route('tugas.show', $tugas);
         $baris[] = 'Jangan sampai terlewat ya 💪';
 

@@ -1,0 +1,121 @@
+{{--
+    File picker for a form object using WithLampiran: the stored attachments (with a "hapus" tick),
+    the input itself (several files at once, uploaded straight away with a progress bar), the newly
+    picked files (cancellable), and the validation errors or the limits hint.
+
+    `model` is the class with the LAMPIRAN_* limits (Informasi / Tugas); `sebutan` is how that
+    record is called in the hint ("2 file per informasi"). Files too big for the server are refused
+    in the browser before any upload starts.
+--}}
+@props(['form', 'model', 'sebutan', 'label' => 'Lampiran (gambar/file)'])
+@php
+    $tersimpan = $form->lampiranTersimpan();
+    $adaErrorFile = $errors->has('form.lampiran') || $errors->has('form.lampiran.*');
+    $perFile = \App\Support\BatasUnggah::perFileBytes();
+    $perPermintaan = \App\Support\BatasUnggah::perPermintaanBytes();
+@endphp
+<div
+    x-data="{
+        pesan: null,
+        progres: null,
+        perFile: {{ $perFile }},
+        perPermintaan: {{ $perPermintaan ?? 'null' }},
+        pilih(daftar) {
+            const files = Array.from(daftar);
+            this.pesan = null;
+
+            if (files.length === 0) return;
+
+            const besar = files.filter(f => f.size > this.perFile);
+            if (besar.length) {
+                this.pesan = besar.map(f => f.name).join(', ') + ' melebihi batas {{ \App\Support\BatasUnggah::mb($perFile) }} MB per file.';
+                this.$refs.input.value = '';
+                return;
+            }
+
+            const total = files.reduce((n, f) => n + f.size, 0);
+            if (this.perPermintaan !== null && total > this.perPermintaan) {
+                this.pesan = 'Total ukuran file yang dipilih sekaligus melebihi {{ $perPermintaan ? \App\Support\BatasUnggah::mb($perPermintaan) : '' }} MB. Pilih lebih sedikit file, lalu tambahkan sisanya.';
+                this.$refs.input.value = '';
+                return;
+            }
+
+            this.progres = 0;
+            $wire.$uploadMultiple('form.lampiran', files,
+                () => { this.progres = null; this.$refs.input.value = ''; },
+                () => { this.progres = null; this.pesan = 'File gagal diunggah. Pastikan ukurannya maksimal {{ \App\Support\BatasUnggah::mb($perFile) }} MB, lalu coba lagi.'; this.$refs.input.value = ''; },
+                (event) => { this.progres = event.detail.progress; },
+            );
+        },
+    }"
+>
+    <label for="form-lampiran" class="mb-1.5 block text-sm font-medium text-slate-700">{{ $label }}</label>
+
+    @if ($tersimpan->isNotEmpty())
+        <ul class="mb-2 divide-y divide-slate-100 rounded-xl border border-slate-200 bg-slate-50 text-sm">
+            @foreach ($tersimpan as $lampiran)
+                <li wire:key="lampiran-lama-{{ $lampiran->id }}" class="flex flex-wrap items-center justify-between gap-3 px-3.5 py-2.5">
+                    <span class="inline-flex min-w-0 items-center gap-2 text-slate-700">
+                        @if ($lampiran->isImage())<x-heroicon-o-photo class="size-4 shrink-0 text-slate-400" />@else<x-heroicon-o-paper-clip class="size-4 shrink-0 text-slate-400" />@endif
+                        <span class="truncate">{{ $lampiran->nama }}</span>
+                        @if ($lampiran->ukuranTerbaca())<span class="shrink-0 text-xs text-slate-400">{{ $lampiran->ukuranTerbaca() }}</span>@endif
+                    </span>
+                    <x-ui.checkbox label="Hapus" name="form.hapus_lampiran.{{ $lampiran->id }}" wire:model="form.hapus_lampiran" value="{{ $lampiran->id }}" />
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    <input
+        id="form-lampiran"
+        type="file"
+        multiple
+        x-ref="input"
+        x-on:change="pilih($event.target.files)"
+        :disabled="progres !== null"
+        accept="{{ collect($model::LAMPIRAN_EKSTENSI)->map(fn ($ext) => '.'.$ext)->join(',') }}"
+        @class([
+            'block w-full rounded-xl border bg-white text-sm text-slate-600 shadow-sm transition file:mr-3 file:rounded-l-xl file:border-0 file:bg-slate-100 file:px-3.5 file:py-2.5 file:text-sm file:font-medium file:text-slate-700 hover:file:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-primary-500/20 disabled:opacity-60',
+            'border-rose-300' => $adaErrorFile,
+            'border-slate-200' => ! $adaErrorFile,
+        ])
+    >
+
+    <div x-show="progres !== null" x-cloak class="mt-1.5 flex items-center gap-2 text-xs text-slate-500">
+        <x-heroicon-m-arrow-path class="size-3.5 animate-spin" />
+        <span>Mengunggah file… <span x-text="progres + '%'"></span></span>
+        <span class="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100"><span class="block h-full rounded-full bg-primary-900 transition-all" :style="'width:' + progres + '%'"></span></span>
+    </div>
+
+    <p x-show="pesan" x-cloak x-text="pesan" class="mt-1.5 text-sm text-rose-600"></p>
+
+    @if ($form->lampiran)
+        <ul class="mt-2 divide-y divide-slate-100 rounded-xl border border-primary-100 bg-primary-50/40 text-sm">
+            @foreach ($form->lampiran as $file)
+                <li wire:key="lampiran-baru-{{ $file->getFilename() }}" class="flex items-center justify-between gap-3 px-3.5 py-2">
+                    <span class="inline-flex min-w-0 items-center gap-2 text-slate-700">
+                        <x-heroicon-o-arrow-up-tray class="size-4 shrink-0 text-primary-700" />
+                        <span class="truncate">{{ $file->getClientOriginalName() }}</span>
+                        <span class="shrink-0 text-xs text-slate-400">{{ \Illuminate\Support\Number::fileSize($file->getSize(), precision: 1) }}</span>
+                    </span>
+                    <button type="button" wire:click="$removeUpload('form.lampiran', '{{ $file->getFilename() }}')" class="rounded-lg p-1 text-slate-400 transition hover:bg-rose-50 hover:text-rose-600" aria-label="Batalkan {{ $file->getClientOriginalName() }}" title="Batalkan file ini">
+                        <x-heroicon-m-x-mark class="size-4" />
+                    </button>
+                </li>
+            @endforeach
+        </ul>
+    @endif
+
+    @if ($errors->has('form.lampiran'))
+        <p class="mt-1.5 text-sm text-rose-600">{{ $errors->first('form.lampiran') }}</p>
+    @elseif ($errors->has('form.lampiran.*'))
+        @foreach ($errors->get('form.lampiran.*') as $key => $messages)
+            @php $indeks = (int) \Illuminate\Support\Str::afterLast($key, '.'); @endphp
+            <p class="mt-1.5 text-sm text-rose-600">{{ ($form->lampiran[$indeks] ?? null)?->getClientOriginalName() ?? 'Lampiran ke-'.($indeks + 1) }}: {{ $messages[0] }}</p>
+        @endforeach
+    @else
+        <p class="mt-1.5 text-xs text-slate-500">
+            Bisa pilih beberapa file sekaligus. Maks. {{ \App\Support\BatasUnggah::mb($perFile) }} MB per file, {{ $model::LAMPIRAN_MAKS_JUMLAH }} file per {{ $sebutan }}; format {{ strtoupper(implode(', ', $model::LAMPIRAN_EKSTENSI)) }}. File hanya bisa dibuka oleh anggota kelas.
+        </p>
+    @endif
+</div>

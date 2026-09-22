@@ -43,11 +43,11 @@ class InformasiPolicy
     }
 
     /**
-     * Admin kelas and super admin may attach files; mahasiswa share a link instead. The kelas must
-     * also be on a plan that includes uploading.
+     * Super admin may always attach files; admin kelas only when the kelas is on a plan that
+     * includes uploading. Mahasiswa share a link instead.
      */
     public function upload(User $user, Kelas $kelas): bool
     {
-        return $kelas->bolehUpload() && $user->canManageKelas($kelas->id);
+        return $user->isSuperAdmin() || ($kelas->bolehUpload() && $user->canManageKelas($kelas->id));
     }
 }

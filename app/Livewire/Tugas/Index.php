@@ -6,6 +6,7 @@ use App\Livewire\Concerns\InteractsWithKelas;
 use App\Livewire\Concerns\Notifies;
 use App\Livewire\Concerns\WithTableControls;
 use App\Models\Tugas;
+use App\Models\TugasLampiran;
 use App\Support\ExcelExport;
 use App\Support\PesanWhatsApp;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -62,6 +63,7 @@ class Index extends Component
         return $this->tugasQuery()
             ->select(['id', 'mata_kuliah_id', 'kategori_kelompok_id', 'nama', 'deskripsi', 'deadline', 'link_pengumpulan', 'created_at', 'updated_at'])
             ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama'])
+            ->withCount('lampiran')
             ->paginate($this->perPage());
     }
 
@@ -78,26 +80,41 @@ class Index extends Component
             ->all();
     }
 
+    /**
+     * Two lembar: the tugas list (with attachment count) and one row per attached file.
+     */
     public function export(): StreamedResponse
     {
         $statusLabel = ['aktif' => 'Aktif', 'segera' => 'Segera', 'lewat' => 'Lewat'];
 
-        $baris = $this->tugasQuery()
-            ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama', 'creator:id,name'])
-            ->get()
-            ->map(fn (Tugas $tugas, int $indeks) => [
-                $indeks + 1,
+        $daftar = $this->tugasQuery()
+            ->with(['mataKuliah:id,nama,dosen', 'kategoriKelompok:id,nama', 'creator:id,name', 'lampiran:id,tugas_id,nama,ukuran'])
+            ->get();
+
+        $baris = $daftar->map(fn (Tugas $tugas, int $indeks) => [
+            $indeks + 1,
+            $tugas->nama,
+            $tugas->mataKuliah->nama,
+            $tugas->mataKuliah->dosen,
+            $tugas->deadline,
+            $statusLabel[$tugas->status()],
+            $tugas->kategoriKelompok?->nama,
+            $tugas->link_pengumpulan,
+            $tugas->lampiran->count(),
+            $tugas->deskripsi,
+            $tugas->creator?->name,
+            $tugas->created_at,
+        ]);
+
+        $lampiran = $daftar
+            ->flatMap(fn (Tugas $tugas) => $tugas->lampiran->map(fn (TugasLampiran $lampiran) => [
                 $tugas->nama,
                 $tugas->mataKuliah->nama,
-                $tugas->mataKuliah->dosen,
-                $tugas->deadline,
-                $statusLabel[$tugas->status()],
-                $tugas->kategoriKelompok?->nama,
-                $tugas->link_pengumpulan,
-                $tugas->deskripsi,
-                $tugas->creator?->name,
-                $tugas->created_at,
-            ]);
+                $lampiran->nama,
+                $lampiran->ukuranTerbaca(),
+            ]))
+            ->values()
+            ->map(fn (array $baris, int $indeks) => [$indeks + 1, ...$baris]);
 
         return ExcelExport::buat('Daftar Tugas')
             ->subjudul('Kelas '.$this->kelas->nama.' · '.$this->kelas->semesterAktif->nama)
@@ -106,6 +123,7 @@ class Index extends Component
                 'Mata kuliah' => $this->mataKuliahId !== '' ? $this->mataKuliahOptions->firstWhere('id', (int) $this->mataKuliahId)?->nama : null,
                 'Status' => ['aktif' => 'Belum deadline', 'lewat' => 'Lewat deadline'][$this->status] ?? null,
             ])
+            ->lembar('Tugas')
             ->kolom(
                 ['No', ExcelExport::TIPE_ANGKA],
                 'Nama Tugas',
@@ -115,11 +133,21 @@ class Index extends Component
                 'Status',
                 'Tugas Kelompok (Kategori)',
                 'Link Pengumpulan',
+                ['Jumlah Lampiran', ExcelExport::TIPE_ANGKA],
                 ['Deskripsi', ExcelExport::TIPE_PANJANG],
                 'Dibuat Oleh',
                 ['Dibuat Pada', ExcelExport::TIPE_WAKTU],
             )
             ->baris($baris)
+            ->lembar('Lampiran')
+            ->kolom(
+                ['No', ExcelExport::TIPE_ANGKA],
+                'Nama Tugas',
+                'Mata Kuliah',
+                'Nama File',
+                'Ukuran',
+            )
+            ->baris($lampiran)
             ->unduh('daftar-tugas '.$this->kelas->nama);
     }
 

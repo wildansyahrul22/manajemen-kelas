@@ -17,9 +17,12 @@ use Tests\TestCase;
 
 class KampusTest extends TestCase
 {
+    /** Rolled back by path, so migrations added after it do not shift which one --step would undo. */
+    private const string MIGRASI_KAMPUS = 'database/migrations/2026_09_17_000001_create_kampus_table.php';
+
     public function test_the_migration_moves_every_existing_kelas_into_the_first_kampus(): void
     {
-        Artisan::call('migrate:rollback', ['--step' => 1]);
+        Artisan::call('migrate:rollback', ['--path' => self::MIGRASI_KAMPUS]);
 
         $semesterId = DB::table('semesters')->where('nomor', 1)->value('id');
         DB::table('kelas')->insert([
@@ -37,7 +40,7 @@ class KampusTest extends TestCase
 
     public function test_the_migration_creates_no_kampus_when_there_is_no_kelas_yet(): void
     {
-        Artisan::call('migrate:rollback', ['--step' => 1]);
+        Artisan::call('migrate:rollback', ['--path' => self::MIGRASI_KAMPUS]);
         Artisan::call('migrate');
 
         $this->assertSame(0, Kampus::query()->count());

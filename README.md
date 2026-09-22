@@ -51,7 +51,7 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 |-----------------------------------------|-----------|-------------------|-------------|
 | Dashboard, Daftar Tugas, Jadwal, Jadwal Lab, Mata Kuliah | Lihat | CRUD (kelasnya) | CRUD (semua) |
 | Informasi & Kategori Informasi          | CRUD (edit/hapus hanya data buatan sendiri) | CRUD | CRUD |
-| Lampiran file/gambar pada informasi     | —         | Upload (bila paket kelas mengizinkan) | Upload (bila paket kelas mengizinkan) |
+| Lampiran file/gambar pada informasi & tugas | —     | Upload (bila paket kelas mengizinkan) | Upload (selalu) |
 | Kategori Kelompok                       | CRUD (edit/hapus hanya data buatan sendiri, selama belum final) | CRUD | CRUD |
 | Kelompok                                | CRUD selama kategorinya belum final | CRUD selama kategorinya belum final | CRUD selama kategorinya belum final |
 | Tandai kategori kelompok final          | —         | Kelasnya          | Semua kelas |
@@ -62,7 +62,7 @@ Akun demo yang dibuat (password `password`): `24010001` admin TI-3A, `24010002` 
 
 Super admin memilih kelas yang sedang dikelola melalui filter kelas di header.
 
-Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara mahasiswa membagikan gambar/file. Admin kelas dan super admin bisa mengunggah **beberapa lampiran** sekaligus (maks. 2 MB per file, 2 file per informasi — di hosting dijamin oleh `public/.user.ini`: `upload_max_filesize = 3M`, `post_max_size = 8M`; form menampilkan batas efektif server dan menolak file kebesaran sebelum diunggah; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran/{lampiran}`).
+Setiap informasi bisa menyertakan **tautan** (mis. file di Google Drive yang aksesnya dibuka untuk "siapa saja yang memiliki link") — ini cara mahasiswa membagikan gambar/file. Admin kelas dan super admin bisa mengunggah **beberapa lampiran** sekaligus (maks. 2 MB per file, 2 file per informasi — di hosting dijamin oleh `public/.user.ini`: `upload_max_filesize = 3M`, `post_max_size = 8M`; form menampilkan batas efektif server dan menolak file kebesaran sebelum diunggah; disimpan di `storage/app/private/informasi` dan hanya bisa dibuka anggota kelas lewat `/informasi/{id}/lampiran/{lampiran}`). **Tugas** punya lampiran yang sama (soal, template laporan; maks. 2 file × 2 MB per tugas, disimpan di `storage/app/private/tugas`, dibuka lewat `/tugas/{id}/lampiran/{lampiran}`) — bagian yang sama dipakai keduanya: trait `HasLampiran`/`LampiranFile` (model), `WithLampiran` (form Livewire), serta komponen Blade `x-ui.lampiran-field` (form) dan `x-ui.lampiran-list` (halaman detail, dengan galeri gambar dan pratinjau PDF).
 
 **Bagikan ke WhatsApp**: tombol/ikon WhatsApp membuka WhatsApp dengan pesan siap kirim (tinggal pilih grup) — per informasi (daftar & detail), per tugas (daftar & detail, termasuk deadline & link pengumpulan), per hari atau seminggu penuh pada Jadwal Kelas, per tanggal atau per mata kuliah pada Jadwal Lab, dan per kategori pada Kelompok (pilih kategori dulu; pesan memuat semua kelompok beserta anggota + NPM dan mahasiswa yang belum masuk kelompok). Teks pesan disusun di `App\Support\PesanWhatsApp`.
 
@@ -105,7 +105,7 @@ Akun demo **hanya-baca**: pengunjung bisa membuka setiap form dan dialog (tambah
 Setiap kelas punya **masa aktif** (rentang tanggal) dan penanda **fitur upload**, keduanya hanya bisa diatur super admin lewat menu Kelas:
 
 - Di luar masa aktif, seluruh akun kelas tersebut tidak bisa masuk — dan sesi yang sedang terbuka ikut dikeluarkan pada permintaan berikutnya. Kosongkan kedua tanggal untuk kelas tanpa batas waktu. Super admin tidak terpengaruh karena tidak terikat kelas.
-- Bila fitur upload dimatikan, admin kelas tidak bisa melampirkan file pada informasi; lampiran tetap bisa dibagikan sebagai tautan Google Drive.
+- Bila fitur upload dimatikan, admin kelas tidak bisa melampirkan file pada informasi maupun tugas; lampiran tetap bisa dibagikan sebagai tautan Google Drive. Super admin tidak terikat paket ini dan selalu bisa mengunggah di kelas mana pun.
 
 ## Import mahasiswa dari CSV
 
