@@ -177,7 +177,8 @@
                 <figure class="mx-auto mt-10 max-w-5xl">
                     <div
                         class="overflow-hidden rounded-2xl border border-[var(--garis)] bg-white p-1.5 shadow-2xl shadow-[#16243f]/15 sm:p-2">
-                        <img src="{{ asset('images/dashboard.webp') }}" width="1600" height="851" fetchpriority="high"
+                        {{-- mtime as version: the hosting caches images for a week, so a replaced screenshot would otherwise stay stale. --}}
+                        <img src="{{ asset('images/dashboard.webp') }}?v={{ filemtime(public_path('images/dashboard.webp')) }}" width="1600" height="851" fetchpriority="high"
                             decoding="async"
                             alt="Dashboard kelas: jadwal hari ini, tugas mendekati deadline, dan informasi terbaru"
                             class="w-full rounded-xl">
