@@ -4,49 +4,64 @@ namespace Tests\Feature;
 
 use App\Models\Informasi;
 use App\Models\InformasiLampiran;
+use App\Models\Kelas;
 use App\Models\Kelompok;
 use App\Models\MataKuliah;
 use App\Models\Tugas;
 use App\Models\TugasLampiran;
-use App\Models\User;
-use Illuminate\Support\Facades\Artisan;
+use Illuminate\Database\Eloquent\MissingAttributeException;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
 /**
- * Records that appear in URLs are addressed by a ULID, never by their auto-increment id.
+ * Records that appear in URLs are addressed by a random ULID. Old keys (the auto-increment id, a
+ * replaced ULID in ulid_lama) redirect only for someone allowed to see the record.
  */
 class UlidRouteKeyTest extends TestCase
 {
-    private const string MIGRASI_ULID = 'database/migrations/2026_09_22_000002_add_ulid_to_routed_tables.php';
+    /** A ULID from the first, sequential backfill, as it may still sit in shared links. */
+    private const string ULID_LAMA = '01k5nq3r7ats8tabcdefghjkmn';
 
-    public function test_detail_pages_are_reached_by_ulid_and_not_by_id(): void
+    private const string ULID_LAMA_LAMPIRAN = '01k5nq3r7ats8vabcdefghjkmn';
+
+    public function test_detail_pages_are_reached_by_ulid(): void
     {
         $kelas = $this->kelas();
         $admin = $this->admin($kelas);
-        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $kelas->id]);
-        $tugas = Tugas::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
-        $informasi = Informasi::factory()->create(['kelas_id' => $kelas->id]);
-        $kelompok = Kelompok::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
-        $mahasiswa = $this->mahasiswa($kelas);
 
-        $halaman = [
-            ['tugas.show', $tugas, '/tugas/'],
-            ['mata-kuliah.show', $mataKuliah, '/mata-kuliah/'],
-            ['informasi.show', $informasi, '/informasi/'],
-            ['kelompok.show', $kelompok, '/kelompok/'],
-            ['users.show', $mahasiswa, '/users/'],
-        ];
-
-        foreach ($halaman as [$route, $model, $prefix]) {
+        foreach ($this->halamanDetail($kelas) as [$route, $model, $prefix]) {
             $this->assertTrue(Str::isUlid($model->ulid), "{$route}: ulid belum terisi");
             $this->assertSame(url($prefix.$model->ulid), route($route, $model), "{$route}: URL tidak memakai ulid");
 
             $this->actingAs($admin)->get(route($route, $model))->assertOk();
-            $this->actingAs($admin)->get($prefix.$model->id)->assertNotFound();
             $this->actingAs($admin)->get($prefix.strtolower((string) Str::ulid()))->assertNotFound();
+            $this->actingAs($admin)->get($prefix.'bukan-ulid')->assertNotFound();
+        }
+    }
+
+    public function test_an_old_id_link_redirects_to_the_ulid_url_for_someone_who_may_view_the_record(): void
+    {
+        $kelas = $this->kelas();
+        $admin = $this->admin($kelas);
+
+        foreach ($this->halamanDetail($kelas) as [$route, $model, $prefix]) {
+            $this->actingAs($admin)->get($prefix.$model->id)
+                ->assertStatus(301)
+                ->assertRedirect(route($route, $model));
+        }
+    }
+
+    public function test_an_old_id_link_is_not_found_for_a_member_of_another_kelas(): void
+    {
+        $kelas = $this->kelas();
+        $adminKelasLain = $this->admin($this->kelas());
+
+        foreach ($this->halamanDetail($kelas) as [$route, $model, $prefix]) {
+            $this->actingAs($adminKelasLain)->get($prefix.$model->id)->assertNotFound();
         }
     }
 
@@ -68,45 +83,111 @@ class UlidRouteKeyTest extends TestCase
 
         $this->actingAs($mahasiswa)->get(route('informasi.lampiran', [$informasi, $lampiranInformasi]))->assertOk();
         $this->actingAs($mahasiswa)->get(route('tugas.lampiran', [$tugas, $lampiranTugas]))->assertOk();
-
-        $this->actingAs($mahasiswa)->get("/informasi/{$informasi->id}/lampiran/{$lampiranInformasi->id}")->assertNotFound();
-        $this->actingAs($mahasiswa)->get("/informasi/{$informasi->ulid}/lampiran/{$lampiranInformasi->id}")->assertNotFound();
-        $this->actingAs($mahasiswa)->get("/tugas/{$tugas->id}/lampiran/{$lampiranTugas->id}")->assertNotFound();
-        $this->actingAs($mahasiswa)->get("/tugas/{$tugas->ulid}/lampiran/{$lampiranTugas->id}")->assertNotFound();
     }
 
-    public function test_the_migration_backfills_a_unique_ulid_on_existing_rows(): void
+    public function test_an_old_attachment_link_redirects_one_key_at_a_time_and_keeps_the_query_string(): void
     {
         $kelas = $this->kelas();
-        $semesterId = DB::table('semesters')->where('nomor', 3)->value('id');
+        $mahasiswa = $this->mahasiswa($kelas);
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $kelas->id])->id]);
+        $lampiran = TugasLampiran::factory()->create(['tugas_id' => $tugas->id]);
 
-        Artisan::call('migrate:rollback', ['--path' => self::MIGRASI_ULID]);
+        $this->actingAs($mahasiswa)->get("/tugas/{$tugas->id}/lampiran/{$lampiran->id}?unduh=1")
+            ->assertStatus(301)
+            ->assertRedirect("/tugas/{$tugas->ulid}/lampiran/{$lampiran->id}?unduh=1");
 
-        DB::table('mata_kuliah')->insert([
-            ['kelas_id' => $kelas->id, 'semester_id' => $semesterId, 'nama' => 'Basis Data', 'dosen' => 'Dr. Andi', 'sks' => 3, 'created_at' => now(), 'updated_at' => now()],
-            ['kelas_id' => $kelas->id, 'semester_id' => $semesterId, 'nama' => 'Jaringan', 'dosen' => 'Dr. Budi', 'sks' => 2, 'created_at' => now(), 'updated_at' => now()],
-        ]);
-
-        Artisan::call('migrate');
-
-        $ulid = DB::table('mata_kuliah')->orderBy('id')->pluck('ulid');
-
-        $this->assertCount(2, $ulid);
-        $this->assertCount(2, $ulid->unique());
-        $ulid->each(fn (string $nilai) => $this->assertTrue(Str::isUlid($nilai)));
-
-        // The kelas row itself is untouched: kelas never appears in a URL.
-        $this->assertFalse(DB::getSchemaBuilder()->hasColumn('kelas', 'ulid'));
+        $this->actingAs($mahasiswa)->get("/tugas/{$tugas->ulid}/lampiran/{$lampiran->id}?unduh=1")
+            ->assertStatus(301)
+            ->assertRedirect("/tugas/{$tugas->ulid}/lampiran/{$lampiran->ulid}?unduh=1");
     }
 
-    public function test_new_rows_get_a_ulid_from_the_model(): void
+    public function test_an_old_attachment_link_is_not_found_outside_its_kelas_or_under_another_parent(): void
     {
         $kelas = $this->kelas();
-        $user = User::factory()->create(['kelas_id' => $kelas->id]);
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $kelas->id]);
+        $informasi = Informasi::factory()->create(['kelas_id' => $kelas->id]);
+        $lampiran = InformasiLampiran::factory()->create(['informasi_id' => $informasi->id]);
+        $tugasLain = Tugas::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
+        $lampiranTugasLain = TugasLampiran::factory()->create(['tugas_id' => $tugasLain->id]);
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => $mataKuliah->id]);
 
-        $this->assertTrue(Str::isUlid($user->ulid));
-        $this->assertSame($user->ulid, $user->fresh()->ulid);
-        $this->assertSame('ulid', $user->getRouteKeyName());
-        $this->assertTrue($user->getIncrementing(), 'id tetap auto-increment');
+        $this->actingAs($this->mahasiswa($this->kelas()))
+            ->get("/informasi/{$informasi->ulid}/lampiran/{$lampiran->id}")
+            ->assertNotFound();
+
+        $this->actingAs($this->mahasiswa($kelas))
+            ->get("/tugas/{$tugas->ulid}/lampiran/{$lampiranTugasLain->id}")
+            ->assertNotFound();
+    }
+
+    public function test_a_replaced_ulid_redirects_to_the_current_one_only_within_the_kelas(): void
+    {
+        $kelas = $this->kelas();
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $kelas->id])->id]);
+        $lampiran = TugasLampiran::factory()->create(['tugas_id' => $tugas->id]);
+        DB::table('tugas')->where('id', $tugas->id)->update(['ulid_lama' => self::ULID_LAMA]);
+        DB::table('tugas_lampiran')->where('id', $lampiran->id)->update(['ulid_lama' => self::ULID_LAMA_LAMPIRAN]);
+
+        $this->actingAs($this->mahasiswa($kelas))->get('/tugas/'.self::ULID_LAMA)
+            ->assertStatus(301)
+            ->assertRedirect(route('tugas.show', $tugas));
+
+        $this->actingAs($this->mahasiswa($kelas))->get("/tugas/{$tugas->ulid}/lampiran/".self::ULID_LAMA_LAMPIRAN)
+            ->assertStatus(301)
+            ->assertRedirect(route('tugas.lampiran', [$tugas, $lampiran]));
+
+        $this->actingAs($this->mahasiswa($this->kelas()))->get('/tugas/'.self::ULID_LAMA)->assertNotFound();
+    }
+
+    public function test_new_rows_get_unrelated_random_ulids_from_the_model(): void
+    {
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $this->kelas()->id]);
+        $tugas = Tugas::factory()->count(5)->create(['mata_kuliah_id' => $mataKuliah->id]);
+
+        $this->assertSame($tugas[0]->ulid, $tugas[0]->fresh()->ulid);
+        $this->assertSame('ulid', $tugas[0]->getRouteKeyName());
+        $this->assertTrue($tugas[0]->getIncrementing(), 'id tetap auto-increment');
+        $tugas->each(fn (Tugas $satu) => $this->assertTrue(Str::isUlid($satu->ulid)));
+        $this->assertCount(5, $tugas->map(fn (Tugas $satu) => substr($satu->ulid, 0, 8))->unique(), 'ULID berbasis waktu yang dibuat dalam satu detik berawalan sama');
+    }
+
+    public function test_a_record_loaded_without_its_ulid_still_links_by_ulid_in_production_and_reports_it(): void
+    {
+        Exceptions::fake();
+        Model::preventAccessingMissingAttributes(false);
+
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $this->kelas()->id])->id]);
+        $tanpaUlid = Tugas::query()->select(['id', 'nama'])->findOrFail($tugas->id);
+
+        $this->assertSame(url('/tugas/'.$tugas->ulid), route('tugas.show', $tanpaUlid));
+        Exceptions::assertReported(MissingAttributeException::class);
+    }
+
+    public function test_a_record_loaded_without_its_ulid_fails_loudly_outside_production(): void
+    {
+        $tugas = Tugas::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $this->kelas()->id])->id]);
+        $tanpaUlid = Tugas::query()->select(['id', 'nama'])->findOrFail($tugas->id);
+
+        $this->expectException(MissingAttributeException::class);
+
+        route('tugas.show', $tanpaUlid);
+    }
+
+    /**
+     * One record for every detail page, all in the given kelas.
+     *
+     * @return list<array{0: string, 1: Model, 2: string}>
+     */
+    private function halamanDetail(Kelas $kelas): array
+    {
+        $mataKuliah = MataKuliah::factory()->create(['kelas_id' => $kelas->id]);
+
+        return [
+            ['tugas.show', Tugas::factory()->create(['mata_kuliah_id' => $mataKuliah->id]), '/tugas/'],
+            ['mata-kuliah.show', $mataKuliah, '/mata-kuliah/'],
+            ['informasi.show', Informasi::factory()->create(['kelas_id' => $kelas->id]), '/informasi/'],
+            ['kelompok.show', Kelompok::factory()->create(['mata_kuliah_id' => $mataKuliah->id]), '/kelompok/'],
+            ['users.show', $this->mahasiswa($kelas), '/users/'],
+        ];
     }
 }

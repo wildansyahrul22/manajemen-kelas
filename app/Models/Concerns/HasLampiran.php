@@ -2,7 +2,6 @@
 
 namespace App\Models\Concerns;
 
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
@@ -40,15 +39,9 @@ trait HasLampiran
      * Scoped route binding for /{induk}/{ulid}/lampiran/{lampiran}: the relation is named "lampiran"
      * (Indonesian has no plural form), not the "lampirans" Laravel would guess.
      */
-    public function resolveChildRouteBinding($childType, $value, $field): ?Model
+    protected function childRouteBindingRelationshipName($childType): string
     {
-        if ($childType === 'lampiran') {
-            $relasi = $this->lampiran();
-
-            return $relasi->where($field ?? $relasi->getRelated()->getRouteKeyName(), $value)->first();
-        }
-
-        return parent::resolveChildRouteBinding($childType, $value, $field);
+        return $childType === 'lampiran' ? 'lampiran' : parent::childRouteBindingRelationshipName($childType);
     }
 
     /**
