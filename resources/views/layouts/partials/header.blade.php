@@ -32,7 +32,7 @@
                 </div>
                 <div class="p-1.5">
                     <x-ui.menu-item :href="route('profile.edit')" icon="heroicon-o-user-circle">Profil Saya</x-ui.menu-item>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <form method="POST" action="{{ route('logout') }}" x-on:submit="$event.submitter && ($event.submitter.disabled = true)">
                         @csrf
                         <x-ui.menu-item type="submit" icon="heroicon-o-arrow-right-start-on-rectangle" danger>Keluar</x-ui.menu-item>
                     </form>

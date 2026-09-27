@@ -50,7 +50,7 @@
                     <span class="text-amber-800">Silakan buka dan isi form apa saja — perubahannya tidak akan disimpan.</span>
                     <span class="ml-auto flex flex-wrap items-center gap-x-4 gap-y-1">
                         <a href="{{ route('landing') }}#harga" class="font-semibold underline underline-offset-2 hover:no-underline">Lihat harga langganan</a>
-                        <form method="POST" action="{{ route('logout') }}">
+                        <form method="POST" action="{{ route('logout') }}" x-on:submit="$event.submitter && ($event.submitter.disabled = true)">
                             @csrf
                             <button type="submit" class="font-semibold underline underline-offset-2 hover:no-underline">Keluar dari demo</button>
                         </form>

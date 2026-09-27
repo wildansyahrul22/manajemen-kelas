@@ -8,9 +8,14 @@ use App\Models\ActivityLog;
 use App\Models\User;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Records sign-in and sign-out in the activity log.
+ *
+ * Laravel also fires Login when the "Ingat saya" cookie signs someone back in after their session
+ * expired, once for every request that arrives without a session. That is not a sign-in by the
+ * user, so it is not logged.
  */
 class LogAuthActivity
 {
@@ -19,6 +24,10 @@ class LogAuthActivity
         $user = $event->user;
 
         if (! $user instanceof User) {
+            return;
+        }
+
+        if ($event instanceof Login && Auth::guard($event->guard)->viaRemember()) {
             return;
         }
 

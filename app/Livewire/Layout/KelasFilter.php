@@ -26,6 +26,11 @@ class KelasFilter extends Component
         return Kelas::query()->orderBy('nama')->get(['id', 'nama']);
     }
 
+    /**
+     * Reloads the whole page rather than using wire:navigate: sidebar links prefetch pages on
+     * hover (wire:navigate.hover) and Livewire serves that copy, rendered for the previous kelas,
+     * for up to 30 seconds. A full load also drops every other prefetched page.
+     */
     public function updatedKelasId(string $value, KelasContext $context): void
     {
         abort_unless(auth()->user()->isSuperAdmin(), 403);
@@ -34,7 +39,7 @@ class KelasFilter extends Component
 
         $context->switchTo($kelas);
 
-        $this->redirect(request()->header('referer') ?: route('dashboard'), navigate: true);
+        $this->redirect(request()->header('referer') ?: route('dashboard'));
     }
 
     public function render()

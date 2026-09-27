@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Concerns;
 
-use App\Enums\AksiLog;
 use App\Models\Kelas;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Database\Eloquent\Model;
@@ -132,8 +131,8 @@ trait WithLampiran
     }
 
     /**
-     * Remove the ticked attachments and store the newly picked files; on edit, log the change of the
-     * attachment list as an "ubah" entry so the activity log shows it (rows live in another table).
+     * Remove the ticked attachments and store the newly picked files; on edit, the change of the
+     * attachment list joins the "ubah" entry of the save (rows live in another table).
      */
     protected function sinkronkanLampiran(Model $induk, Kelas $kelas, bool $log = true): void
     {
@@ -155,7 +154,7 @@ trait WithLampiran
         $sesudah = $induk->lampiran()->pluck('nama');
 
         if ($log && $sebelum->all() !== $sesudah->all()) {
-            $induk->catatAktivitas(AksiLog::Ubah, [
+            $induk->catatPerubahanLain([
                 'lampiran' => [$sebelum->implode(', ') ?: null, $sesudah->implode(', ') ?: null],
             ]);
         }

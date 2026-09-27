@@ -14,6 +14,9 @@ use Illuminate\Support\Arr;
  */
 trait LogsActivity
 {
+    /** The entry written by the model's latest save, which catatPerubahanLain() can add to. */
+    protected ?ActivityLog $aktivitasSimpanan = null;
+
     abstract public function activityModul(): ModulLog;
 
     abstract public function activityLabel(): string;
@@ -22,6 +25,10 @@ trait LogsActivity
 
     public static function bootLogsActivity(): void
     {
+        static::saving(function (Model $model) {
+            $model->aktivitasSimpanan = null;
+        });
+
         static::created(fn (Model $model) => $model->catatAktivitas(AksiLog::Buat));
 
         static::updated(function (Model $model) {
@@ -40,7 +47,7 @@ trait LogsActivity
      */
     public function catatAktivitas(AksiLog $aksi, array $perubahan = []): ActivityLog
     {
-        return ActivityLog::catat(
+        return $this->aktivitasSimpanan = ActivityLog::catat(
             aksi: $aksi,
             modul: $this->activityModul(),
             label: $this->activityLabel(),
@@ -48,6 +55,28 @@ trait LogsActivity
             subjekId: $this->getKey(),
             perubahan: $perubahan,
         );
+    }
+
+    /**
+     * Changes model events cannot see (attachments, members in a pivot table) join the "ubah"
+     * entry of the save that just happened, so one save shows as one entry. When that save changed
+     * no attribute, they get an entry of their own.
+     *
+     * @param  array<string, array{0: mixed, 1: mixed}>  $perubahan
+     */
+    public function catatPerubahanLain(array $perubahan): void
+    {
+        if ($perubahan === []) {
+            return;
+        }
+
+        if ($this->aktivitasSimpanan?->aksi === AksiLog::Ubah) {
+            $this->aktivitasSimpanan->update(['perubahan' => [...$this->aktivitasSimpanan->perubahan ?? [], ...$perubahan]]);
+
+            return;
+        }
+
+        $this->catatAktivitas(AksiLog::Ubah, $perubahan);
     }
 
     /**

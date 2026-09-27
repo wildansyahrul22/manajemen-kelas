@@ -2,7 +2,6 @@
 
 namespace App\Livewire\Forms;
 
-use App\Enums\AksiLog;
 use App\Enums\Role;
 use App\Models\KategoriKelompok;
 use App\Models\Kelas;
@@ -152,7 +151,7 @@ class KelompokForm extends Form
             $kelompok->fill($attributes)->save();
             $kelompok->anggota()->sync($sync);
 
-            // Pivot syncs fire no model events, so membership changes are logged here.
+            // Pivot syncs fire no model events, so membership changes join the save's log entry here.
             if ($sebelum !== null) {
                 $sesudah = $this->ringkasanAnggota($kelompok);
                 $perubahan = array_filter([
@@ -160,9 +159,7 @@ class KelompokForm extends Form
                     'ketua' => [$sebelum['ketua'], $sesudah['ketua']],
                 ], fn (array $pasangan) => $pasangan[0] !== $pasangan[1]);
 
-                if ($perubahan !== []) {
-                    $kelompok->catatAktivitas(AksiLog::Ubah, $perubahan);
-                }
+                $kelompok->catatPerubahanLain($perubahan);
             }
 
             return $kelompok;

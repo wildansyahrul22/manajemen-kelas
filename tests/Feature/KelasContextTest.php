@@ -20,12 +20,13 @@ class KelasContextTest extends TestCase
 
         $superAdmin = $this->superAdmin();
 
-        Livewire::actingAs($superAdmin)
+        $filter = Livewire::actingAs($superAdmin)
             ->test(KelasFilter::class)
             ->set('kelasId', (string) $kelasB->id)
             ->assertRedirect();
 
         $this->assertSame($kelasB->id, session(KelasContext::SESSION_KEY));
+        $this->assertArrayNotHasKey('redirectUsingNavigate', $filter->effects, 'wire:navigate bisa memakai halaman prefetch dari kelas sebelumnya');
 
         Livewire::actingAs($superAdmin)
             ->test(Dashboard::class)

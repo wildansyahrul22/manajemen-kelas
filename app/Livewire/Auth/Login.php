@@ -22,8 +22,18 @@ class Login extends Component
 
     public bool $remember = false;
 
+    /**
+     * A second click while the first successful login is still navigating to the dashboard is not
+     * a second sign-in (nor a second "masuk" in the activity log).
+     */
     public function login(): void
     {
+        if (Auth::check()) {
+            $this->redirectIntended(route('dashboard'), navigate: true);
+
+            return;
+        }
+
         $this->validate([
             'npm' => ['required', 'string'],
             'password' => ['required', 'string'],

@@ -101,6 +101,62 @@ class ActivityLogTest extends TestCase
         $this->assertSame(1, ActivityLog::query()->where('aksi', AksiLog::Keluar->value)->where('user_id', $user->id)->count());
     }
 
+    public function test_signing_back_in_through_the_remember_cookie_is_not_logged_as_a_new_login(): void
+    {
+        $user = $this->mahasiswa($this->kelas(), ['npm' => '24010002']);
+
+        Livewire::test(Login::class)
+            ->set('npm', '24010002')
+            ->set('password', 'password')
+            ->set('remember', true)
+            ->call('login')
+            ->assertHasNoErrors();
+
+        $cookie = collect(app('cookie')->getQueuedCookies())->first(fn ($cookie) => str_starts_with($cookie->getName(), 'remember_web_'));
+        session()->flush();
+        auth()->forgetGuards();
+
+        $this->withCookie($cookie->getName(), $cookie->getValue())->get(route('dashboard'))->assertOk();
+
+        $this->assertAuthenticatedAs($user);
+        $this->assertTrue(auth()->viaRemember());
+        $this->assertSame(1, ActivityLog::query()->where('aksi', AksiLog::Masuk->value)->count());
+    }
+
+    public function test_a_second_login_submit_after_signing_in_is_not_logged_again(): void
+    {
+        $this->mahasiswa($this->kelas(), ['npm' => '24010002']);
+
+        Livewire::test(Login::class)
+            ->set('npm', '24010002')
+            ->set('password', 'password')
+            ->call('login')
+            ->call('login')
+            ->assertRedirect(route('dashboard'));
+
+        $this->assertSame(1, ActivityLog::query()->where('aksi', AksiLog::Masuk->value)->count());
+    }
+
+    public function test_one_save_that_changes_fields_and_members_is_one_log_entry(): void
+    {
+        $kelas = $this->kelas();
+        $kategori = KategoriKelompok::factory()->create(['mata_kuliah_id' => MataKuliah::factory()->create(['kelas_id' => $kelas->id])->id]);
+        $anggota = $this->mahasiswa($kelas, ['name' => 'Anggota Baru']);
+        $kelompok = Kelompok::factory()->create(['kategori_kelompok_id' => $kategori->id, 'nama' => 'Kelompok 1']);
+
+        Livewire::actingAs($this->admin($kelas))
+            ->test(KelompokIndex::class)
+            ->call('openEdit', $kelompok->id)
+            ->set('form.nama', 'Kelompok Satu')
+            ->set('form.anggota', [$anggota->id])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $log = ActivityLog::query()->where('modul', ModulLog::Kelompok->value)->where('aksi', AksiLog::Ubah->value)->sole();
+        $this->assertSame(['Kelompok 1', 'Kelompok Satu'], $log->perubahan['nama']);
+        $this->assertSame(['', 'Anggota Baru'], $log->perubahan['anggota']);
+    }
+
     public function test_kelompok_membership_changes_are_logged(): void
     {
         $kelas = $this->kelas();

@@ -216,6 +216,25 @@ class TugasLampiranTest extends TestCase
         $this->assertSame(['lama.pdf, tetap.png', 'tetap.png, baru.docx'], $log->perubahan['lampiran']);
     }
 
+    public function test_changing_fields_and_attachments_in_one_save_writes_one_log_entry(): void
+    {
+        $kelas = $this->kelas();
+        $tugas = $this->tugas($kelas);
+        $namaLama = $tugas->nama;
+
+        Livewire::actingAs($this->admin($kelas))
+            ->test(TugasShow::class, ['tugas' => $tugas])
+            ->call('openEdit', $tugas->id)
+            ->set('form.nama', 'Laporan Akhir')
+            ->set('form.lampiran', [UploadedFile::fake()->create('soal.pdf', 50, 'application/pdf')])
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $log = ActivityLog::query()->where('modul', ModulLog::Tugas->value)->where('aksi', AksiLog::Ubah->value)->sole();
+        $this->assertSame([$namaLama, 'Laporan Akhir'], $log->perubahan['nama']);
+        $this->assertSame([null, 'soal.pdf'], $log->perubahan['lampiran']);
+    }
+
     public function test_deleting_the_tugas_removes_every_attached_file(): void
     {
         $kelas = $this->kelas();
