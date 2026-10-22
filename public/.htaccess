@@ -2,6 +2,12 @@
     Require all granted
 </IfModule>
 
+# Mitigasi tambahan PHP2Shell (CVE-2026-109618/109619): aplikasi tidak memakai upload progress
+# bawaan PHP, jadi dimatikan. Diset di sini karena LiteSpeed di hosting tidak membaca .user.ini.
+<IfModule LiteSpeed>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+
 <IfModule mod_rewrite.c>
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
